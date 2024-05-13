@@ -1,0 +1,4 @@
+  // Nice to have for any repo:
+  // (use `typescript` version that's inside `node_modules`)
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,

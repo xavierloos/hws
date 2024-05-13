@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 193.08, 65%, 23.53%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 50 98% 64.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 20 14.3% 4.1%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 5.26% 11.18%;
+    --foreground: 234, 5.62%, 65.1%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 50 98% 64.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 35.5 91.7% 32.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/*Editor */
+
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border: none !important;
+}
+
+.middle-line {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.middle-line::before,
+.middle-line::after {
+  content: "";
+  flex: 1;
+
+  border-bottom: 1px solid #a8a1aa;
+}
+
+.middle-line:not(:empty)::before {
+  margin-right: 0.25em;
+  width: 50px;
+}
+
+.middle-line:not(:empty)::after {
+  margin-left: 0.25em;
+  width: 50px;
+}
+
+/* LOGO */
+
+.patterns {
+  height: 30vh;
+}
+
+svg text {
+  font-family: "Poppins", sans-serif;
+  letter-spacing: 10px;
+  stroke: hsl(48, 96%, 89.1%);
+  font-size: 100px;
+  font-weight: 800;
+  stroke-width: 3;
+  animation: textAnimate 5s infinite alternate;
+}
+
+@keyframes textAnimate {
+  0% {
+    stroke-dasharray: 0 50%;
+    stroke-dashoffset: 20%;
+    fill: hsla(189, 68%, 75%, 0%);
+  }
+
+  100% {
+    fill: hsl(48, 96%, 89.1%);
+    stroke-dasharray: 50% 0;
+    stroke-dashoffstet: -20%;
+  }
+}

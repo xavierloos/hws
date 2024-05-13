@@ -1,0 +1,136 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id                        String           @id @default(cuid()) @map("_id")
+  username                  String?          @unique //Optional for social creations
+  name                      String?
+  email                     String?          @unique
+  emailVerified             DateTime?
+  image                     String?
+  password                  String?
+  about                     String?
+  tel                       String?
+  birthday                  DateTime?        @db.Date
+  role                      UserRole         @default(USER)
+  accounts                  Account[]
+  otpEnabled                Boolean          @default(false)
+  emailNotificationsEnabled Boolean          @default(false)
+  smsNotificationsEnabled   Boolean          @default(false)
+  otpConfirmation           OTPConfirmation?
+  blog                      Blog[]
+  file                      File[]
+  task                      Task[]
+  comment                   Comment[]
+
+  @@unique([email, id])
+}
+
+model Account {
+  id                String  @id @default(cuid()) @map("_id")
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Token {
+  id      String   @id @default(cuid()) @map("_id")
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model OTPConfirmation {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+model Category {
+  id   String @id @default(cuid()) @map("_id")
+  name String
+}
+
+model Blog {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String   @unique
+  slug        String   @unique
+  description String
+  isActive    Boolean  @default(false)
+  content     String
+  thumbnail   String?
+  banner      String?
+  views       Int      @default(0)
+  categories  Json
+  tags        Json
+  // category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  modifiedBy  String
+  modifiedAt  DateTime @default(now())
+  user        User     @relation(fields: [createdBy, modifiedBy], references: [email, id], onDelete: Cascade)
+}
+
+model File {
+  id           String   @id @default(cuid()) @map("_id")
+  name         String
+  type         String
+  size         Int
+  lastModified Int
+  createdBy    String
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String
+  priority    Json
+  dueDate     String
+  assignTo    Json
+  attachments Json?
+  description String
+  status      Json
+  createdBy   String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+}
+
+model Comment {
+  id          String   @id @default(cuid()) @map("_id")
+  comment     String
+  attachments Json?
+  relatedId   String //Could be related to blog, task, product, etc
+  createdBy   String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+}
