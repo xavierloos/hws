@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const GET = async () => {
-  console.log("he");
   try {
     const categories = await db.category.findMany();
     return new NextResponse(JSON.stringify(categories, { status: 200 }));

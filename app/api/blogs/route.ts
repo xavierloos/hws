@@ -12,16 +12,19 @@ export const GET = async (req: Request) => {
     };
 
     const res = await db.blog.findMany({
-      include: { user: true, category: true },
+      include: { user: true },
     });
 
-    for (const file of res) {
-      const [url] = await storage
-        .bucket(`${process.env.GCP_BUCKET}`)
-        .file(file.thumbnail)
-        .getSignedUrl(options);
-      file.tempThumbnailUrl = url;
+    if (res.length > 0) {
+      for (const file of res) {
+        const [url] = await storage
+          .bucket(`${process.env.GCP_BUCKET}`)
+          .file(`files/${file.thumbnail}`)
+          .getSignedUrl(options);
+        file.tempUrl = url;
+      }
     }
+
     return NextResponse.json(res, { status: 200 });
   } catch (error) {
     return NextResponse.json(
@@ -39,6 +42,7 @@ export const POST = async (req: Request, res: Response) => {
     // TODO: check if user has writing permissions
 
     const blog = await req.json();
+    console.log(blog);
 
     const existingSlug = await db.blog.findUnique({
       where: { slug: blog.slug },

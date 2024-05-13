@@ -5,10 +5,8 @@ import { currentUser } from "@/lib/auth";
 import { storage } from "@/lib/gcp";
 
 export const GET = async (req: any) => {
-  console.log("here");
   const searchParams = req.nextUrl.searchParams;
   const type = searchParams.get("id");
-  console.log(type);
   try {
     const options = {
       version: "v2", // defaults to 'v2' if missing.

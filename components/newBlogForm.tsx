@@ -72,7 +72,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
     slug: undefined,
     description: undefined,
     isActive: false,
-    categories: [],
+    categories: selectedCategories,
     content: undefined,
     thumbnail: undefined,
     banner: undefined,
@@ -128,7 +128,6 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
       await axios
         .get("/api/files?type=image")
         .then((res) => {
-          console.log(res.data);
           setImages(res.data);
         })
         .catch(() => {});
@@ -226,7 +225,6 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
           setShowAdd({ ...showAdd, category: !showAdd.category });
         })
         .catch((e) => {
-          console.log(e);
           toast.error(e.response.data.message);
         });
     });
@@ -251,6 +249,10 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
         });
       }
     });
+  };
+
+  const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFields({ ...fields, categories: new Set(e.target.value.split(",")) });
   };
 
   return (
@@ -285,11 +287,17 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
         />
         <Textarea
           size="sm"
+          minRows={1}
+          maxRows={4}
           isRequired
           type="text"
           radius="md"
           label="Description"
-          minRows={1}
+          disableAutosize
+          classNames={{
+            base: "w-full",
+            input: "resize-y min-h-[10px] max-h-[60px]",
+          }}
           defaultValue={fields.description}
           onValueChange={(e) => {
             fields.description = e;
@@ -366,7 +374,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 items={images}
                 label="Thumbnail"
                 isDisabled={isPending}
-                value={fields.thumbnail}
+                defaultValue={fields.thumbnail}
                 onChange={(e) => {
                   fields.thumbnail = e.target.value;
                 }}
@@ -480,7 +488,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 label="Banner"
                 items={images}
                 isDisabled={isPending}
-                value={fields.banner}
+                defaultValue={fields.banner}
                 onChange={(e) => {
                   fields.banner = e.target.value;
                 }}
@@ -539,7 +547,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
           id="uploadImage"
           type="file"
           accept="image/*"
-          required
+          // required
           className="hidden"
           onChange={handleImageSelected}
         />
@@ -593,10 +601,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               isDisabled={isPending}
               selectionMode="multiple"
               selectedKeys={selectedCategories}
-              onSelectionChange={() => {
-                setSelectedCategories;
-                fields.categories = selectedCategories;
-              }}
+              onChange={handleSelectionChange}
             >
               {categories.map((item) => (
                 <SelectItem key={item.id} value={item.name}>
@@ -634,12 +639,11 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
       ) : (
         <ReactQuill
           theme="snow"
-          // onChange={field.onChange}
           placeholder="Write your content"
           className="min-h-[200px] rounded-xl bg-content2"
           modules={modules}
           formats={formats}
-          value={fields.content}
+          defaultValue={fields.content}
           onChange={(e) => {
             fields.content = e;
           }}

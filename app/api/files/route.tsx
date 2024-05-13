@@ -7,8 +7,7 @@ import { storage } from "@/lib/gcp";
 export const GET = async (req: any) => {
   const searchParams = req.nextUrl.searchParams;
   const type = searchParams.get("type");
-  const filetype = searchParams;
-  console.log(filetype);
+
   try {
     const options = {
       version: "v2", // defaults to 'v2' if missing.
@@ -34,7 +33,6 @@ export const GET = async (req: any) => {
         .file(`files/${file.name}`)
         .getSignedUrl(options);
       file.tempUrl = url;
-      console.log(file.tempUrl);
       file.image = url;
     }
 

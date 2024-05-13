@@ -1,15 +1,16 @@
 "use client";
 import { Title } from "@/components/title";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import axios from "axios";
 import { TableItems } from "@/components/tableItems";
 import { toast } from "sonner";
 import { NewBlogModal } from "@/components/newBlogModal";
 
 const BlogPage = () => {
+  const [isPending, startTransition] = useTransition();
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const initialCols = ["name", "isActive", "createdBy", "actions"];
   const cols = [
     { name: "TITLE", uid: "name", sortable: true },
@@ -31,29 +32,34 @@ const BlogPage = () => {
   }, []);
 
   const getData = async () => {
-    await axios
-      .get("/api/blogs")
-      .then((res) => {
-        setData(res.data);
-      })
-
-      .catch((e) => {
-        toast.error(e.response.data.message);
-      });
-    setLoading(false);
+    startTransition(async () => {
+      await axios
+        .get("/api/blogs")
+        .then((res) => {
+          setData(res.data);
+        })
+        .catch((e) => {
+          toast.error(e.response.data.message);
+        });
+    });
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>, inputs: any) => {
     e.preventDefault();
-    console.log(inputs);
-    // await axios
-    //   .post("/api/blogs", inputs)
-    //   .then(() => {
-    //     getData();
-    //   })
-    //   .catch((e) => {
-    //     toast.error(e.response.data.message);
-    //   });
+    let cats = [];
+    inputs.categories.forEach((element) => {
+      cats.push(element);
+    });
+    inputs.categories = cats;
+    await axios
+      .post("/api/blogs", inputs)
+      .then((res) => {
+        console.log(res);
+        getData();
+      })
+      .catch((e) => {
+        toast.error(e.response.data.message);
+      });
   };
 
   const onDelete = async (id: string, name: string) => {
@@ -82,8 +88,8 @@ const BlogPage = () => {
         type="blogs"
         onDelete={onDelete}
         onSubmit={onSubmit}
-        loading={loading}
         statusOptions={statusOptions}
+        isPending={isPending}
       />
     </div>
   );
