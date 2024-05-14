@@ -759,7 +759,7 @@ export const TableItems = ({
           style={{
             overflow: "scroll",
           }}
-          className="flex flex-col gap-3 relative z-50 w-full box-border outline-none mx-1 my-1 sm:mx-6 sm:my-16 max-w-md rounded-large shadow-small overflow-y-hidden bg-white p-6"
+          className="flex flex-col gap-3 relative z-50 w-full box-border outline-none mx-1 my-1 sm:mx-6 sm:my-16 max-w-md rounded-large shadow-small overflow-y-hidden bg-white p-6 h-full"
         >
           <div className="flex justify-between w-full">
             <div className="flex items-center">
