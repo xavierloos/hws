@@ -42,7 +42,6 @@ export const POST = async (req: Request, res: Response) => {
     // TODO: check if user has writing permissions
 
     const blog = await req.json();
-    console.log(blog);
 
     const existingSlug = await db.blog.findUnique({
       where: { slug: blog.slug },

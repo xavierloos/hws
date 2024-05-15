@@ -66,7 +66,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
   const [isPending, startTransition] = useTransition();
   const [slugLoading, setSlugLoading] = useState(false);
   const [titleLoading, setTitleLoading] = useState(false);
-  const [openAICategory, setOpenAICategory] = useState(null);
+  const [openAICategories, setOpenAICategories] = useState(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [newImagePreview, setNewImagePreview] = useState(null);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
@@ -141,13 +141,14 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
   const createSlug = (value: string) => {
     const trimmedText = value.toLowerCase().trim();
     const alphanumericText = trimmedText.replace(/\W+/g, "-");
-    setFields({ ...fields, slug: alphanumericText.replace(/(^-|-$)/g, "") });
+    // setFields({ ...fields, slug: alphanumericText.replace(/(^-|-$)/g, "") });
+    return alphanumericText.replace(/(^-|-$)/g, "");
   };
 
   const generate = async () => {
     startTransition(async () => {
       await axios
-        .get("/api/chat?type=blog")
+        .get("/api/chat")
         .then((res) => {
           setFields({
             ...fields,
@@ -156,7 +157,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
             description: JSON.parse(res.data.content).description,
             content: JSON.parse(res.data.content).content,
           });
-          setOpenAICategory(JSON.parse(res.data.content).categories);
+          setOpenAICategories(JSON.parse(res.data.content).categories);
           setIsRegenateButtonActive(true);
         })
         .catch((e) => {
@@ -172,10 +173,6 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
         value = fields.name;
         setTitleLoading(true);
         break;
-      case "slug":
-        value = fields.slug;
-        setSlugLoading(true);
-        break;
       case "description":
         value = fields.description;
         setDescriptionLoading(true);
@@ -189,15 +186,11 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
     }
 
     await axios
-      .get(`/api/chat?type=${value}`)
+      .post(`/api/chat`, { value })
       .then((res) => {
         const content = res.data.content;
         if (input === "name") {
-          setFields({
-            ...fields,
-            name: JSON.parse(content).title,
-            slug: JSON.parse(content).slug,
-          });
+          setFields({ ...fields, name: content, slug: createSlug(content) });
           setTitleLoading(false);
         }
         if (input === "description") {
@@ -272,13 +265,12 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               placeholder={fields.name}
               value={fields.name}
               onValueChange={(v) => {
-                setFields({ ...fields, name: v });
+                setFields({
+                  ...fields,
+                  name: v,
+                  slug: createSlug(v),
+                });
               }}
-              onKeyUp={(e) =>
-                setTimeout(() => {
-                  createSlug(e.target.value);
-                }, 1000)
-              }
               description={fields.slug}
             />
             {isRegenateButtonActive && (
@@ -307,6 +299,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               radius="md"
               label="Description"
               disableAutosize
+              isLoading={descriptionLoading}
               classNames={{
                 base: "w-full",
                 input: "resize-y min-h-[10px] max-h-[60px]",
@@ -320,8 +313,9 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               <Button
                 size="sm"
                 isIconOnly
-                variant="flat"
-                className="ms-2 rounded-full hover:opacity-100"
+                radius="full"
+                variant="solid"
+                className="ms-2 bg-content2"
                 onClick={() => regenerate("description")}
               >
                 <MagicWandIcon />
@@ -623,6 +617,10 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                   selectionMode="multiple"
                   selectedKeys={selectedCategories}
                   onChange={handleSelectionChange}
+                  description={
+                    openAICategories &&
+                    `Suggested categories: ${openAICategories}`
+                  }
                 >
                   {categories.map((item) => (
                     <SelectItem key={item.id} value={item.name}>
@@ -654,47 +652,45 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               </>
             )}
           </div>
-          <ReactQuill
-            theme="snow"
-            placeholder="Write your content"
-            className="min-h-[200px] rounded-xl bg-content2"
-            modules={modules}
-            formats={formats}
-            value={fields.content}
-            onChange={(v) => {
-              setFields({ ...fields, content: v });
-            }}
-            endContent={
-              <Button
-                size="md"
-                isIconOnly
-                variant="light"
-                className="my-auto p-0 rounded-full"
-                onClick={() => regenerate("description")}
-              >
-                <MagicWandIcon className="w-5 h-5" />
-              </Button>
-            }
-          />
-          {/* <div className="w-full flex justify-between">
-            {reloading ? (
-              <Button
-                size="md"
-                className="w-5 h-10 bg-content3"
-                isDisabled={contentLoading}
-                endContent={
-                  contentLoading ? (
-                    <Spinner size="sm" />
-                  ) : reloading ? (
-                    <ReloadIcon
-                      className="w-5 h-5"
-                      onClick={() => regenerate("content")}
-                    />
-                  ) : null
-                }
-              />
-            ) : null}
-          </div> */}
+          <div className="flex flex-row items-top">
+            <ReactQuill
+              theme="snow"
+              placeholder="Write your content"
+              className="min-h-[200px] rounded-xl bg-content2"
+              modules={modules}
+              formats={formats}
+              value={fields.content}
+              onChange={(v) => {
+                setFields({ ...fields, content: v });
+              }}
+              endContent={
+                <Button
+                  size="md"
+                  isIconOnly
+                  variant="light"
+                  className="my-auto p-0 rounded-full"
+                  onClick={() => regenerate("description")}
+                >
+                  <MagicWandIcon className="w-5 h-5" />
+                </Button>
+              }
+            />
+            {isRegenateButtonActive && (
+              <Tooltip content="Regenerate">
+                <Button
+                  size="sm"
+                  isIconOnly
+                  radius="full"
+                  variant="solid"
+                  className="ms-2 bg-content2"
+                  onClick={() => regenerate("content")}
+                  isLoading={contentLoading}
+                >
+                  <MagicWandIcon />
+                </Button>
+              </Tooltip>
+            )}
+          </div>
           <Switch
             onChange={(e) => {
               fields.isActive = e.target.checked;

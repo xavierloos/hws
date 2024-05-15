@@ -54,7 +54,6 @@ const BlogPage = () => {
     await axios
       .post("/api/blogs", inputs)
       .then((res) => {
-        console.log(res);
         getData();
       })
       .catch((e) => {
