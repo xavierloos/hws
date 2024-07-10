@@ -101,7 +101,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
       <Input
         size="sm"
         isRequired
-        radius="md"
+        radius="sm"
         type="text"
         label="Task"
         onChange={(e) => setInputs({ ...inputs, name: e.target.value })}
@@ -110,7 +110,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
         <Select
           size="sm"
           isRequired
-          radius="md"
+          radius="sm"
           label="Priority"
           items={priorities}
           onChange={
@@ -126,7 +126,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
             return items.map((item) => (
               <div className="flex gap-1 items-center">
                 <Avatar
-                  radius="full"
+                  radius="sm"
                   alt={item.data.name}
                   className={`flex-shrink-0 w-5 h-5 bg-${item.data.color}`}
                   src={item.data.name}
@@ -142,7 +142,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
             <SelectItem key={i.name} value={i.name}>
               <div className="flex gap-1 items-center">
                 <Avatar
-                  radius="full"
+                  radius="sm"
                   alt={i.name}
                   src={i.name}
                   className={`flex-shrink-0 w-5 h-5 bg-${i.color}`}
@@ -154,7 +154,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
         </Select>
         <DatePicker
           size="sm"
-          radius="md"
+          radius="sm"
           isRequired
           hourCycle={24}
           hideTimeZone={true}
@@ -179,7 +179,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
         <Select
           size="sm"
           isRequired
-          radius="md"
+          radius="sm"
           items={team}
           label="Assign to"
           selectionMode="multiple"
@@ -195,7 +195,7 @@ export const TaskFormModal = ({ onSubmit, isPending }: TaskFormProps) => {
               <div className="flex gap-1 items-center">
                 <Avatar
                   size="sm"
-                  radius="full"
+                  radius="sm"
                   alt={i.name}
                   src={i.image}
                   className="flex-shrink-0"

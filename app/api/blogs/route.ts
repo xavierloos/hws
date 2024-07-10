@@ -1,31 +1,60 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { storage } from "@/lib/gcp";
+import { getTemporaryUrlImage } from "@/temporaryUrlImage";
 import { NextResponse } from "next/server";
 
 export const GET = async (req: Request) => {
   try {
-    const options = {
-      version: "v2", // defaults to 'v2' if missing.
-      action: "read",
-      expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in one hour
-    };
-
-    const res = await db.blog.findMany({
+    const blogs = await db.blog.findMany({
       include: { user: true },
     });
 
-    if (res.length > 0) {
-      for (const file of res) {
-        const [url] = await storage
-          .bucket(`${process.env.GCP_BUCKET}`)
-          .file(`files/${file.thumbnail}`)
-          .getSignedUrl(options);
-        file.tempUrl = url;
+    if (blogs.length > 0) {
+      for (const blog of blogs) {
+        const modifier = await db.user.findUnique({
+          where: {
+            id: blog.modifiedBy,
+          },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            role: true,
+            image: true,
+          },
+        });
+        modifier.image = await getTemporaryUrlImage(
+          "profiles",
+          modifier.image,
+          modifier.id
+        );
+
+        const cats = [];
+        for (const category of blog.categories) {
+          const cat = await db.category.findUnique({
+            where: {
+              id: category,
+            },
+          });
+          cats.push(cat);
+        }
+
+        blog.user.image = await getTemporaryUrlImage(
+          "profiles",
+          blog.user.image,
+          blog.user.id
+        );
+        blog.categories = cats;
+        blog.modifiedBy = modifier;
+        blog.tempThumbnail = await getTemporaryUrlImage(
+          "files",
+          blog.thumbnail
+        );
       }
     }
 
-    return NextResponse.json(res, { status: 200 });
+    return NextResponse.json(blogs, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Something went wrong with blogs" },

@@ -157,7 +157,7 @@ export const Security = ({ fields }: any) => {
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 md:grid-cols-1">
             <Input
               size="sm"
-              radius="md"
+              radius="sm"
               label="Old"
               type={showPsswrd1 ? "text" : "password"}
               onValueChange={(v) => (fields.password = v)}
@@ -169,7 +169,7 @@ export const Security = ({ fields }: any) => {
             />
             <Input
               size="sm"
-              radius="md"
+              radius="sm"
               label="New"
               type={showPsswrd2 ? "text" : "password"}
               onKeyUp={(e) => validatePassword(e.target.value)}
@@ -182,7 +182,7 @@ export const Security = ({ fields }: any) => {
             />
             <Input
               size="sm"
-              radius="md"
+              radius="sm"
               label="Confirm"
               type={showPsswrd3 ? "text" : "password"}
               onKeyUp={(e) => confirmPassword(e.target.value)}

@@ -21,9 +21,11 @@ const EventsPage = () => {
     { name: "On Sale", uid: "true" },
     { name: "No Active", uid: "false" },
   ];
+
   useEffect(() => {
     getData();
   }, []);
+
   const getData = async () => {
     await axios
       .get("/api/events")

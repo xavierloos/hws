@@ -20,6 +20,7 @@ import {
   Avatar,
   Image,
   Tooltip,
+  Chip,
 } from "@nextui-org/react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useEffect, useState, useTransition } from "react";
@@ -45,12 +46,13 @@ import { FaMagic, FaSave } from "react-icons/fa";
 import { FilePreviewer } from "./filePreviewer";
 import { BlogSkeleton } from "./blogSkeleton";
 
-type NewItemFormProps = {
+type BlogFormProps = {
+  values: any;
   onSubmit: (e?: any, values?: any) => {};
   onClose: () => {};
 };
 
-export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
+export const BlogForm = ({ values, onSubmit, onClose }: BlogFormProps) => {
   const [showAdd, setShowAdd] = useState({
     thumbnail: false,
     banner: false,
@@ -59,29 +61,16 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [reloading, setReloading] = useState(false);
   const [isRegenateButtonActive, setIsRegenateButtonActive] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [newImage, setNewImage] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
-  const [slugLoading, setSlugLoading] = useState(false);
   const [titleLoading, setTitleLoading] = useState(false);
   const [openAICategories, setOpenAICategories] = useState(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [newImagePreview, setNewImagePreview] = useState(null);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<Selection>();
-  const [fields, setFields] = useState({
-    name: "",
-    slug: undefined,
-    description: undefined,
-    isActive: false,
-    categories: selectedCategories,
-    content: undefined,
-    thumbnail: undefined,
-    banner: undefined,
-  });
-
+  const [fields, setFields] = useState(values);
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -112,6 +101,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
   ];
 
   useEffect(() => {
+    console.log(values);
     getCategories();
     getImages();
   }, []);
@@ -133,6 +123,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
         .get("/api/files?type=image")
         .then((res) => {
           setImages(res.data);
+          console.log(res.data);
         })
         .catch(() => {});
     });
@@ -260,7 +251,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               size="sm"
               isRequired
               type="text"
-              radius="md"
+              radius="sm"
               label="Title"
               placeholder={fields.name}
               value={fields.name}
@@ -278,11 +269,11 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 <Button
                   size="sm"
                   isIconOnly
-                  radius="full"
+                  radius="sm"
                   variant="solid"
+                  isLoading={titleLoading}
                   className="ms-2 bg-content2"
                   onClick={() => regenerate("name")}
-                  isLoading={titleLoading}
                 >
                   <MagicWandIcon />
                 </Button>
@@ -296,10 +287,9 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
               maxRows={4}
               isRequired
               type="text"
-              radius="md"
+              radius="sm"
               label="Description"
               disableAutosize
-              isLoading={descriptionLoading}
               classNames={{
                 base: "w-full",
                 input: "resize-y min-h-[10px] max-h-[60px]",
@@ -309,18 +299,21 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 setFields({ ...fields, description: v.target.value });
               }}
             />
-            <Tooltip content="Regenerate">
-              <Button
-                size="sm"
-                isIconOnly
-                radius="full"
-                variant="solid"
-                className="ms-2 bg-content2"
-                onClick={() => regenerate("description")}
-              >
-                <MagicWandIcon />
-              </Button>
-            </Tooltip>
+            {isRegenateButtonActive && (
+              <Tooltip content="Regenerate">
+                <Button
+                  size="sm"
+                  isIconOnly
+                  radius="sm"
+                  variant="solid"
+                  className="ms-2 bg-content2"
+                  isLoading={descriptionLoading}
+                  onClick={() => regenerate("description")}
+                >
+                  <MagicWandIcon />
+                </Button>
+              </Tooltip>
+            )}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex flex-row items-center">
@@ -332,7 +325,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                   >
                     {newImagePreview ? (
                       <Avatar
-                        radius="none"
+                        radius="sm"
                         src={newImagePreview}
                         className="w-5 h-5 me-2 shrink-0"
                       />
@@ -381,38 +374,37 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                   <Select
                     size="sm"
                     isRequired
-                    radius="md"
-                    items={images}
+                    radius="sm"
+                    className="w-full overflow-ellipsis line-clamp-1 break-all"
                     label="Thumbnail"
                     isDisabled={isPending}
-                    defaultValue={fields.thumbnail}
+                    defaultSelectedKeys={[fields?.thumbnail]}
                     onChange={(e) => {
                       fields.thumbnail = e.target.value;
                     }}
-                    renderValue={(items) => {
-                      return items.map((item) => item.key);
+                    renderValue={(images) => {
+                      return images.map((i) => i.key);
                     }}
                   >
-                    {(item: any) => (
-                      <SelectItem key={item.name} value={item.name}>
+                    {images.map((i: any) => (
+                      <SelectItem key={i.name} value={i.name}>
                         <div className="flex gap-x-1 items-center">
                           <Avatar
-                            radius="none"
-                            alt={item.name}
+                            radius="sm"
+                            alt={i.name}
                             className="flex-shrink-0"
                             size="sm"
-                            src={item.tempUrl}
+                            src={i.tempUrl}
                           />
                           <div className="flex flex-col">
-                            <span className="text-small">{item.name}</span>
+                            <span className="text-small">{i.name}</span>
                             <span className="text-tiny text-default-400">
-                              {item.size &&
-                                `${(item.size / 1024).toFixed(2)}kB`}
+                              {i.size && `${(i.size / 1024).toFixed(2)}kB`}
                             </span>
                           </div>
                         </div>
                       </SelectItem>
-                    )}
+                    ))}
                   </Select>
                   <Tooltip content="Add Thumbnail">
                     <Button
@@ -451,7 +443,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                   >
                     {newImagePreview ? (
                       <Avatar
-                        radius="none"
+                        radius="sm"
                         src={newImagePreview}
                         className="w-5 h-5 me-2 shrink-0"
                       />
@@ -497,33 +489,29 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                   <Select
                     size="sm"
                     isRequired
-                    radius="md"
+                    radius="sm"
                     label="Banner"
                     items={images}
                     isDisabled={isPending}
-                    defaultValue={fields.banner}
-                    onChange={(e) => {
-                      fields.banner = e.target.value;
-                    }}
-                    renderValue={(items) => {
-                      return items.map((item) => item.key);
-                    }}
+                    defaultSelectedKeys={[fields?.banner]}
+                    renderValue={(items) => items.map((i) => i.key)}
+                    onChange={(e) => (fields.banner = e.target.value)}
+                    className="w-full overflow-ellipsis line-clamp-1 break-all"
                   >
-                    {(item: any) => (
-                      <SelectItem key={item.name} value={item.name}>
+                    {(i: any) => (
+                      <SelectItem key={i.name} value={i.name}>
                         <div className="flex gap-x-1 items-center">
                           <Avatar
-                            radius="none"
-                            alt={item.name}
-                            className="flex-shrink-0"
                             size="sm"
-                            src={item.tempUrl}
+                            alt={i.name}
+                            radius="sm"
+                            src={i.tempUrl}
+                            className="flex-shrink-0"
                           />
                           <div className="flex flex-col">
-                            <span className="text-small">{item.name}</span>
+                            <span className="text-small">{i.name}</span>
                             <span className="text-tiny text-default-400">
-                              {item.size &&
-                                `${(item.size / 1024).toFixed(2)}kB`}
+                              {i.size && `${(i.size / 1024).toFixed(2)}kB`}
                             </span>
                           </div>
                         </div>
@@ -535,24 +523,16 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                       size="sm"
                       isIconOnly
                       variant="solid"
-                      className="p-0 rounded-full ms-2  bg-content2"
-                      onClick={(e) =>
+                      onClick={() =>
                         setShowAdd({
                           ...showAdd,
                           thumbnail: false,
                           banner: !showAdd.banner,
                         })
                       }
+                      className="p-0 rounded-full ms-2 bg-primary"
                     >
-                      <PlusIcon
-                        className={`origin-center ${
-                          showAdd.banner && "rotate-45 "
-                        }`}
-                        style={{
-                          transition:
-                            "all 0.5s cubic-bezier(0.175,0.885,0.32,1.1)",
-                        }}
-                      />
+                      <PlusIcon />
                     </Button>
                   </Tooltip>
                 </>
@@ -573,7 +553,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 <Input
                   size="sm"
                   type="text"
-                  radius="md"
+                  radius="sm"
                   label="Add category"
                   onValueChange={(v) =>
                     setNewCategory(v.charAt(0).toUpperCase() + v.slice(1))
@@ -611,20 +591,34 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 <Select
                   size="sm"
                   isRequired
-                  radius="md"
+                  items={categories}
+                  radius="sm"
                   label="Categories"
                   isDisabled={isPending}
                   selectionMode="multiple"
-                  selectedKeys={selectedCategories}
+                  isMultiline={false}
+                  // selectedKeys={[fields.categories]}
+                  className="w-full"
+                  renderValue={(items) => {
+                    return (
+                      <div className="w-full flex gap-x-1 overflow-x-scrool">
+                        {items.map((item) => (
+                          <Chip size="sm" key={item.key}>
+                            {item.rendered}
+                          </Chip>
+                        ))}
+                      </div>
+                    );
+                  }}
                   onChange={handleSelectionChange}
                   description={
                     openAICategories &&
                     `Suggested categories: ${openAICategories}`
                   }
                 >
-                  {categories.map((item) => (
-                    <SelectItem key={item.id} value={item.name}>
-                      {item.name}
+                  {categories.map((i: any) => (
+                    <SelectItem key={i.id} value={i.name}>
+                      {i.name}
                     </SelectItem>
                   ))}
                 </Select>
@@ -680,7 +674,7 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
                 <Button
                   size="sm"
                   isIconOnly
-                  radius="full"
+                  radius="sm"
                   variant="solid"
                   className="ms-2 bg-content2"
                   onClick={() => regenerate("content")}
@@ -721,7 +715,6 @@ export const NewBlogForm = ({ onSubmit, onClose }: NewItemFormProps) => {
           </Switch>
         </>
       )}
-
       <div className="grid gap-3 grid-cols-2">
         <Button
           size="md"

@@ -19,30 +19,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // const session = await auth();
-
   return (
-    // <SessionProvider session={session}>
     <html lang="en">
-      <body className={inter.className}>
-        {children}
-        <Toaster
-          // closeButton
-          toastOptions={{
-            unstyled: true,
-            classNames: {
-              error:
-                "bg-red-500 text-white px-4 py-3 rounded relative flex items-center shadow-md",
-              success:
-                "bg-green-500 text-white px-4 py-3 rounded relative flex items-center shadow-md",
-              warning:
-                "bg-yellow-500 text-white px-4 py-3 rounded relative flex items-center shadow-md",
-              info: "bg-blue-500 text-white px-4 py-3 rounded relative flex items-center shadow-md",
-            },
-          }}
-        />
-      </body>
+      <body className={inter.className}>{children}</body>
+      <Toaster richColors position="bottom-center" />
     </html>
-    // </SessionProvider>
   );
 }

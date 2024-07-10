@@ -33,9 +33,10 @@ import {
   DrawingPinIcon,
   EyeOpenIcon,
   Pencil1Icon,
+  PlusIcon,
   TrashIcon,
 } from "@radix-ui/react-icons";
-import { NewBlogForm } from "./newBlogForm";
+import { BlogForm } from "./blogForm";
 import { NewFilesForm } from "./newFilesForm";
 import { TaskFormModal } from "./taskFormModal";
 import { format } from "timeago.js";
@@ -76,8 +77,17 @@ export const TableItems = ({
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
   const [isSearching, setIsSearching] = useState(false);
-  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [isOpen, setIsOpen] = useState(false);
+  const values = {
+    name: undefined,
+    slug: undefined,
+    description: undefined,
+    isActive: false,
+    categories: undefined,
+    content: undefined,
+    thumbnail: undefined,
+    banner: undefined,
+  };
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(initialCols)
   );
@@ -193,7 +203,9 @@ export const TableItems = ({
                       ? img
                       : type === "members"
                       ? i.tempUrl || i.image
-                      : i.tempThumbnailUrl,
+                      : type === "events"
+                      ? i.images[0]["url"]
+                      : i.tempThumbnail,
                 }}
                 description={
                   <span className="truncate text-ellipsis line-clamp-1 ">
@@ -210,7 +222,7 @@ export const TableItems = ({
                 }
                 name={
                   <span
-                    className={`text-ellipsis  overflow-hidden  break-words line-clamp-${
+                    className={`text-primary-foreground w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-${
                       type === "uploads" ? "1" : "2"
                     } `}
                   >
@@ -247,44 +259,28 @@ export const TableItems = ({
             <User
               avatarProps={{
                 isBordered: true,
-                // color: "default",
-                // color: `${user?.role === "ADMIN" ? "primary" : "default"}`,
-                // radius: "round",
                 className: `shrink-0 ${
-                  i?.role === "SUPERADMIN"
+                  cellValue.role === "SUPERADMIN"
                     ? "bg-primary text-foreground"
-                    : i?.role === "ADMIN"
+                    : cellValue.role === "ADMIN"
                     ? "bg-foreground text-primary"
                     : "bg-default text-default-foreground"
                 }`,
-                src:
-                  type === "uploads"
-                    ? i.type.includes("application")
-                      ? `https://placehold.co/600x400?text=${
-                          i.type.split("/")[1]
-                        }`
-                      : i.image
-                    : "",
-                name: cellValue[0],
-                // className: "shrink-0",
+                color: cellValue.role === "USER" ? "default" : "primary",
+                size: "sm",
+                radius: "full",
+                src: cellValue.image,
               }}
               description={
                 <span className="truncate text-ellipsis line-clamp-1 ">
-                  {i.dates &&
-                    dateFormat(
-                      i.dates?.start.dateTime,
-                      "ddd dd/mmm/yy - HH:MM"
-                    )}
-                  {i.size && `${(i.size / 1024).toFixed(2)}kB`}
+                  @{cellValue.username}
                 </span>
               }
               name={
                 <span
-                  className={`text-ellipsis  overflow-hidden  break-words line-clamp-${
-                    type === "uploads" ? "1" : "2"
-                  } `}
+                  className={`text-ellipsis overflow-hidden break-words line-clamp-1 `}
                 >
-                  {cellValue}
+                  {cellValue.name}
                 </span>
               }
             />
@@ -389,13 +385,25 @@ export const TableItems = ({
               </AvatarGroup>
             );
           }
-        case "category":
+        case "categories": // return (
+          // <Chip size="sm" color="primary">
+          //   {/* {i.categories} */}
+          //   {type === "blogs" && category.name}
+          //   {/* {i.classifications && i.classifications[0].genre.name} */}
+          // </Chip>;
+          // );
           return (
-            <Chip size="sm" color="primary">
-              {type === "blogs" && i.category.name}
-              {i.classifications && i.classifications[0].genre.name}
-            </Chip>
+            <div className="grid gap-1">
+              {i.categories.map((category: any) => {
+                return (
+                  <Chip size="sm" color="primary">
+                    {category.name}
+                  </Chip>
+                );
+              })}
+            </div>
           );
+
         case "type":
           return (
             <Chip size="sm" color="primary">
@@ -438,24 +446,6 @@ export const TableItems = ({
         case "actions":
           return (
             <div className="relative flex items-center gap-2 justify-end">
-              {type === "blogs" && (
-                <Tooltip content="Edit">
-                  <Button
-                    size="md"
-                    isIconOnly
-                    color="default"
-                    variant="light"
-                    className="p-0 rounded-full"
-                    onClick={() =>
-                      router.push(`/hws/blogs/${i.id}`, {
-                        scroll: false,
-                      })
-                    }
-                  >
-                    <Pencil1Icon color="gray" />
-                  </Button>
-                </Tooltip>
-              )}
               <Tooltip content="Show">
                 <Button
                   size="md"
@@ -463,13 +453,10 @@ export const TableItems = ({
                   color="primary"
                   variant="light"
                   className="p-0 rounded-full"
-                  onClick={
-                    () =>
-                      type === "files" ? window.open(i.tempUrl) : handleView(i)
-                    // router.push(`/hws/${type}/${i.id}`, {
-                    //     scroll: false,
-                    //   })
-                  }
+                  // onClick={() =>
+                  //   type === "files" ? window.open(i.tempUrl) : handleView(i)
+                  // }
+                  onClick={() => handleView(i)}
                 >
                   <EyeOpenIcon color="purple" />
                 </Button>
@@ -535,9 +522,10 @@ export const TableItems = ({
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-center">
           <Input
             size="md"
+            radius="sm"
             isClearable
             className="w-full"
             placeholder={`Search ${type}...`}
@@ -545,6 +533,7 @@ export const TableItems = ({
             value={filterValue}
             onClear={() => onClear()}
             onValueChange={onSearchChange}
+            color="default"
           />
           <div className={`${isSearching ? "hidden" : "flex"} gap-3 sm:flex`}>
             {statusOptions && (
@@ -554,6 +543,8 @@ export const TableItems = ({
                     endContent={<FaChevronDown className="text-small" />}
                     variant="flat"
                     size="md"
+                    radius="sm"
+                    className="bg-secondary"
                   >
                     Status
                   </Button>
@@ -580,6 +571,8 @@ export const TableItems = ({
                   size="md"
                   endContent={<FaChevronDown className="text-small" />}
                   variant="flat"
+                  radius="sm"
+                  className="bg-secondary"
                 >
                   Columns
                 </Button>
@@ -601,12 +594,23 @@ export const TableItems = ({
             </Dropdown>
             <Button
               color="primary"
+              className="hidden md:flex"
               size="md"
-              endContent={<FaPlus />}
+              radius="sm"
+              endContent={<PlusIcon />}
               onPress={handleNewItem}
             >
-              <span className="hidden md:flex">Add New</span>
+              New
             </Button>
+            <Button
+              color="primary"
+              className="flex md:hidden"
+              radius="sm"
+              isIconOnly
+              size="md"
+              endContent={<PlusIcon />}
+              onPress={handleNewItem}
+            />
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -670,17 +674,18 @@ export const TableItems = ({
         topContentPlacement="outside"
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
-        onRowAction={() => {}}
+        // onRowAction={() => {}}
         classNames={{
           table: "min-h-[150px]",
         }}
       >
-        <TableHeader columns={headerColumns}>
+        <TableHeader columns={headerColumns} className="shadow-none">
           {(column: any) => (
             <TableColumn
               key={column.uid}
               align={column.uid === "actions" ? "center" : "start"}
               allowsSorting={column.sortable}
+              className="bg-foreground text-secondary-foreground shadow-none"
             >
               {column.name}
             </TableColumn>
@@ -704,7 +709,7 @@ export const TableItems = ({
         backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        radius="lg"
+        radius="sm"
         classNames={{
           body: "py-0 max-h-screen",
           backdrop: "bg-black/50 backdrop-opacity-40",
@@ -786,7 +791,9 @@ export const TableItems = ({
             />
           )}
           {type === "files" && <NewFilesForm type={type} onSubmit={onSubmit} />}
-          {type === "blogs" && <NewBlogForm type={type} onSubmit={onSubmit} />}
+          {type === "blogs" && (
+            <BlogForm values={values} type={type} onSubmit={onSubmit} />
+          )}
           {type === "members" && (
             <NewMemberForm type={type} onSubmit={onSubmit} />
           )}

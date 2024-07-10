@@ -7,6 +7,8 @@ export const GET = async () => {
       `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}`
     );
 
+    console.log(res.data);
+
     return NextResponse.json(res.data, { status: 200 });
   } catch (error) {
     return NextResponse.json(

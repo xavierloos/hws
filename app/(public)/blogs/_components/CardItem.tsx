@@ -17,7 +17,7 @@ export const CardItem = ({ item }: any) => {
         <Button
           className="text-tiny uppercase font-bold"
           color="secondary"
-          radius="full"
+          radius="sm"
           size="md"
         >
           New

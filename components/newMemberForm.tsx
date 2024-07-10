@@ -22,7 +22,7 @@ export const NewMemberForm = ({ onSubmit, onClose }: NewMemberFormProps) => {
         Send an invitation to a new member
       </div>
       <Input
-        radius="md"
+        radius="sm"
         type="email"
         label="Email"
         size="sm"

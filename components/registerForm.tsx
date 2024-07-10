@@ -29,6 +29,7 @@ export const RegisterForm = () => {
   const [success, setSuccess] = useState<string | undefined>();
   const [message, setMessage] = useState<string | undefined>();
   const [messageType, setMessageType] = useState<string | undefined>();
+  const [passwordHelp, setPasswordHelp] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [password2Visible, setPassword2Visible] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({
@@ -40,10 +41,10 @@ export const RegisterForm = () => {
     confirmPasswordMatch: false,
   });
   const [inputs, setInputs] = useState({
-    name: undefined,
-    email: undefined,
-    username: undefined,
-    password: undefined,
+    name: null,
+    email: null,
+    username: null,
+    password: null,
   });
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
   const togglePassword2Visibility = () =>
@@ -56,15 +57,19 @@ export const RegisterForm = () => {
           if (res.msg) {
             setMessage(res.msg);
             setMessageType(res.type);
+            setLoading(false);
           } else {
             inputs.email = res.email;
+            setLoading(false);
           }
         })
         .catch((e) => {
           setError("Something went wrong");
+          setLoading(false);
         });
+    } else {
+      router.push(`/hws/login`, { scroll: false });
     }
-    setLoading(false);
   }, [token]);
 
   const validatePassword = (value: any) => {
@@ -82,6 +87,7 @@ export const RegisterForm = () => {
       hasSpecialChar: checkPassword(value, special),
     });
     setInputs({ ...inputs, password: value });
+    setPasswordHelp(true);
   };
 
   const checkLength = (value: string) => {
@@ -178,7 +184,7 @@ export const RegisterForm = () => {
             </>
           )}
 
-          {!error && !loading && !success ? (
+          {!error && !loading && !success && !message ? (
             <>
               <form
                 className="grid gap-3"
@@ -187,7 +193,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="md"
+                  radius="sm"
                   type="text"
                   label="Full Name"
                   onChange={(e) =>
@@ -198,7 +204,7 @@ export const RegisterForm = () => {
                   size="sm"
                   isRequired
                   isDisabled={token ? true : false}
-                  radius="md"
+                  radius="sm"
                   type="email"
                   label="Email"
                   value={token && inputs.email}
@@ -209,7 +215,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="md"
+                  radius="sm"
                   type="text"
                   label="Username"
                   onKeyDown={(e) => {
@@ -222,7 +228,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="md"
+                  radius="sm"
                   label="Password"
                   type={passwordVisible ? "text" : "password"}
                   onKeyUp={(e) => validatePassword(e.target.value)}
@@ -241,7 +247,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="md"
+                  radius="sm"
                   label="Confirm Password"
                   type={password2Visible ? "text" : "password"}
                   onKeyUp={(e) => confirmPassword(e.target.value)}
@@ -256,90 +262,106 @@ export const RegisterForm = () => {
                       {password2Visible ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Button>
                   }
+                  description={
+                    passwordHelp && (
+                      <div className="grid grid-cols-2 md:gap-2">
+                        <div>
+                          <div className="text-muted-foreground text-xs flex">
+                            {passwordValidation.hasMinLength ? (
+                              <CheckCircledIcon className="me-2 text-success" />
+                            ) : (
+                              <CircleIcon className="me-2" />
+                            )}
+                            <span
+                              className={
+                                passwordValidation.hasMinLength &&
+                                "line-through"
+                              }
+                            >
+                              Min length (8)
+                            </span>
+                          </div>
+                          <div className="text-muted-foreground text-xs flex">
+                            {passwordValidation.hasUpperCase ? (
+                              <CheckCircledIcon className="me-2 text-success" />
+                            ) : (
+                              <CircleIcon className="me-2" />
+                            )}
+                            <span
+                              className={
+                                passwordValidation.hasUpperCase &&
+                                "line-through"
+                              }
+                            >
+                              Upper letter (A-Z)
+                            </span>
+                          </div>
+                          <div className="text-muted-foreground text-xs flex">
+                            {passwordValidation.hasLowerCase ? (
+                              <CheckCircledIcon className="me-2 text-success" />
+                            ) : (
+                              <CircleIcon className="me-2" />
+                            )}
+                            <span
+                              className={
+                                passwordValidation.hasLowerCase &&
+                                "line-through"
+                              }
+                            >
+                              Lower letter (a-z)
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-xs flex">
+                            {passwordValidation.hasSpecialChar ? (
+                              <CheckCircledIcon className="me-2 text-success" />
+                            ) : (
+                              <CircleIcon className="me-2" />
+                            )}
+                            <span
+                              className={
+                                passwordValidation.hasSpecialChar &&
+                                "line-through"
+                              }
+                            >
+                              Special character
+                            </span>
+                          </div>
+                          <div className="text-muted-foreground text-xs flex">
+                            {passwordValidation.confirmPasswordMatch ? (
+                              <CheckCircledIcon className="me-2 text-success" />
+                            ) : (
+                              <CircleIcon className="me-2" />
+                            )}
+                            <span
+                              className={
+                                passwordValidation.confirmPasswordMatch &&
+                                "line-through"
+                              }
+                            >
+                              Passwords match
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
                 />
-                <div className="grid grid-cols-2 md:gap-2">
-                  <div>
-                    <div className="text-muted-foreground text-xs flex">
-                      {passwordValidation.hasMinLength ? (
-                        <CheckCircledIcon className="me-2 text-success" />
-                      ) : (
-                        <CircleIcon className="me-2" />
-                      )}
-                      <span
-                        className={
-                          passwordValidation.hasMinLength && "line-through"
-                        }
-                      >
-                        Min length (8)
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground text-xs flex">
-                      {passwordValidation.hasUpperCase ? (
-                        <CheckCircledIcon className="me-2 text-success" />
-                      ) : (
-                        <CircleIcon className="me-2" />
-                      )}
-                      <span
-                        className={
-                          passwordValidation.hasUpperCase && "line-through"
-                        }
-                      >
-                        Upper letter (A-Z)
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground text-xs flex">
-                      {passwordValidation.hasLowerCase ? (
-                        <CheckCircledIcon className="me-2 text-success" />
-                      ) : (
-                        <CircleIcon className="me-2" />
-                      )}
-                      <span
-                        className={
-                          passwordValidation.hasLowerCase && "line-through"
-                        }
-                      >
-                        Lower letter (a-z)
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-xs flex">
-                      {passwordValidation.hasSpecialChar ? (
-                        <CheckCircledIcon className="me-2 text-success" />
-                      ) : (
-                        <CircleIcon className="me-2" />
-                      )}
-                      <span
-                        className={
-                          passwordValidation.hasSpecialChar && "line-through"
-                        }
-                      >
-                        Special character
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground text-xs flex">
-                      {passwordValidation.confirmPasswordMatch ? (
-                        <CheckCircledIcon className="me-2 text-success" />
-                      ) : (
-                        <CircleIcon className="me-2" />
-                      )}
-                      <span
-                        className={
-                          passwordValidation.confirmPasswordMatch &&
-                          "line-through"
-                        }
-                      >
-                        Passwords match
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
                 <Button
                   size="md"
                   color="primary"
                   type="submit"
                   isLoading={isPending}
+                  isDisabled={
+                    inputs.name &&
+                    inputs.username &&
+                    inputs.email &&
+                    inputs.password &&
+                    passwordValidation.confirmPasswordMatch
+                      ? false
+                      : true
+                  }
                 >
                   Create account
                 </Button>
@@ -352,7 +374,7 @@ export const RegisterForm = () => {
                     </div>
                     <div className="w-[50%] flex justify-around m-auto">
                       <Button
-                        radius="full"
+                        radius="sm"
                         size="md"
                         isIconOnly
                         color="primary"
@@ -362,7 +384,7 @@ export const RegisterForm = () => {
                         <GitHubLogoIcon className="w-6 h-6" />
                       </Button>
                       <Button
-                        radius="full"
+                        radius="sm"
                         size="md"
                         isIconOnly
                         color="primary"

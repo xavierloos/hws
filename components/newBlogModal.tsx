@@ -260,7 +260,7 @@ export const NewBlogModal = ({
           </div>
           <div className="w-full grid grid-cols-2 gap-4">
             <Select
-              radius="full"
+              radius="sm"
               size="md"
               key={data?.status?.color}
               color={data?.status?.color}
@@ -275,7 +275,7 @@ export const NewBlogModal = ({
               ))}
             </Select>
             <Select
-              radius="full"
+              radius="sm"
               size="sm"
               key={data?.priority?.color}
               color={data?.priority?.color}
@@ -361,7 +361,7 @@ export const NewBlogModal = ({
                               <div className="flex gap-1 items-center m-auto w-full">
                                 <Avatar
                                   size="sm"
-                                  radius="full"
+                                  radius="sm"
                                   alt={i.name}
                                   src={i.image}
                                   className="flex-shrink-0 w-6 h-6"
@@ -382,7 +382,7 @@ export const NewBlogModal = ({
                             <div className="flex gap-1 items-center m-auto w-full">
                               <Avatar
                                 size="sm"
-                                radius="full"
+                                radius="sm"
                                 alt={i.name}
                                 src={i.image}
                                 className="flex-shrink-0 w-6 h-6"

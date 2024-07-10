@@ -29,9 +29,9 @@ export const LoginForm = () => {
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
   const [isPending, startTransition] = useTransition();
   const [inputs, setInputs] = useState({
-    email: undefined,
-    password: undefined,
-    code: undefined,
+    email: null,
+    password: null,
+    code: null,
   });
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
@@ -130,7 +130,7 @@ export const LoginForm = () => {
               <Input
                 size="sm"
                 isRequired
-                radius="md"
+                radius="sm"
                 type="email"
                 label="Email"
                 onChange={(e) =>
@@ -140,7 +140,7 @@ export const LoginForm = () => {
               <Input
                 size="sm"
                 required
-                radius="md"
+                radius="sm"
                 label="Password"
                 type={passwordVisible ? "text" : "password"}
                 onChange={(e) =>
@@ -169,7 +169,13 @@ export const LoginForm = () => {
             </>
           )}
 
-          <Button size="md" color="primary" type="submit" isLoading={isPending}>
+          <Button
+            size="md"
+            color="primary"
+            type="submit"
+            isLoading={isPending}
+            isDisabled={inputs.email && inputs.password ? false : true}
+          >
             {showOTP ? "Confirm OTP" : "Login"}
           </Button>
         </form>
@@ -180,7 +186,7 @@ export const LoginForm = () => {
             </div>
             <div className="w-[50%] flex justify-around m-auto">
               <Button
-                radius="full"
+                radius="sm"
                 size="md"
                 isIconOnly
                 color="primary"
@@ -190,7 +196,7 @@ export const LoginForm = () => {
                 <GitHubLogoIcon className="w-6 h-6" />
               </Button>
               <Button
-                radius="full"
+                radius="sm"
                 size="md"
                 isIconOnly
                 color="primary"

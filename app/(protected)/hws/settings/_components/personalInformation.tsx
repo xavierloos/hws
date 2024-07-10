@@ -104,7 +104,7 @@ export const PersonalInformation = ({ fields }: any) => {
               <div className="grid grid-cols-1 gap-3">
                 <Input
                   size="sm"
-                  radius="md"
+                  radius="sm"
                   type="text"
                   label="Full Name"
                   defaultValue={fields?.name}
@@ -112,7 +112,7 @@ export const PersonalInformation = ({ fields }: any) => {
                 />
                 <Input
                   size="sm"
-                  radius="md"
+                  radius="sm"
                   type="text"
                   label="Username"
                   defaultValue={fields?.username}
@@ -123,7 +123,7 @@ export const PersonalInformation = ({ fields }: any) => {
               <Input
                 size="sm"
                 isDisabled
-                radius="md"
+                radius="sm"
                 type="email"
                 label="Email"
                 defaultValue={fields?.email}
@@ -135,7 +135,7 @@ export const PersonalInformation = ({ fields }: any) => {
             <div className="grid gap-3 grid-cols-2">
               <Select
                 size="sm"
-                radius="md"
+                radius="sm"
                 label="User Role"
                 placeholder="Select a role"
                 // isDisabled={inputs?.role === "USER"}
@@ -150,7 +150,7 @@ export const PersonalInformation = ({ fields }: any) => {
               </Select>
               <Input
                 size="sm"
-                radius="md"
+                radius="sm"
                 type="text"
                 variant="flat"
                 defaultValue={fields?.tel}
@@ -162,7 +162,7 @@ export const PersonalInformation = ({ fields }: any) => {
 
             <Textarea
               size="sm"
-              radius="md"
+              radius="sm"
               type="text"
               label="About"
               defaultValue={fields?.about}

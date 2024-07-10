@@ -181,7 +181,7 @@ const EditBlogPage = (query: any) => {
                 >
                   <div className="flex gap-1 items-center">
                     <Avatar
-                      radius="md"
+                      radius="sm"
                       alt={item.name}
                       className="flex-shrink-0"
                       size="lg"
@@ -215,7 +215,7 @@ const EditBlogPage = (query: any) => {
                 >
                   <div className="flex gap-1 items-center">
                     <Avatar
-                      radius="md"
+                      radius="sm"
                       alt={item.name}
                       className="flex-shrink-0"
                       size="lg"

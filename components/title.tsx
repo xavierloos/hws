@@ -19,7 +19,7 @@ export const Title = ({ text, subtext, className }: TitleProps) => {
     >
       <h1
         className={cn(
-          "text-3xl font-semibold border-b-3 border-primary",
+          "text-3xl font-semibold border-b-3 border-primary text-primary",
           font.className
         )}
       >

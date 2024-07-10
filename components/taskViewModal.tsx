@@ -255,7 +255,7 @@ export const TaskViewModal = ({
           </div>
           <div className="w-full grid grid-cols-2 gap-4">
             <Select
-              radius="full"
+              radius="sm"
               size="sm"
               key={data?.status?.color}
               color={data?.status?.color}
@@ -270,7 +270,7 @@ export const TaskViewModal = ({
               ))}
             </Select>
             <Select
-              radius="full"
+              radius="sm"
               size="sm"
               key={data?.priority?.color}
               color={data?.priority?.color}
@@ -362,7 +362,7 @@ export const TaskViewModal = ({
                               <div className="flex gap-1 items-center m-auto w-full">
                                 <Avatar
                                   size="sm"
-                                  radius="full"
+                                  radius="sm"
                                   alt={i.name}
                                   src={i.image}
                                   className="flex-shrink-0 w-6 h-6 ms-2"
@@ -383,7 +383,7 @@ export const TaskViewModal = ({
                             <div className="flex gap-1 items-center m-auto w-full">
                               <Avatar
                                 size="sm"
-                                radius="full"
+                                radius="sm"
                                 alt={i.name}
                                 src={i.image}
                                 className="flex-shrink-0 w-6 h-6"
@@ -402,7 +402,7 @@ export const TaskViewModal = ({
                   </CheckboxGroup>
                   <Button
                     size="sm"
-                    radius="md"
+                    radius="sm"
                     color="primary"
                     variant="solid"
                     className="p-0 rounded-md mx-2 my-2 w-full"
@@ -457,7 +457,7 @@ export const TaskViewModal = ({
                     <Textarea
                       placeholder="What are you thinking?"
                       size="sm"
-                      radius="md"
+                      radius="sm"
                       className="w-full text-tiny"
                       color="default"
                       isRequired

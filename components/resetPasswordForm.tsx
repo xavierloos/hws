@@ -149,7 +149,7 @@ export const ResetPasswordForm = () => {
               <Input
                 size="sm"
                 isRequired
-                radius="md"
+                radius="sm"
                 label="New Password"
                 type={passwordVisible ? "text" : "password"}
                 onKeyUp={(e) => validatePassword(e.target.value)}
@@ -168,7 +168,7 @@ export const ResetPasswordForm = () => {
               <Input
                 size="sm"
                 isRequired
-                radius="md"
+                radius="sm"
                 label="Confirm Password"
                 type={password2Visible ? "text" : "password"}
                 onKeyUp={(e) => confirmPassword(e.target.value)}

@@ -79,12 +79,14 @@ export const Sidebar = () => {
   return (
     <>
       {/* SMALL DEVICES */}
-      <Navbar className="bg-primary  w-auto p-0 px-0 sm:hidden flex">
+      <Navbar className="bg-primary  w-auto p-0 px-0 sm:hidden flex text-secondary-foreground">
         <NavbarContent justify="start">
           <NavbarMenuToggle />
         </NavbarContent>
         <NavbarContent justify="center">
-          <NavbarBrand className="font-bold text-inherit">HWS</NavbarBrand>
+          <NavbarBrand className="font-bold text-secondary-foreground capitalize p-2 rounded-md w-full flex transition shrink-0">
+            HWS
+          </NavbarBrand>
         </NavbarContent>
         {/* USER MENU */}
         <NavbarContent justify="end">
@@ -104,7 +106,7 @@ export const Sidebar = () => {
                     color:
                       user?.role === "SUPERADMIN" || user?.role === "ADMIN"
                         ? "primary"
-                        : "default",
+                        : "secondary",
                     size: "sm",
                     src: user?.tempUrl || user?.image,
                   }}
@@ -139,14 +141,13 @@ export const Sidebar = () => {
             <NavbarMenuItem key={`${item.href}-${index}`}>
               <Link
                 isDisabled={currentPath.includes(item.href)}
-                className={`w-full capitalize font-medium p-2 rounded-md 
+                className={`text-secondary-foreground w-full capitalize font-medium p-2 rounded-md transition shrink-0 hover:text-accent-foreground 
               ${
                 currentPath.includes(item.href)
-                  ? "bg-white"
+                  ? "bg-accent opacity-100 hover:cursor-none"
                   : "hover:drop-shadow-sm"
               }
             `}
-                color="foreground"
                 href={item.href}
                 size="sm"
               >
@@ -166,7 +167,7 @@ export const Sidebar = () => {
         <div className="grid gap-1 overflow-auto">
           <div className="py-3">
             <Link
-              className={`capitalize p-2 rounded-md w-full flex transition shrink-0 hover:opacity-55`}
+              className={`text-secondary-foreground capitalize p-2 rounded-md w-full flex transition shrink-0 hover:text-accent-foreground`}
               color="foreground"
               size="lg"
               onClick={() => toggleSidebar()}
@@ -180,7 +181,7 @@ export const Sidebar = () => {
                 }}
               />
               <span
-                className={`ms-2 font-semibold text-lg ${
+                className={`ms-2 font-semibold text-xl ${
                   isCollapsed ? "hidden" : "flex"
                 }`}
               >
@@ -199,20 +200,22 @@ export const Sidebar = () => {
                   // arrow color
                   "before:bg-neutral-400 dark:before:bg-white",
                 ],
-                content: ["py-2 px-4 shadow-xl", "bg-primary"],
+                content: [
+                  "py-2 px-4 shadow-xl",
+                  "bg-primary text-primary-foreground",
+                ],
               }}
               isDisabled={!isCollapsed}
             >
               <Link
                 isDisabled={currentPath.includes(item.href)}
-                className={`w-full capitalize font-medium p-2 rounded-md 
+                className={`text-secondary-foreground w-full capitalize font-medium p-2 rounded-md transition shrink-0 hover:text-accent-foreground
                ${
                  currentPath.includes(item.href)
-                   ? "bg-white"
+                   ? "bg-secondary opacity-100 hover:cursor-none"
                    : "hover:drop-shadow-sm"
                }
              `}
-                color="foreground"
                 href={item.href}
                 size="sm"
               >
@@ -225,8 +228,7 @@ export const Sidebar = () => {
           ))}
         </div>
         <Link
-          className={`capitalize font-medium p-2 rounded-md  bg-primary w-full flex transition my-4 shrink-0 hover:opacity-55 items-center justify-center`}
-          color="foreground"
+          className={`capitalize font-medium p-2 rounded-md bg-foreground text-secondary-foreground w-full flex transition my-4 shrink-0 hover:opacity-55 items-center justify-center`}
           size="sm"
           onClick={() => setTheme(theme == "dark" ? "light" : "dark")}
         >

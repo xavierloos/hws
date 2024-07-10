@@ -2,11 +2,6 @@ import { Sidebar } from "./hws/_components/sidebar";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { Header } from "./hws/_components/header";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 
 import Providers from "./providers";
 interface ProtectedLayoutProps {
