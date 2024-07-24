@@ -1,7 +1,15 @@
 /**
  * Public access, does not require authentication
  */
-export const publicRoutes = ["/", "/hws/emailverification", "/blogs"];
+export const publicRoutes = [
+  "/",
+  "/hws/emailverification",
+  "/home",
+  "/blogs",
+  "/blogs/(.*)",
+  "/events",
+  "/api/blogs",
+];
 /**
  * Public access to authentication
  */

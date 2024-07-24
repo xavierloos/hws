@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -6,42 +6,114 @@ import {
   CardFooter,
   Image,
   Button,
+  Chip,
+  User,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
+import { format } from "timeago.js";
+import { EyeOpenIcon } from "@radix-ui/react-icons";
 
-export const CardItem = ({ item }: any) => {
+type CardItemProps = {
+  item: any;
+  suggestion?: boolean;
+};
+
+export const CardItem = ({ item, suggestion = false }: CardItemProps) => {
   const router = useRouter();
+
+  const formatViews = (views: number) => {
+    if (views >= 1000000) {
+      return (views / 1000000).toFixed(1) + "M";
+    } else if (views >= 1000) {
+      return (views / 1000).toFixed(1) + "K";
+    } else {
+      return views;
+    }
+  };
+
+  const openBlog = () => {
+    router.push(`/blogs/${item.slug}`);
+  };
+
   return (
-    <Card isFooterBlurred className="w-full h-[300px] col-span-6 sm:col-span-4">
+    <Card
+      isFooterBlurred
+      className={`h-full ${
+        suggestion ? "h-[100px]" : "min-h-[300px]"
+      } flex items-center`}
+      isPressable
+      onPress={() => openBlog()}
+    >
       <CardHeader className="absolute z-10 top-1 flex-col items-start">
-        <Button
-          className="text-tiny uppercase font-bold"
-          color="secondary"
-          radius="sm"
-          size="md"
+        {!suggestion && (
+          <div className="flex gap-1">
+            {item.categories.map((cat: any) => {
+              return (
+                <Chip
+                  color="primary"
+                  variant="solid"
+                  size="sm"
+                  key={cat.id}
+                  className="shadow-md"
+                >
+                  {cat.name}
+                </Chip>
+              );
+            })}
+          </div>
+        )}
+
+        <h4
+          className={`text-black/90 justify-start flex text-start font-medium ${
+            suggestion ? "text-sm" : "text-xl"
+          } drop-shadow-md`}
         >
-          New
-          {/* {item.categoryId} */}
-        </Button>
+          {item.name}
+        </h4>
       </CardHeader>
       <Image
         removeWrapper
-        alt="Card example background"
-        className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-        src="https://source.unsplash.com/random"
+        alt={`${item.id} blog image`}
+        className="z-0 w-full h-full"
+        src={suggestion ? item.thumbnail : item.tempThumbnail}
       />
-      <CardFooter className="absolute bg-white/30 bottom-0 border-t-1 border-zinc-100/50 z-10 justify-between py-1 px-3">
-        <div className="min-h-[60px] flex">
-          <h6
-            className="text-white font-medium text-sm md:text-lg  line-clamp-2 m-0"
-            onClick={() =>
-              router.push(`/blogs/${item.slug}`, { scroll: false })
-            }
-          >
-            {item.title} some util sad adoj dlfle ggnv ldjfjk dkfjdfn jdfjdf
-          </h6>
-        </div>
-      </CardFooter>
+      {!suggestion && (
+        <CardFooter className="flex flex-col gap-2 absolute bg-black/30 bottom-0 z-10">
+          <div className="flex gap-2 min-h-[32px] w-full">
+            <p className="text-tiny text-white/90 text-ellipsis line-clamp-2">
+              {item.description}
+            </p>
+          </div>
+          <div className="flex justify-between w-full gap-2 items-center">
+            <User
+              avatarProps={{
+                size: "sm",
+                className: "shrink-0",
+                src: item.user.image,
+              }}
+              description={
+                <span className="text-tiny truncate text-ellipsis line-clamp-1 text-white">
+                  {format(item.createdAt)}
+                </span>
+              }
+              name={
+                <span
+                  className={`text-tiny text-white w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-1`}
+                >
+                  By @{item.modifiedBy.username}
+                </span>
+              }
+            />
+            <div className="flex flex-col text-white justify-center items-center">
+              <EyeOpenIcon className="shrink-0 m-auto" />
+
+              <div className="w-full m-auto flex justify-center text-[10px] items-center">
+                {formatViews(item.views)}
+              </div>
+            </div>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };

@@ -2,7 +2,7 @@
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")  
 }
 
 generator client {
@@ -81,23 +81,25 @@ model Category {
 }
 
 model Blog {
-  id          String   @id @default(cuid()) @map("_id")
-  name        String   @unique
-  slug        String   @unique
+  id          String    @id @default(cuid()) @map("_id")
+  name        String    @unique
+  slug        String    @unique
   description String
-  isActive    Boolean  @default(false)
+  isActive    Boolean   @default(false)
   content     String
   thumbnail   String?
   banner      String?
-  views       Int      @default(0)
+  views       Int       @default(0)
+  likes       Int       @default(0)
   categories  Json
   tags        Json?
   // category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdBy   String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
   modifiedBy  String
-  modifiedAt  DateTime @default(now())
-  user        User     @relation(fields: [createdBy, modifiedBy], references: [email, id], onDelete: Cascade)
+  modifiedAt  DateTime  @default(now())
+  user        User      @relation(fields: [createdBy, modifiedBy], references: [email, id], onDelete: Cascade)
+  comments    Comment[]
 }
 
 model File {
@@ -127,10 +129,13 @@ model Task {
 
 model Comment {
   id          String   @id @default(cuid()) @map("_id")
+  name        String?
   comment     String
   attachments Json?
   relatedId   String //Could be related to blog, task, product, etc
   createdBy   String
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+  user        User?    @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+  blog        Blog?    @relation(fields: [relatedId], references: [id], onDelete: Cascade)
+  isVerified  Boolean  @default(false)
 }

@@ -42,3 +42,17 @@ export const sendRegisterInvitation = async (email: string, token: string) => {
     html: `<p>Click <a href='${confirmLink}'>here</a> to register.</p>`,
   });
 };
+
+export const sendCommentVerification = async (
+  email: string,
+  token: string,
+  blog: string
+) => {
+  const confirmLink = `${DOMAIN}/blogs/${blog}?token=${token}`;
+  await resend.emails.send({
+    from: "onbording@resend.dev",
+    to: email,
+    subject: "Comment verification",
+    html: `<p>Thank you for comment our blog, please click <a href='${confirmLink}'>here</a> to verify.</p>`,
+  });
+};

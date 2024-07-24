@@ -30,7 +30,28 @@ export const verification = async (token: string) => {
   });
 
   return {
-    msg: `${existingUser.email} verified!, you can now login`,
+    msg: `Thank you ${existingUser.email}, you account has been verified`,
+    type: "success",
+  };
+};
+
+export const verifyComment = async (token: string) => {
+  const existingToken = await getTokenByToken(token);
+  if (!existingToken) return { msg: "Token doesn't exist!", type: "error" };
+
+  await db.comment.updateMany({
+    where: { createdBy: existingToken.email },
+    data: {
+      isVerified: true,
+    },
+  });
+
+  await db.token.delete({
+    where: { id: existingToken.id },
+  });
+
+  return {
+    msg: `Thank you ${existingToken.email}, your comment has been verified and added`,
     type: "success",
   };
 };

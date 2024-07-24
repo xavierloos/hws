@@ -101,7 +101,6 @@ export const BlogForm = ({ values, onSubmit, onClose }: BlogFormProps) => {
   ];
 
   useEffect(() => {
-    console.log(values);
     getCategories();
     getImages();
   }, []);
@@ -123,7 +122,6 @@ export const BlogForm = ({ values, onSubmit, onClose }: BlogFormProps) => {
         .get("/api/files?type=image")
         .then((res) => {
           setImages(res.data);
-          console.log(res.data);
         })
         .catch(() => {});
     });

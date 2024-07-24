@@ -1,5 +1,4 @@
 "use client";
-import { Title } from "@/components/title";
 import * as React from "react";
 import { useEffect, useState, useTransition } from "react";
 import axios from "axios";
@@ -11,6 +10,7 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Button } from "@nextui-org/react";
 import { CrossCircledIcon } from "@radix-ui/react-icons";
+
 const BlogPage = () => {
   const [isPending, startTransition] = useTransition();
   const [data, setData] = useState([]);

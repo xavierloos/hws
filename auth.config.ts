@@ -19,7 +19,9 @@ export default {
       async authorize(credentials) {
         const { email, password } = credentials;
         const user = await getUserByEmail(email);
+
         if (!user || !user.password) return null;
+
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) return user;
         return null;

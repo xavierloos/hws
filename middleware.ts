@@ -7,6 +7,7 @@ import {
 } from "@/routes";
 import NextAuth from "next-auth";
 import authConfig from "@/auth.config";
+import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
@@ -15,7 +16,19 @@ export default auth((req) => {
 
   const isLogged = !!req.auth;
   const isApi = nextUrl.pathname.startsWith(apiRoutes);
-  const isPublic = publicRoutes.includes(nextUrl.pathname);
+
+  const checkIsPublic = (url: string) => {
+    return publicRoutes.some((item) => {
+      if (item.includes("*")) {
+        const regex = new RegExp(item.replace("*", ".*"));
+        return url.match(regex);
+      } else {
+        return item.includes(url);
+      }
+    });
+  };
+
+  const isPublic = checkIsPublic(nextUrl.pathname);
   const isAuth = authRoutes.includes(nextUrl.pathname);
 
   if (isApi) return null;
@@ -29,16 +42,15 @@ export default auth((req) => {
   if (!isLogged && !isPublic) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) callbackUrl += nextUrl.search;
+    const encodedCallbackUrl = `/hws/login?callbackUrl=${encodeURIComponent(
+      callbackUrl
+    )}`;
 
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-    return Response.redirect(
-      new URL(`/hws/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
-    );
+    return Response.redirect(new URL(encodedCallbackUrl, nextUrl));
   }
-
   return null;
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/(api|trpc)(.*)"],
 };

@@ -24,6 +24,7 @@ export const GET = async (req: Request) => {
             image: true,
           },
         });
+
         modifier.image = await getTemporaryUrlImage(
           "profiles",
           modifier.image,
