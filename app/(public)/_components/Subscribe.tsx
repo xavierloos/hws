@@ -6,8 +6,10 @@ import axios from "axios";
 import { toast } from "sonner";
 import TopWave from "./TopWave";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Subscribe = ({ item }: any) => {
+  const user = useCurrentUser();
   const [email, setEmail] = useState(null);
 
   const onSubmit = async (
@@ -53,12 +55,12 @@ export const Subscribe = ({ item }: any) => {
                 <form onSubmit={(e) => onSubmit(e, email)}>
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder={`${user ? user.email : "Email"}`}
                     size="md"
                     radius="none"
-                    autoFocus
                     color="default"
                     isRequired
+                    isDisabled={user ? true : false}
                     onChange={(e) => {
                       setEmail(e.target.value);
                     }}

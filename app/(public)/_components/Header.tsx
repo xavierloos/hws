@@ -11,12 +11,29 @@ import {
   Link,
   Button,
 } from "@nextui-org/react";
-import { useRouter } from "next/navigation";
-import { PersonIcon } from "@radix-ui/react-icons";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  HomeIcon,
+  PersonIcon,
+  ReaderIcon,
+  RocketIcon,
+} from "@radix-ui/react-icons";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Header = ({ item }: any) => {
+  const user = useCurrentUser();
   const router = useRouter();
-  const menuItems = ["blogs", "events"];
+  const currentLocation = usePathname();
+
+  const menuItems = [
+    {
+      name: "home",
+      link: "home",
+      icon: <HomeIcon />,
+    },
+    { name: "events", link: "events", icon: <RocketIcon /> },
+    { name: "blogs", link: "blogs", icon: <ReaderIcon /> },
+  ];
 
   return (
     <Navbar disableAnimation className="bg-primary">
@@ -36,16 +53,27 @@ export const Header = ({ item }: any) => {
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem className="hidden sm:flex">
-          <Link color="foreground" href="/blogs">
-            Blogs
-          </Link>
-        </NavbarItem>
-        <NavbarItem isActive className="hidden sm:flex">
-          <Link href="/events" aria-current="page" color="foreground">
-            Events
-          </Link>
-        </NavbarItem>
+        {menuItems?.map((item, index) => {
+          return (
+            <NavbarItem className="hidden sm:flex" key={index}>
+              <Button
+                radius="none"
+                size="sm"
+                variant="light"
+                className={`uppercase ${
+                  currentLocation === `/${item.link}`
+                    ? "border-b-1 border-cyan-950"
+                    : ""
+                }`}
+                onClick={() => router.push(`/${item.link}`, { scroll: false })}
+                endContent={item.icon}
+                isDisabled={currentLocation == `/${item.link}` ? true : false}
+              >
+                {item.name}
+              </Button>
+            </NavbarItem>
+          );
+        })}
         <NavbarItem>
           <Button
             radius="none"
@@ -54,24 +82,34 @@ export const Header = ({ item }: any) => {
             onClick={() => router.push(`/hws/login`, { scroll: false })}
             endContent={<PersonIcon />}
           >
-            LOGIN
+            {user ? "DASHBOARD" : "LOGIN"}
           </Button>
         </NavbarItem>
       </NavbarContent>
 
       <NavbarMenu className="bg-gradient-to-t from-background to-primary">
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <Link
-              className="w-full"
-              color="foreground"
-              href={`/${item}`}
-              size="lg"
-            >
-              {item}
-            </Link>
-          </NavbarMenuItem>
-        ))}
+        {menuItems?.map((item, index) => {
+          return (
+            <NavbarItem className="flex sm:hidden" key={index}>
+              <Button
+                radius="none"
+                size="md"
+                fullWidth
+                className={`flex justify-start uppercase ${
+                  currentLocation === `/${item.link}`
+                    ? "border-b-1 border-cyan-950"
+                    : ""
+                }`}
+                variant="light"
+                onClick={() => router.push(`/${item.link}`, { scroll: false })}
+                startContent={item.icon}
+                isDisabled={currentLocation == `/${item.link}` ? true : false}
+              >
+                {item.name}
+              </Button>
+            </NavbarItem>
+          );
+        })}
       </NavbarMenu>
     </Navbar>
   );

@@ -5,8 +5,10 @@ import { Input, Button, Image } from "@nextui-org/react";
 import { ArrowRightIcon, EnvelopeClosedIcon } from "@radix-ui/react-icons";
 import axios from "axios";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Hero = () => {
+  const user = useCurrentUser();
   const [isPending, startTransition] = useTransition();
   const [invite, setInvite] = useState(false);
   const [email, setEmail] = useState(null);
@@ -75,7 +77,7 @@ export const Hero = () => {
                 radius="none"
                 className="transition-all ease-in-out duration-300"
                 color="primary"
-                // className="m-auto bg-primary"
+                isDisabled={user ? true : false}
                 endContent={<EnvelopeClosedIcon />}
                 onClick={() => setInvite(true)}
               >

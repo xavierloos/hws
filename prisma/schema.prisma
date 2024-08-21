@@ -148,3 +148,10 @@ model Newsletter {
 
   // @@unique([email, id])
 }
+
+model Invitations {
+  id            String  @id @default(cuid()) @map("_id")
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  inviteSent    Boolean @default(false)
+}
