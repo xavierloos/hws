@@ -9,6 +9,15 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
+export const getSubscriberByEmail = async (email: string) => {
+  try {
+    const user = await db.newsletter.findFirst({ where: { email } });
+    return user;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const getUserByUsername = async (username: string) => {
   try {
     const user = await db.user.findFirst({ where: { username } });

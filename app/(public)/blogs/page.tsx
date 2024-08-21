@@ -5,10 +5,12 @@ import { useEffect, useState, useTransition } from "react";
 import { CardItem } from "./_components/CardItem";
 import axios from "axios";
 import { toast } from "sonner";
+import { Spinner } from "@nextui-org/react";
 
 const BlogsPage = () => {
   const [isPending, startTransition] = useTransition();
-  const [blogs, setBlogs] = useState([]);
+  const [items, setItems] = useState([]);
+
   useEffect(() => {
     getData();
   }, []);
@@ -18,7 +20,7 @@ const BlogsPage = () => {
       await axios
         .get("/api/blogs")
         .then((res) => {
-          setBlogs(res.data);
+          setItems(res.data);
         })
         .catch((e) => {});
     });
@@ -27,11 +29,22 @@ const BlogsPage = () => {
   return (
     <div>
       <Title text="Blogs" className=" items-start mb-4" />
-      <div className="max-w-full gap-4 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-cols-1">
-        {blogs?.map((item) => (
-          <CardItem item={item} />
-        ))}
-      </div>
+      {isPending ? (
+        <div className="w-full min-h-screen items-center justify-center flex">
+          <Spinner
+            label="Loading..."
+            color="default"
+            labelColor="default"
+            size="lg"
+          />
+        </div>
+      ) : (
+        <div className="max-w-full gap-4 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-cols-1">
+          {items?.map((item) => (
+            <CardItem item={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

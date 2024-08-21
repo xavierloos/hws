@@ -139,3 +139,12 @@ model Comment {
   blog        Blog?    @relation(fields: [relatedId], references: [id], onDelete: Cascade)
   isVerified  Boolean  @default(false)
 }
+
+model Newsletter {
+  id                        String  @id @default(cuid()) @map("_id")
+  email                     String  @unique
+  emailVerified             Boolean @default(false)
+  emailNotificationsEnabled Boolean @default(true)
+
+  // @@unique([email, id])
+}

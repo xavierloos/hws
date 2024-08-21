@@ -2,22 +2,22 @@ import { auth } from "@/auth";
 import { Footer } from "./_components/Footer";
 import { Header } from "./_components/Header";
 import { SessionProvider } from "next-auth/react";
+import { Hero } from "./_components/Hero";
+import { HomeEvents } from "./_components/HomeEvents";
 
-interface PublicLayoutProps {
+interface HomeLayoutProps {
   children: React.ReactNode;
 }
-const PublicLayout = async ({ children }: PublicLayoutProps) => {
+const HomeLayout = async ({ children }: HomeLayoutProps) => {
   const session = await auth();
   return (
     <>
       <SessionProvider session={session}>
         <Header />
-        <div className="container min-h-svh">
-          <div className="p-2 md:p-4 max-w-[1096px] m-auto">{children}</div>
-        </div>
+        {children}
         <Footer />
       </SessionProvider>
     </>
   );
 };
-export default PublicLayout;
+export default HomeLayout;

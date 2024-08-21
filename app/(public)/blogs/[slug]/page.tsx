@@ -1,20 +1,16 @@
 "use client";
-
 import React, { useEffect, useState, useTransition } from "react";
 import { Image, Button, Chip, User, Spinner } from "@nextui-org/react";
 import { CardItem } from "../_components/CardItem";
 import { format } from "timeago.js";
 import axios from "axios";
-import { useSearchParams, usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { verifyComment } from "@/actions/verification";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { Comments } from "../_components/Comments";
 
 const BlogPage = ({ params }: any) => {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const token = searchParams.get("token");
   const { slug } = params;
   const [blog, setBlog] = useState([]);

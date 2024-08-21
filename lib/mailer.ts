@@ -56,3 +56,16 @@ export const sendCommentVerification = async (
     html: `<p>Thank you for comment our blog, please click <a href='${confirmLink}'>here</a> to verify.</p>`,
   });
 };
+
+export const sendNewsletterInvitation = async (
+  email: string,
+  token: string
+) => {
+  const confirmLink = `${DOMAIN}/hws/newsletterinvitation?token=${token}`;
+  await resend.emails.send({
+    from: "onbording@resend.dev",
+    to: email,
+    subject: "HWS Newsletter invitation",
+    html: `<p>Thank you for registering to the HWS newsletter, click <a href='${confirmLink}'>here</a> to confirm.</p>`,
+  });
+};

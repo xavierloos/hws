@@ -1,6 +1,5 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { storage } from "@/lib/gcp";
 import { getTemporaryUrlImage } from "@/temporaryUrlImage";
 import { NextResponse } from "next/server";
 
@@ -83,7 +82,7 @@ export const POST = async (req: Request, res: Response) => {
         { status: 500 }
       );
 
-    const r = await db.blog.create({
+    await db.blog.create({
       data: {
         ...blog,
         createdBy: user?.email,

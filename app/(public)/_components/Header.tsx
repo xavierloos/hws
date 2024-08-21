@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Navbar,
@@ -10,9 +11,11 @@ import {
   Link,
   Button,
 } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
+import { PersonIcon } from "@radix-ui/react-icons";
 
 export const Header = ({ item }: any) => {
-  //   const router = useRouter();
+  const router = useRouter();
   const menuItems = ["blogs", "events"];
 
   return (
@@ -44,8 +47,14 @@ export const Header = ({ item }: any) => {
           </Link>
         </NavbarItem>
         <NavbarItem>
-          <Button as={Link} href="/hws/login" variant="flat" size="sm">
-            Admin
+          <Button
+            radius="none"
+            size="sm"
+            className="m-auto bg-white"
+            onClick={() => router.push(`/hws/login`, { scroll: false })}
+            endContent={<PersonIcon />}
+          >
+            LOGIN
           </Button>
         </NavbarItem>
       </NavbarContent>
