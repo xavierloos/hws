@@ -4,13 +4,17 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const DOMAIN = process.env.NEXT_PUBLIC_APP_URL;
 
-export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `${DOMAIN}/emailverification?token=${token}`;
+export const sendVerificationEmail = async (
+  email: string,
+  token: string,
+  type?: string
+) => {
+  const confirmLink = `${DOMAIN}/emailverification?token=${token}&type=${type}`;
   await resend.emails.send({
     from: "onbording@resend.dev",
     to: email,
-    subject: "Confirm your email",
-    html: `<p>Click <a href='${confirmLink}>here</a> to confirm email.</p>`,
+    subject: `HWS ${type}: Confirm your email`,
+    html: `<p>Click <a href='${confirmLink}'>here</a> to confirm email.</p>`,
   });
 };
 

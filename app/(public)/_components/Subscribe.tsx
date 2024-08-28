@@ -8,7 +8,7 @@ import TopWave from "./TopWave";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
-export const Subscribe = ({ item }: any) => {
+export const Subscribe = () => {
   const user = useCurrentUser();
   const [email, setEmail] = useState(null);
 

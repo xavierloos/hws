@@ -9,7 +9,8 @@ export const publicRoutes = [
   "/blogs/(.*)",
   "/events",
   "/api/blogs",
-  "api/events",
+  "/api/events",
+  "/api/(.*)",
 ];
 /**
  * Public access to authentication

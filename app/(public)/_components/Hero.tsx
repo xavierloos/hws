@@ -6,6 +6,7 @@ import { ArrowRightIcon, EnvelopeClosedIcon } from "@radix-ui/react-icons";
 import axios from "axios";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { EmailForm } from "./EmailForm";
 
 export const Hero = () => {
   const user = useCurrentUser();
@@ -41,36 +42,7 @@ export const Hero = () => {
               Join the revolution and start being more creative
             </p>
             {invite ? (
-              <form onSubmit={(e) => onSubmit(e)}>
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  size="md"
-                  radius="none"
-                  autoFocus
-                  color="default"
-                  isRequired
-                  className="transition-all ease-in-out duration-300"
-                  onValueChange={(e) => {
-                    setEmail(e);
-                  }}
-                  description="An invitation will be sent to your email"
-                  endContent={
-                    <Button
-                      color="primary"
-                      type="submit"
-                      radius="full"
-                      size="sm"
-                      isIconOnly
-                      className="m-auto"
-                      isDisabled={email ? false : true}
-                      isLoading={isPending}
-                    >
-                      <ArrowRightIcon />
-                    </Button>
-                  }
-                />
-              </form>
+              <EmailForm />
             ) : (
               <Button
                 size="md"
