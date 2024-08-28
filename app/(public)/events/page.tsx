@@ -93,7 +93,6 @@ const EventsPage = () => {
       await axios
         .post("/api/events", { filters })
         .then((res) => {
-          console.log(res.data._embedded.events);
           setItems(res.data._embedded.events);
         })
         .catch((e) => {});
@@ -101,82 +100,84 @@ const EventsPage = () => {
   };
 
   return (
-    <div className="grid gap-3">
-      <Title text="Events" className="items-start" />
-      <Input
-        startContent={
-          <MagnifyingGlassIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
-        }
-        size="md"
-        radius="none"
-        type="text"
-        placeholder="Search"
-        fullWidth
-        isClearable
-        onValueChange={(e) => {
-          setFilters((prevFilters) => ({
-            ...prevFilters,
-            keyword: e,
-          }));
-        }}
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Select
-          size="sm"
-          fullWidth
+    <div className="min-h-screen">
+      <div className="grid gap-3 mb-3">
+        <Title text="Events" className="items-start" />
+        <Input
+          startContent={
+            <MagnifyingGlassIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
+          }
+          size="md"
           radius="none"
-          label="Sort By"
-          disabledKeys={[filters.sortedBy]}
-          defaultSelectedKeys={[filters.sortedBy]}
-          onChange={(e) => {
+          type="text"
+          placeholder="Search"
+          fullWidth
+          isClearable
+          onValueChange={(e) => {
             setFilters((prevFilters) => ({
               ...prevFilters,
-              sortedBy: e.target.value,
-            }));
-          }}
-        >
-          {sortBy.map((i) => (
-            <SelectItem key={i.key}>{i.label}</SelectItem>
-          ))}
-        </Select>
-        <Select
-          size="sm"
-          fullWidth
-          radius="none"
-          label="Type"
-          className=" overflow-x-hidden overflow-hidden"
-          // disabledKeys={[filters.sortedBy]}
-          // defaultSelectedKeys={[filters.sortedBy]}
-          selectionMode="multiple"
-          selectedKeys={classifications}
-          onSelectionChange={setClassifications}
-        >
-          {classificationsTypes.map((i) => (
-            <SelectItem key={i.key} value={i.key} startContent={i.icon}>
-              {i.label}
-            </SelectItem>
-          ))}
-        </Select>
-        <DatePicker
-          size="sm"
-          label="Date"
-          color="default"
-          fullWidth
-          radius="none"
-          minValue={today(getLocalTimeZone())}
-          onChange={(date) => {
-            const m = `${date?.month <= 9 ? "0" : ""}${date?.month}`;
-            const d = `${date?.day <= 9 ? "0" : ""}${date?.day}`;
-            setFilters((prevFilters) => ({
-              ...prevFilters,
-              startDate: `${date?.year}-${m}-${d}`,
+              keyword: e,
             }));
           }}
         />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Select
+            size="sm"
+            fullWidth
+            radius="none"
+            label="Sort By"
+            disabledKeys={[filters.sortedBy]}
+            defaultSelectedKeys={[filters.sortedBy]}
+            onChange={(e) => {
+              setFilters((prevFilters) => ({
+                ...prevFilters,
+                sortedBy: e.target.value,
+              }));
+            }}
+          >
+            {sortBy.map((i) => (
+              <SelectItem key={i.key}>{i.label}</SelectItem>
+            ))}
+          </Select>
+          <Select
+            size="sm"
+            fullWidth
+            radius="none"
+            label="Type"
+            className=" overflow-x-hidden overflow-hidden"
+            // disabledKeys={[filters.sortedBy]}
+            // defaultSelectedKeys={[filters.sortedBy]}
+            selectionMode="multiple"
+            selectedKeys={classifications}
+            onSelectionChange={setClassifications}
+          >
+            {classificationsTypes.map((i) => (
+              <SelectItem key={i.key} value={i.key} startContent={i.icon}>
+                {i.label}
+              </SelectItem>
+            ))}
+          </Select>
+          <DatePicker
+            size="sm"
+            label="Date"
+            color="default"
+            fullWidth
+            radius="none"
+            minValue={today(getLocalTimeZone())}
+            onChange={(date) => {
+              const m = `${date?.month <= 9 ? "0" : ""}${date?.month}`;
+              const d = `${date?.day <= 9 ? "0" : ""}${date?.day}`;
+              setFilters((prevFilters) => ({
+                ...prevFilters,
+                startDate: `${date?.year}-${m}-${d}`,
+              }));
+            }}
+          />
+        </div>
       </div>
 
       {isPending ? (
-        <div className="w-full min-h-screen items-center justify-center flex">
+        <div className="w-full  items-center justify-center flex">
           <Spinner
             label="Loading..."
             color="default"
@@ -186,7 +187,7 @@ const EventsPage = () => {
         </div>
       ) : (
         <>
-          <div className="w-full flex justify-between">
+          <div className="w-full flex justify-between mb-3">
             <div>
               <small className="w-full flex justify-center text-foreground">
                 {items?.length} events found
@@ -212,14 +213,14 @@ const EventsPage = () => {
           {gridView ? (
             <div
               className="max-w-full grid gap-2 md:gap-3 lg:gap-4 xl:gap-5
-        xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 "
+        grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 "
             >
               {items?.map((item) => (
                 <ItemGrid item={item} key={item.id} />
               ))}
             </div>
           ) : (
-            <div className="max-w-full grid gap-2 grid-cols-1 ">
+            <div className="max-w-full grid gap-2 grid-cols-1">
               {items?.map((item) => (
                 <ItemList item={item} key={item.id} />
               ))}

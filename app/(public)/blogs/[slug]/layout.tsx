@@ -12,18 +12,18 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // fetch data
-  const { slug } = params;
-  const product = "";
-  await axios.get(`/api/blogs/${slug}`).then((res) => {
-    console.log(res.data);
-  });
+  // const { slug } = params;
+  // const product = "";
+  // await axios.get(`/api/blogs/${slug}`).then((res) => {
+  //   console.log(res.data);
+  // });
 
-  console.log(product);
+  // console.log(product);
   // optionally access and extend (rather than replace) parent metadata
   //   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: product.title,
+    // title: product.title,
     openGraph: {
       images: ["/some-specific-page-image.jpg"],
     },

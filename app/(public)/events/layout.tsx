@@ -14,7 +14,9 @@ interface LayoutProps {
 }
 
 const Layout = async ({ children }: LayoutProps) => {
-  return <>{children}</>;
+  return (
+    <div className="container min-h-screen max-w-[1024px]">{children}</div>
+  );
 };
 
 export default Layout;

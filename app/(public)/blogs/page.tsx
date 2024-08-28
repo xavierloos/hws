@@ -20,6 +20,7 @@ const BlogsPage = () => {
       await axios
         .get("/api/blogs")
         .then((res) => {
+          console.log(res);
           setItems(res.data);
         })
         .catch((e) => {});
