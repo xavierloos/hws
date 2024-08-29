@@ -12,15 +12,24 @@ export const verification = async (token: string, type: string) => {
   const hasExpired = new Date(existingToken.expires) < new Date();
   if (hasExpired) return { msg: "Token has expired", type: "error" };
 
-  console.log(existingToken);
   switch (type) {
     case "register":
       await db.token.delete({
         where: { id: existingToken.id },
       });
-      console.log("here");
+
       return {
         msg: "Thank you for verify, the team will contact you soon",
+        email: existingToken.email,
+        type: "success",
+      };
+    case "subscribe":
+      await db.token.delete({
+        where: { id: existingToken.id },
+      });
+
+      return {
+        msg: "Thank you for subscribe",
         email: existingToken.email,
         type: "success",
       };

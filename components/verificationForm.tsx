@@ -23,24 +23,33 @@ export const VerificationForm = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token == null) router.push(`/hws/login`, { scroll: false });
+    if (token == null) router.push(`/`, { scroll: false });
     if (token) {
       verification(token, type)
-        .then(async (res) => {
-          console.log(type, res);
-          await axios
-            .post(`/api/members/request`, { email: res.email })
-            .then(async (res: any) => {
-              console.log(res);
-            })
-            .catch((e) => {});
-          setMessage(res.msg);
-          setMessageType(res.type);
+        .then(async (response) => {
+          if (response.type === "success") {
+            await createRequest(response.email, type).then(() => {
+              setMessage(response.msg);
+              setMessageType(response.type);
+            });
+          } else {
+            setMessage(response.msg);
+            setMessageType(response.type);
+          }
         })
         .catch(() => {});
     }
     setLoading(false);
   }, [token]);
+
+  const createRequest = async (email: string, type: string) => {
+    await axios
+      .post(
+        `${type === "register" ? "/api/members/request" : "/api/newsletter"}`,
+        { email }
+      )
+      .catch((e) => {});
+  };
 
   return (
     <Card className="border-none bg-content1 max-w-md w-full rounded-md shadow-md">

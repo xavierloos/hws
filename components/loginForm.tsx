@@ -90,15 +90,11 @@ export const LoginForm = () => {
   };
 
   return (
-    <Card className="border-none bg-content1 max-w-md w-full rounded-large shadow-md">
+    <Card className="border-none bg-content1 max-w-md w-full rounded-md shadow-md">
       <CardBody className="grid grid-cols-1 gap-3 items-center justify-start p-8">
         <Title
           text="Login"
-          subtext={
-            showOTP
-              ? "Please enter the one-time password sent to your email"
-              : "Access with your credentials"
-          }
+          subtext={showOTP ? "Please check your email" : "Welcome back"}
           className="items-start mb-4"
         />
         <form className="grid gap-4" onSubmit={(e) => onSubmit(e, inputs)}>
@@ -130,7 +126,7 @@ export const LoginForm = () => {
               <Input
                 size="sm"
                 isRequired
-                radius="sm"
+                radius="none"
                 type="email"
                 label="Email"
                 onChange={(e) =>
@@ -140,7 +136,7 @@ export const LoginForm = () => {
               <Input
                 size="sm"
                 required
-                radius="sm"
+                radius="none"
                 label="Password"
                 type={passwordVisible ? "text" : "password"}
                 onChange={(e) =>
@@ -159,7 +155,7 @@ export const LoginForm = () => {
                     size="md"
                     isIconOnly
                     variant="light"
-                    className="p-0 rounded-full"
+                    className="p-0 rounded-full m-auto"
                     onClick={togglePasswordVisibility}
                   >
                     {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
@@ -173,13 +169,14 @@ export const LoginForm = () => {
             size="md"
             color="primary"
             type="submit"
+            radius="none"
             isLoading={isPending}
             isDisabled={inputs.email && inputs.password ? false : true}
           >
-            {showOTP ? "Confirm OTP" : "Login"}
+            {showOTP ? "Confirm OTP" : "LOGIN"}
           </Button>
         </form>
-        {!showOTP && (
+        {/* {!showOTP && (
           <div className="w-full grid grid-cols-1 gap-2">
             <div className="w-[50%] middle-line text-foreground-400 text-center text-tiny m-auto">
               or login with
@@ -213,7 +210,7 @@ export const LoginForm = () => {
               No an account? Register
             </div>
           </div>
-        )}
+        )} */}
       </CardBody>
     </Card>
   );

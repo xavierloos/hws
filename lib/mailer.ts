@@ -9,7 +9,7 @@ export const sendVerificationEmail = async (
   token: string,
   type?: string
 ) => {
-  const confirmLink = `${DOMAIN}/emailverification?token=${token}&type=${type}`;
+  const confirmLink = `${DOMAIN}/hws/emailverification?token=${token}&type=${type}`;
   await resend.emails.send({
     from: "onbording@resend.dev",
     to: email,

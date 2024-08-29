@@ -46,12 +46,7 @@ const BlogPage = ({ params }: any) => {
     <>
       {isPending ? (
         <div className="w-full min-h-svh items-center justify-center flex">
-          <Spinner
-            label="Loading..."
-            color="default"
-            labelColor="default"
-            size="lg"
-          />
+          <Spinner label="Loading..." color="default" size="lg" />
         </div>
       ) : (
         <>

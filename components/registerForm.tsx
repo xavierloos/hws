@@ -142,10 +142,7 @@ export const RegisterForm = () => {
 
   return (
     <>
-      <Card
-        className="border-none bg-content1 max-w-md w-full rounded-large shadow-small"
-        shadow="sm"
-      >
+      <Card className="border-none bg-content1 max-w-md w-full rounded-md shadow-md">
         <CardBody className="grid  grid-cols-1  gap-2 items-center justify-center py-4 px-8">
           <Title
             text={token ? "Register invitation" : "Register"}
@@ -183,17 +180,16 @@ export const RegisterForm = () => {
               <Spinner size="md" label="Redirecting to login..." />
             </>
           )}
-
           {!error && !loading && !success && !message ? (
             <>
               <form
-                className="grid gap-3"
+                className="grid gap-4 pb-4"
                 onSubmit={(e) => onSubmit(e, inputs)}
               >
                 <Input
                   size="sm"
                   isRequired
-                  radius="sm"
+                  radius="none"
                   type="text"
                   label="Full Name"
                   onChange={(e) =>
@@ -204,7 +200,7 @@ export const RegisterForm = () => {
                   size="sm"
                   isRequired
                   isDisabled={token ? true : false}
-                  radius="sm"
+                  radius="none"
                   type="email"
                   label="Email"
                   value={token && inputs.email}
@@ -215,7 +211,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="sm"
+                  radius="none"
                   type="text"
                   label="Username"
                   onKeyDown={(e) => {
@@ -228,7 +224,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="sm"
+                  radius="none"
                   label="Password"
                   type={passwordVisible ? "text" : "password"}
                   onKeyUp={(e) => validatePassword(e.target.value)}
@@ -237,7 +233,7 @@ export const RegisterForm = () => {
                       size="md"
                       isIconOnly
                       variant="light"
-                      className="p-0 rounded-full"
+                      className="p-0 rounded-full m-auto"
                       onClick={togglePasswordVisibility}
                     >
                       {passwordVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
@@ -247,7 +243,7 @@ export const RegisterForm = () => {
                 <Input
                   size="sm"
                   isRequired
-                  radius="sm"
+                  radius="none"
                   label="Confirm Password"
                   type={password2Visible ? "text" : "password"}
                   onKeyUp={(e) => confirmPassword(e.target.value)}
@@ -256,7 +252,7 @@ export const RegisterForm = () => {
                       size="md"
                       isIconOnly
                       variant="light"
-                      className="p-0 rounded-full"
+                      className="p-0 rounded-full m-auto"
                       onClick={togglePassword2Visibility}
                     >
                       {password2Visible ? <EyeOpenIcon /> : <EyeClosedIcon />}
@@ -350,6 +346,7 @@ export const RegisterForm = () => {
                 />
                 <Button
                   size="md"
+                  radius="none"
                   color="primary"
                   type="submit"
                   isLoading={isPending}
@@ -363,7 +360,7 @@ export const RegisterForm = () => {
                       : true
                   }
                 >
-                  Create account
+                  CREATE ACCOUNT
                 </Button>
               </form>
               {!token && (

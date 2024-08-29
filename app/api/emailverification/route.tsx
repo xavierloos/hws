@@ -6,8 +6,8 @@ import { NextResponse } from "next/server";
 export const POST = async (req: Request, res: Response) => {
   console.log("eher");
   try {
-    const { email } = await req.json();
-    console.log(email);
+    const { email, type } = await req.json();
+    console.log(email, type);
 
     const existingEmail = await getUserByEmail(email);
 
@@ -23,10 +23,10 @@ export const POST = async (req: Request, res: Response) => {
 
     const token = await generateToken(email);
 
-    await sendVerificationEmail(token.email, token.token, "register");
+    await sendVerificationEmail(token.email, token.token, type);
 
     return NextResponse.json(
-      { message: "Please verify your account" },
+      { message: "Please verify your email" },
       { status: 200 }
     );
   } catch (error) {

@@ -20,7 +20,6 @@ const BlogsPage = () => {
       await axios
         .get("/api/blogs")
         .then((res) => {
-          console.log(res);
           setItems(res.data);
         })
         .catch((e) => {});
@@ -28,21 +27,16 @@ const BlogsPage = () => {
   };
 
   return (
-    <div>
-      <Title text="Blogs" className=" items-start mb-4" />
+    <div className="grid gap-6">
+      <Title text="Blogs" className="items-start" />
       {isPending ? (
         <div className="w-full min-h-screen items-center justify-center flex">
-          <Spinner
-            label="Loading..."
-            color="default"
-            labelColor="default"
-            size="lg"
-          />
+          <Spinner label="Loading..." color="default" size="lg" />
         </div>
       ) : (
-        <div className="max-w-full gap-4 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-cols-1">
+        <div className="max-w-full grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {items?.map((item) => (
-            <CardItem item={item} />
+            <CardItem item={item} key={item.id} />
           ))}
         </div>
       )}

@@ -15,7 +15,7 @@ interface LayoutProps {
 
 const Layout = async ({ children }: LayoutProps) => {
   return (
-    <div className="container min-h-screen max-w-[1024px]">{children}</div>
+    <div className="container min-h-screen max-w-[1024px] py-6">{children}</div>
   );
 };
 

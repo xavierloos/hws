@@ -8,8 +8,6 @@ export const publicRoutes = [
   "/blogs",
   "/blogs/(.*)",
   "/events",
-  "/api/blogs",
-  "/api/events",
   "/api/(.*)",
 ];
 /**

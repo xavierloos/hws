@@ -7,27 +7,9 @@ import { toast } from "sonner";
 import TopWave from "./TopWave";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { EmailForm } from "./EmailForm";
 
 export const Subscribe = () => {
-  const user = useCurrentUser();
-  const [email, setEmail] = useState(null);
-
-  const onSubmit = async (
-    e: React.FormEvent<HTMLFormElement>,
-    value: string
-  ) => {
-    e.preventDefault();
-
-    axios
-      .put(`/api/newsletter`, { value })
-      .then(async (res) => {
-        console.log(res);
-        if (res.data.type === "warning") return toast.warning(res.data.message);
-        return toast.success(res.data.message);
-      })
-      .catch((e) => {});
-  };
-
   return (
     <>
       <TopWave />
@@ -49,38 +31,10 @@ export const Subscribe = () => {
                 <h1 className=" text-secondary items-start">
                   Stay in the loop
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                  Subscribe to our newsletter and stay updated!
+                <p className="text-muted-foreground text-md">
+                  Subscribe to our newsletter to unlock exclusive updates!
                 </p>
-                <form onSubmit={(e) => onSubmit(e, email)}>
-                  <Input
-                    type="email"
-                    placeholder={`${user ? user.email : "Email"}`}
-                    size="md"
-                    radius="none"
-                    color="default"
-                    isRequired
-                    isDisabled={user ? true : false}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                    }}
-                    description="You can unsubscribe at any time"
-                    endContent={
-                      <Button
-                        color="primary"
-                        type="submit"
-                        radius="full"
-                        size="sm"
-                        isIconOnly
-                        className="m-auto"
-                        isDisabled={email ? false : true}
-                        // endContent={<FaSave />}
-                      >
-                        <ArrowRightIcon />
-                      </Button>
-                    }
-                  />
-                </form>
+                <EmailForm type="subscribe" />
               </div>
             </div>
           </div>

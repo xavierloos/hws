@@ -100,7 +100,7 @@ const EventsPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div>
       <div className="grid gap-3 mb-3">
         <Title text="Events" className="items-start" />
         <Input

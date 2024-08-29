@@ -31,7 +31,7 @@ export const CardItem = ({ item, suggestion = false }: CardItemProps) => {
     }
   };
 
-  const openBlog = () => {
+  const openLink = () => {
     router.push(`/blogs/${item.slug}`);
   };
 
@@ -40,9 +40,9 @@ export const CardItem = ({ item, suggestion = false }: CardItemProps) => {
       isFooterBlurred
       className={`h-full ${
         suggestion ? "h-[100px]" : "min-h-[300px]"
-      } flex items-center`}
+      } flex items-center rounded-md`}
       isPressable
-      onPress={() => openBlog()}
+      onPress={() => openLink()}
     >
       <CardHeader className="absolute z-10 top-1 flex-col items-start">
         {!suggestion && (
@@ -74,11 +74,11 @@ export const CardItem = ({ item, suggestion = false }: CardItemProps) => {
       <Image
         removeWrapper
         alt={`${item.id} blog image`}
-        className="z-0 w-full h-full"
+        className="z-0 w-full h-full rounded-md"
         src={suggestion ? item.thumbnail : item.tempThumbnail}
       />
       {!suggestion && (
-        <CardFooter className="flex flex-col gap-2 absolute bg-black/30 bottom-0 z-10">
+        <CardFooter className="flex flex-col gap-2 absolute bg-black/30 bottom-0 z-10 rounded-b-md ">
           <div className="flex gap-2 min-h-[32px] w-full">
             <p className="text-tiny text-white/90 text-ellipsis line-clamp-2">
               {item.description}

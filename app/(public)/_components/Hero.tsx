@@ -42,7 +42,7 @@ export const Hero = () => {
               Join the revolution and start being more creative
             </p>
             {invite ? (
-              <EmailForm />
+              <EmailForm type="register" />
             ) : (
               <Button
                 size="md"

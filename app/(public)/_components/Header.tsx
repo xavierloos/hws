@@ -66,7 +66,7 @@ export const Header = ({ item }: any) => {
                     : ""
                 }`}
                 onClick={() => router.push(`/${item.link}`, { scroll: false })}
-                endContent={item.icon}
+                startContent={item.icon}
                 isDisabled={currentLocation == `/${item.link}` ? true : false}
               >
                 {item.name}
@@ -80,7 +80,7 @@ export const Header = ({ item }: any) => {
             size="sm"
             className="m-auto bg-white"
             onClick={() => router.push(`/hws/login`, { scroll: false })}
-            endContent={<PersonIcon />}
+            startContent={<PersonIcon />}
           >
             {user ? "DASHBOARD" : "LOGIN"}
           </Button>
