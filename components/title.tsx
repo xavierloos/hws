@@ -15,17 +15,17 @@ interface TitleProps {
 export const Title = ({ text, subtext, className }: TitleProps) => {
   return (
     <div
-      className={`w-full capitalize flex flex-col gap-y-2 align-middle mb-2 ${className}`}
+      className={`w-full flex flex-col gap-y-2 align-middle mb-2 ${className}`}
     >
       <h1
         className={cn(
-          "text-3xl font-semibold border-b-3 border-primary text-primary",
+          "text-3xl capitalize font-semibold border-b-3 border-primary text-primary",
           font.className
         )}
       >
         {text}
       </h1>
-      {subtext && <h3 className="text-muted-foreground text-sm">{subtext}</h3>}
+      {subtext && <h3 className="text-muted-foreground text-md ">{subtext}</h3>}
     </div>
   );
 };

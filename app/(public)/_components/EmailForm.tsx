@@ -17,6 +17,7 @@ export const EmailForm = ({ item }: any) => {
       .then(async (res) => {
         console.log(res);
         if (res.data.type === "warning") return toast.warning(res.data.message);
+        if (res.data.type === "error") return toast.error(res.data.message);
         return toast.success(res.data.message);
       })
       .catch((e) => {});

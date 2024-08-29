@@ -73,3 +73,13 @@ export const sendNewsletterInvitation = async (
     html: `<p>Thank you for registering to the HWS newsletter, click <a href='${confirmLink}'>here</a> to confirm.</p>`,
   });
 };
+
+export const sendNotification = async (email: string) => {
+  const link = `${DOMAIN}/hws/members`;
+  await resend.emails.send({
+    from: "onbording@resend.dev",
+    to: "javierlr.dev@gmail.com",
+    subject: "HWS Register Request",
+    html: `<p>${email} wants to join your team, click <a href='${link}'>here</a> to see it.</p>`,
+  });
+};

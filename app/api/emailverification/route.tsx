@@ -23,7 +23,7 @@ export const POST = async (req: Request, res: Response) => {
 
     const token = await generateToken(email);
 
-    await sendVerificationEmail(token.email, token.token, "Register");
+    await sendVerificationEmail(token.email, token.token, "register");
 
     return NextResponse.json(
       { message: "Please verify your account" },
@@ -31,7 +31,7 @@ export const POST = async (req: Request, res: Response) => {
     );
   } catch (error) {
     return NextResponse.json(
-      { message: "Something went wrong with events" },
+      { message: "Something went wrong" },
       { status: 500 }
     );
   }

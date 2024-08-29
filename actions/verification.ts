@@ -3,36 +3,48 @@ import { db } from "@/lib/db";
 import { getUserByEmail } from "@/data/user";
 import { getTokenByToken } from "@/data/verification";
 
-export const verification = async (token: string) => {
+export const verification = async (token: string, type: string) => {
   const existingToken = await getTokenByToken(token);
-  if (!existingToken) return { msg: "Token doesn't exist!", type: "error" };
+
+  if (existingToken == null)
+    return { msg: "Token doesn't exist!", type: "error" };
 
   const hasExpired = new Date(existingToken.expires) < new Date();
-  if (hasExpired) {
-    // const verification = await generateToken(existingToken?.email);
-    // await sendVerificationEmail(verification?.email, verification.token);
-    return { msg: "Token has expired", type: "error" };
+  if (hasExpired) return { msg: "Token has expired", type: "error" };
+
+  console.log(existingToken);
+  switch (type) {
+    case "register":
+      await db.token.delete({
+        where: { id: existingToken.id },
+      });
+      console.log("here");
+      return {
+        msg: "Thank you for verify, the team will contact you soon",
+        email: existingToken.email,
+        type: "success",
+      };
+    default:
+      const existingUser = await getUserByEmail(existingToken?.email);
+      if (!existingUser) return { msg: "Email doesn't exist", type: "error" };
+
+      await db.user.update({
+        where: { id: existingUser.id },
+        data: {
+          emailVerified: new Date(),
+          email: existingToken.email,
+        },
+      });
+
+      await db.token.delete({
+        where: { id: existingToken.id },
+      });
+
+      return {
+        msg: `Thank you ${existingUser.email}, you account has been verified`,
+        type: "success",
+      };
   }
-
-  const existingUser = await getUserByEmail(existingToken?.email);
-  if (!existingUser) return { msg: "Email doesn't exist", type: "error" };
-
-  await db.user.update({
-    where: { id: existingUser.id },
-    data: {
-      emailVerified: new Date(),
-      email: existingToken.email,
-    },
-  });
-
-  await db.token.delete({
-    where: { id: existingToken.id },
-  });
-
-  return {
-    msg: `Thank you ${existingUser.email}, you account has been verified`,
-    type: "success",
-  };
 };
 
 export const verifyComment = async (token: string) => {
