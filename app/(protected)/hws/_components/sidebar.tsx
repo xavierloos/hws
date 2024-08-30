@@ -180,18 +180,7 @@ export const Sidebar = () => {
               <DropdownTrigger>
                 <User
                   avatarProps={{
-                    isBordered: true,
-                    className: `shrink-0 ${
-                      user?.role === "SUPERADMIN"
-                        ? "bg-primary text-foreground"
-                        : user?.role === "ADMIN"
-                        ? "bg-foreground text-primary"
-                        : "bg-default text-default-foreground"
-                    }`,
-                    color:
-                      user?.role === "SUPERADMIN" || user?.role === "ADMIN"
-                        ? "primary"
-                        : "secondary",
+                    className: `shrink-0`,
                     size: "sm",
                     src: user?.tempUrl || user?.image,
                   }}

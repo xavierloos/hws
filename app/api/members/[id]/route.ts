@@ -23,18 +23,18 @@ export const GET = async (req: Request, { params }: any) => {
         smsNotificationsEnabled: true,
       },
     });
-    // if (res.image && res.image.includes(res.id)) {
-    //   const options = {
-    //     version: "v2", // defaults to 'v2' if missing.
-    //     action: "read",
-    //     expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
-    //   };
-    //   const [url] = await storage
-    //     .bucket(`${process.env.GCP_BUCKET}`)
-    //     .file(`profiles/${res.id}/${res.image}`)
-    //     .getSignedUrl(options);
-    //   res.tempUrl = url;
-    // }
+    if (res?.image && res?.image.includes(res?.id)) {
+      const options = {
+        version: "v2", // defaults to 'v2' if missing.
+        action: "read",
+        expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
+      };
+      const [url] = await storage
+        .bucket(`${process.env.GCP_BUCKET}`)
+        .file(`profiles/${res.id}/${res.image}`)
+        .getSignedUrl(options);
+      res.tempUrl = url;
+    }
 
     return NextResponse.json(res, { status: 200 });
   } catch (error) {

@@ -1,71 +1,92 @@
 "use client";
-import { FaDashcube, FaSearch, FaSignOutAlt, FaUser } from "react-icons/fa";
 import { signOut } from "next-auth/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Navbar, NavbarContent } from "@nextui-org/react";
-
-import { FcMenu } from "react-icons/fc";
 import {
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
   Avatar,
+  DropdownSection,
   User,
 } from "@nextui-org/react";
-import { useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
+import axios from "axios";
+import { ExitIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 
 export const Header = () => {
   const user = useCurrentUser();
-
+  const [data, setData] = useState(null);
+  const [isPending, startTransition] = useTransition();
   const onClick = async () => {
     await signOut();
+  };
+
+  useEffect(() => {
+    getData(user?.id);
+  }, []);
+
+  const getData = async (id: string) => {
+    startTransition(async () => {
+      await axios
+        .get(`/api/members/${id}`)
+        .then((res) => {
+          return setData(res.data);
+        })
+        .catch((e) => {});
+    });
   };
 
   return (
     <Navbar isBordered className="container hidden sm:flex">
       <NavbarContent justify="end">
-        <Dropdown placement="bottom-start">
-          <DropdownTrigger>
-            <User
-              avatarProps={{
-                isBordered: true,
-                className: `shrink-0 ${
-                  user?.role === "SUPERADMIN"
-                    ? "bg-primary text-foreground"
-                    : user?.role === "ADMIN"
-                    ? "bg-foreground text-primary"
-                    : "bg-default text-default-foreground"
-                }`,
-                color:
-                  user?.role === "SUPERADMIN" || user?.role === "ADMIN"
-                    ? "primary"
-                    : "default",
-                size: "sm",
-                src: user?.tempUrl || user?.image,
+        {!isPending && (
+          <Dropdown
+            classNames={{
+              content:
+                "p-0 border-none border-divider bg-background rounded-md",
+            }}
+          >
+            <DropdownTrigger>
+              <Avatar showFallback src={data?.tempUrl} />
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="options"
+              className="px-3 border-none shadow-md rounded-md"
+              itemClasses={{
+                base: ["rounded-md"],
               }}
-              className="transition-transform flex flex-row-reverse"
-              description={
-                <span className="truncate text-ellipsis line-clamp-1 ">
-                  {user?.username}
-                </span>
-              }
-              name={
-                <span
-                  className={`text-ellipsis  overflow-hidden  break-words line-clamp-1 `}
+            >
+              <DropdownSection aria-label="User Actions">
+                <DropdownItem
+                  isReadOnly
+                  key="profile"
+                  showDivider
+                  className=" hover:cursor-none"
                 >
-                  {user?.name}
-                </span>
-              }
-            />
-          </DropdownTrigger>
-          <DropdownMenu aria-label="User Actions" variant="solid">
-            <DropdownItem key="help_and_feedback">Help & Feedback</DropdownItem>
-            <DropdownItem key="logout" color="danger" onClick={onClick}>
-              Log Out
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+                  <div className="flex flex-col justify-center items-center m-auto w-full">
+                    <Avatar size="lg" showFallback src={data?.tempUrl} />
+                    <span>{data?.name}</span>
+                    <small>@{data?.username}</small>
+                    <small>{data?.email}</small>
+                  </div>
+                </DropdownItem>
+                <DropdownItem key="hNf" startContent={<InfoCircledIcon />}>
+                  Help and Feedback
+                </DropdownItem>
+                <DropdownItem
+                  key="logout"
+                  startContent={<ExitIcon />}
+                  onClick={onClick}
+                  color="danger"
+                >
+                  Log out
+                </DropdownItem>
+              </DropdownSection>
+            </DropdownMenu>
+          </Dropdown>
+        )}
       </NavbarContent>
     </Navbar>
   );
