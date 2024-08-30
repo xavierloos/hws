@@ -144,15 +144,32 @@ export const Sidebar = () => {
     );
   };
 
+  const MobileMenu = ({ item }: any, key: string) => {
+    return (
+      <Button
+        color="default"
+        variant={currentLocation == `/hws/${item.link}` ? "solid" : "light"}
+        onClick={() => router.push(`/hws/${item.link}`, { scroll: false })}
+        className={`uppercase flex font-medium rounded-md justify-start ${
+          currentLocation == `/hws/${item.link}` && "shadow-md"
+        }`}
+        isDisabled={currentLocation == `/hws/${item.link}` ? true : false}
+        startContent={item.icon}
+      >
+        {item.link}
+      </Button>
+    );
+  };
+
   return (
     <>
       {/* SMALL DEVICES */}
-      <Navbar className="bg-primary  w-auto p-0 px-0 sm:hidden flex text-secondary-foreground">
+      <Navbar className="bg-primary sm:hidden flex">
         <NavbarContent justify="start">
           <NavbarMenuToggle />
         </NavbarContent>
         <NavbarContent justify="center">
-          <NavbarBrand className="font-bold text-secondary-foreground capitalize p-2 rounded-md w-full flex transition shrink-0">
+          <NavbarBrand className="font-bold text-xl capitalize">
             HWS
           </NavbarBrand>
         </NavbarContent>
@@ -203,31 +220,15 @@ export const Sidebar = () => {
             </Dropdown>
           </NavbarItem>
         </NavbarContent>
-        {/* SMALL MENU CONTENT */}
-        <NavbarMenu className="bg-gradient-to-t from-background to-primary">
+        {/* MOBILE MENU CONTENT */}
+        <NavbarMenu className="bg-primary">
           {NAVLINKS.map((item, index) => (
-            <NavbarMenuItem key={`${item.link}-${index}`}>
-              <Link
-                isDisabled={currentLocation.includes(item.link)}
-                className={`text-secondary-foreground w-full capitalize font-medium p-2 rounded-md transition shrink-0 hover:text-accent-foreground 
-              ${
-                currentLocation.includes(item.link)
-                  ? "bg-accent opacity-100 hover:cursor-none"
-                  : "hover:drop-shadow-sm"
-              }
-            `}
-                href={item.link}
-                size="sm"
-              >
-                {item.icon}
-                <span className={isCollapsed ? "hidden" : "flex  ms-2"}>
-                  {item.link}
-                </span>
-              </Link>
-            </NavbarMenuItem>
+            <MobileMenu item={item} key={index} />
           ))}
         </NavbarMenu>
+        {/* MOBILE MENU CONTENT ENDED */}
       </Navbar>
+      {/* SMALL DEVICES ENDED*/}
       {/* SIDE BAR MENU */}
       <nav
         style={{ transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)" }}
