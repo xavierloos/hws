@@ -117,7 +117,7 @@ export const ResetPasswordForm = () => {
   };
 
   return (
-    <Card className="border-none bg-content1 max-w-md w-full rounded-large shadow-md">
+    <Card className="border-none bg-content1 max-w-md w-full rounded-md shadow-md">
       <CardBody className="grid grid-cols-1 gap-3 items-center justify-start p-8">
         <Title
           text="Reset password"

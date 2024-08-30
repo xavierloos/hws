@@ -60,10 +60,6 @@ export const Header = () => {
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="User Actions" variant="solid">
-            <DropdownItem key="profile" className="h-14 gap-2 justify-center">
-              <p className="font-bold m-auto text-center">Signed in as</p>
-              <p className="font-bold">{user?.email}</p>
-            </DropdownItem>
             <DropdownItem key="help_and_feedback">Help & Feedback</DropdownItem>
             <DropdownItem key="logout" color="danger" onClick={onClick}>
               Log Out
