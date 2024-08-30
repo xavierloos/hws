@@ -13,10 +13,12 @@ import {
   BellIcon,
   Pencil2Icon,
   ChevronRightIcon,
+  InfoCircledIcon,
+  ExitIcon,
 } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Tooltip } from "@nextui-org/react";
 import {
   Navbar,
@@ -32,16 +34,21 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  User,
+  DropdownSection,
+  Avatar,
 } from "@nextui-org/react";
 import { signOut } from "next-auth/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import axios from "axios";
 
 export const Sidebar = () => {
   const router = useRouter();
   const currentLocation = usePathname();
   const user = useCurrentUser();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [isPending, startTransition] = useTransition();
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("isCollapsed")) {
@@ -49,9 +56,19 @@ export const Sidebar = () => {
         localStorage.getItem("isCollapsed") === "true" ? true : false
       );
     }
+    getData(user?.id);
   }, []);
 
-  const { theme, setTheme } = useTheme();
+  const getData = async (id: string) => {
+    startTransition(async () => {
+      await axios
+        .get(`/api/members/${id}`)
+        .then((res) => {
+          return setData(res.data);
+        })
+        .catch((e) => {});
+    });
+  };
 
   const toggleSidebar = () => {
     localStorage.setItem("isCollapsed", `${!isCollapsed}`);
@@ -176,37 +193,63 @@ export const Sidebar = () => {
         {/* USER MENU */}
         <NavbarContent justify="end">
           <NavbarItem>
-            <Dropdown placement="bottom-start">
-              <DropdownTrigger>
-                <User
-                  avatarProps={{
-                    className: `shrink-0`,
-                    size: "sm",
-                    src: user?.tempUrl || user?.image,
+            {!isPending && (
+              <Dropdown
+                classNames={{
+                  content:
+                    "p-0 border-none border-divider bg-background rounded-md",
+                }}
+              >
+                <DropdownTrigger>
+                  <Avatar size="sm" showFallback src={data?.tempUrl} />
+                </DropdownTrigger>
+                <DropdownMenu
+                  aria-label="options"
+                  className="px-3 border-none shadow-md rounded-md"
+                  itemClasses={{
+                    base: ["rounded-md"],
                   }}
-                  className="transition-transform flex flex-row-reverse"
-                />
-              </DropdownTrigger>
-              <DropdownMenu aria-label="User Actions" variant="solid">
-                <DropdownItem
-                  key="profile"
-                  className="h-14 gap-2 justify-center"
                 >
-                  <p className="font-bold m-auto text-center">Signed in as</p>
-                  <p className="font-bold">{user?.email}</p>
-                </DropdownItem>
-                <DropdownItem
-                  key="help_and_feedback"
-                  onClick={() => setTheme(theme == "dark" ? "light" : "dark")}
-                >
-                  {" "}
-                  {theme === "dark" ? "Lights On" : "Lights Off"}
-                </DropdownItem>
-                <DropdownItem key="logout" color="danger" onClick={onClick}>
-                  Log Out
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+                  <DropdownSection aria-label="User Actions">
+                    <DropdownItem
+                      isReadOnly
+                      key="profile"
+                      showDivider
+                      className=" hover:cursor-none"
+                    >
+                      <div className="flex flex-col justify-center items-center m-auto w-full">
+                        <Avatar size="lg" showFallback src={data?.tempUrl} />
+                        <span className="font-semibold">{data?.name}</span>
+                        <small>@{data?.username}</small>
+                        <small>{data?.email}</small>
+                      </div>
+                    </DropdownItem>
+                    <DropdownItem key="hNf" startContent={<InfoCircledIcon />}>
+                      Help and Feedback
+                    </DropdownItem>
+                    <DropdownItem
+                      key="theme"
+                      onClick={() =>
+                        setTheme(theme == "dark" ? "light" : "dark")
+                      }
+                      startContent={
+                        theme === "dark" ? <SunIcon /> : <MoonIcon />
+                      }
+                    >
+                      {theme === "dark" ? "Lights On" : "Lights Off"}
+                    </DropdownItem>
+                    <DropdownItem
+                      key="logout"
+                      startContent={<ExitIcon />}
+                      onClick={onClick}
+                      color="danger"
+                    >
+                      Log out
+                    </DropdownItem>
+                  </DropdownSection>
+                </DropdownMenu>
+              </Dropdown>
+            )}
           </NavbarItem>
         </NavbarContent>
         {/* MOBILE MENU CONTENT */}

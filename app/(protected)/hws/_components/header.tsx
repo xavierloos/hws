@@ -67,7 +67,7 @@ export const Header = () => {
                 >
                   <div className="flex flex-col justify-center items-center m-auto w-full">
                     <Avatar size="lg" showFallback src={data?.tempUrl} />
-                    <span>{data?.name}</span>
+                    <span className="font-semibold">{data?.name}</span>
                     <small>@{data?.username}</small>
                     <small>{data?.email}</small>
                   </div>
