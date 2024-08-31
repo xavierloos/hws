@@ -18,17 +18,19 @@ const BlogPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const initialCols = ["name", "isActive", "actions"];
   const cols = [
-    { name: "TITLE", uid: "name", sortable: true },
-    { name: "SLUG", uid: "slug", sortable: true },
-    { name: "CATEGORIES", uid: "categories", sortable: true },
-    { name: "CREATED BY", uid: "createdBy", sortable: true },
-    { name: "MODIFIED BY", uid: "modifiedBy", sortable: true },
-    { name: "STATUS", uid: "isActive", sortable: true },
-    { name: "ACTIONS", uid: "actions" },
+    { name: "Title", uid: "name", sortable: true },
+    { name: "Slug", uid: "slug", sortable: true },
+    { name: "Category", uid: "categories", sortable: true },
+    { name: "Created by", uid: "createdBy", sortable: true },
+    { name: "Modified by", uid: "modifiedBy", sortable: true },
+    { name: "Status", uid: "isActive", sortable: true },
+    { name: "Actions", uid: "actions" },
   ];
+
   const statusOptions = [
-    { name: "Active", uid: "true" },
-    { name: "Draft", uid: "false" },
+    { name: "All", uid: "all" },
+    { name: "Active", uid: true },
+    { name: "Draft", uid: false },
   ];
 
   useEffect(() => {

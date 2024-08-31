@@ -22,6 +22,8 @@ import {
   useDisclosure,
   AvatarGroup,
   Avatar,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import React, { useState } from "react";
 import { FaChevronDown, FaPlus, FaSearch, FaUserEdit } from "react-icons/fa";
@@ -32,6 +34,7 @@ import {
   CrossCircledIcon,
   DrawingPinIcon,
   EyeOpenIcon,
+  MagnifyingGlassIcon,
   Pencil1Icon,
   PlusIcon,
   TrashIcon,
@@ -72,7 +75,7 @@ export const TableItems = ({
   type Items = (typeof data)[0];
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const [statusFilter, setStatusFilter] = useState<Selection>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -118,18 +121,24 @@ export const TableItems = ({
       );
     }
     if (statusOptions) {
-      if (
-        statusFilter !== "all" &&
-        Array.from(statusFilter).length !== statusOptions.length
-      ) {
-        filteredItem = filteredItem.filter((i) => {
-          if (type === "tasks") {
-            Array.from(statusFilter).includes(i?.status);
-          } else {
-            Array.from(statusFilter).includes(i?.isActive ? "true" : "false");
-          }
-        });
-      }
+      if (statusFilter === "all") return filteredItem;
+      let statusFilterSelected = statusFilter === "true" ? true : false;
+      filteredItem = filteredItem.filter(
+        (i) => i?.isActive == statusFilterSelected
+      );
+      // if (
+      //   statusFilter == "all" &&
+      //   Array.from(statusFilter).length !== statusOptions.length
+      // ) {
+      //   console.log(statusFilter);
+      //   filteredItem = filteredItem.filter((i) => {
+      //     if (type === "tasks") {
+      //       Array.from(statusFilter).includes(i?.status);
+      //     } else {
+      //       Array.from(statusFilter).includes(i?.isActive ? "true" : "false");
+      //     }
+      //   });
+      // }
     }
 
     return filteredItem;
@@ -496,6 +505,7 @@ export const TableItems = ({
 
   const onRowsPerPageChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      console.log(e.target.value);
       setRowsPerPage(Number(e.target.value));
       setPage(1);
     },
@@ -522,103 +532,101 @@ export const TableItems = ({
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row justify-between gap-3 items-center">
-          <Input
-            size="md"
-            radius="sm"
-            isClearable
-            className="w-full"
-            placeholder={`Search ${type}...`}
-            startContent={<FaSearch />}
-            value={filterValue}
-            onClear={() => onClear()}
-            onValueChange={onSearchChange}
-            color="default"
-          />
-          <div className={`${isSearching ? "hidden" : "flex"} gap-3 sm:flex`}>
-            {statusOptions && (
-              <Dropdown className="w-full">
-                <DropdownTrigger>
-                  <Button
-                    endContent={<FaChevronDown className="text-small" />}
-                    variant="flat"
-                    size="md"
-                    radius="sm"
-                    className="bg-secondary"
-                  >
-                    Status
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  disallowEmptySelection
-                  aria-label="Table Columns"
-                  closeOnSelect={false}
-                  selectedKeys={statusFilter}
-                  selectionMode="multiple"
-                  onSelectionChange={setStatusFilter}
-                >
-                  {statusOptions?.map((status: any) => (
-                    <DropdownItem key={status.uid} className="capitalize">
-                      {status.name}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            )}
-            <Dropdown>
-              <DropdownTrigger>
-                <Button
-                  size="md"
-                  endContent={<FaChevronDown className="text-small" />}
-                  variant="flat"
-                  radius="sm"
-                  className="bg-secondary"
-                >
-                  Columns
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={visibleColumns}
-                selectionMode="multiple"
-                onSelectionChange={setVisibleColumns}
-              >
-                {cols.map((column) => (
-                  <DropdownItem key={column.uid} className="capitalize">
-                    {column.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Button
-              color="primary"
-              className="hidden md:flex"
-              size="md"
-              radius="sm"
-              endContent={<PlusIcon />}
-              onPress={handleNewItem}
-            >
-              New
-            </Button>
-            <Button
-              color="primary"
-              className="flex md:hidden"
-              radius="sm"
-              isIconOnly
-              size="md"
-              endContent={<PlusIcon />}
-              onPress={handleNewItem}
+        {/* FILTERS START */}
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+          <div className="flex gap-3 items-center">
+            <Input
+              size="sm"
+              fullWidth
+              type="text"
+              isClearable
+              radius="none"
+              value={filterValue}
+              label="Search"
+              onClear={() => onClear()}
+              onValueChange={onSearchChange}
             />
+            <Tooltip content="ADD NEW" showArrow>
+              <Button
+                color="primary"
+                className="flex sm:hidden shadow-md"
+                radius="full"
+                isIconOnly
+                size="md"
+                endContent={<PlusIcon />}
+                onPress={handleNewItem}
+              />
+            </Tooltip>
+          </div>
+          <div className="flex gap-3 items-center w-full">
+            <div className="w-full">
+              <div className={`grid gap-3 grid-cols-2`}>
+                {statusOptions && (
+                  <Select
+                    size="sm"
+                    fullWidth
+                    radius="none"
+                    label="Status"
+                    disabledKeys={statusFilter}
+                    defaultSelectedKeys={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    {statusOptions?.map((status: any) => (
+                      <SelectItem key={status.uid}>{status.name}</SelectItem>
+                    ))}
+                  </Select>
+                )}
+                {cols && (
+                  <Select
+                    size="sm"
+                    fullWidth
+                    radius="none"
+                    label="Columns"
+                    selectionMode="multiple"
+                    disabledKeys={["name"]}
+                    className=" overflow-hidden"
+                    defaultSelectedKeys={visibleColumns}
+                    onSelectionChange={setVisibleColumns}
+                  >
+                    {cols?.map((i: any) => (
+                      <SelectItem key={i.uid}>{i.name}</SelectItem>
+                    ))}
+                  </Select>
+                )}
+              </div>
+            </div>
+            <Tooltip content="ADD NEW" showArrow>
+              <Button
+                color="primary"
+                className="sm:flex hidden shadow-md"
+                radius="full"
+                isIconOnly
+                size="md"
+                endContent={<PlusIcon />}
+                onPress={handleNewItem}
+              />
+            </Tooltip>
           </div>
         </div>
+
+        {/* <Button
+            color="primary"
+            className="hidden md:flex"
+            size="md"
+            radius="sm"
+            endContent={<PlusIcon />}
+            onPress={handleNewItem}
+          >
+            New
+          </Button> */}
+
+        {/* FILTERS END*/}
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
             Total {data.length} {type}
           </span>
           <label className="flex items-center text-default-400 text-small">
-            Rows per page:
+            Items:
             <select
               className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
@@ -648,8 +656,9 @@ export const TableItems = ({
           <Pagination
             isCompact
             showControls
-            showShadow
-            color="primary"
+            radius="none"
+            size="sm"
+            variant="light"
             page={page}
             total={pages}
             onChange={setPage}
