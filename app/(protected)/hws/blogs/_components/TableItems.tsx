@@ -1,3 +1,4 @@
+"use client";
 import {
  Table,
  TableHeader,
@@ -6,27 +7,25 @@ import {
  TableRow,
  TableCell,
  Input,
- DropdownTrigger,
- Dropdown,
- DropdownMenu,
- DropdownItem,
  User,
  Pagination,
  Selection,
  SortDescriptor,
  Tooltip,
- Switch,
  Chip,
  Spinner,
  Button,
- useDisclosure,
- AvatarGroup,
- Avatar,
  Select,
  SelectItem,
+ Modal,
+ ModalContent,
+ ModalHeader,
+ ModalBody,
+ ModalFooter,
+ useDisclosure,
 } from "@nextui-org/react";
 import React, { useState } from "react";
-import { FaChevronDown, FaPlus, FaSearch, FaUserEdit } from "react-icons/fa";
+
 import { useRouter } from "next/navigation";
 import dateFormat from "dateformat";
 import Autoplay from "embla-carousel-autoplay";
@@ -39,25 +38,25 @@ import {
  PlusIcon,
  TrashIcon,
 } from "@radix-ui/react-icons";
-import { BlogForm } from "./blogForm";
-import { NewFilesForm } from "./newFilesForm";
-import { TaskFormModal } from "./taskFormModal";
+import { BlogForm } from "@/components/blogForm";
 import { format } from "timeago.js";
-import { NewMemberForm } from "./newMemberForm";
-import { Title } from "./title";
+import { Title } from "@/components/title";
 import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import axios from "axios";
+
 type TableItemsProps = {
  data: any;
  cols: any;
  initialCols: any;
  type: string;
  onDelete?: (id: any, name: any) => {};
- onSubmit?: (e: any, files?: any) => {};
+ onSaveBlog: (e: any, files?: any) => {};
  statusOptions?: any;
- handleView?: (item?: any) => {};
- isPending: boolean;
+ handleView: (item: any) => {};
+ isLoading: boolean;
+ isSaving: boolean;
+ isOpen: boolean;
+ onOpen: () => void;
+ onClose: () => void;
 };
 
 export const TableItems = ({
@@ -66,10 +65,14 @@ export const TableItems = ({
  initialCols,
  type,
  onDelete,
- onSubmit,
+ onSaveBlog,
  statusOptions,
  handleView,
- isPending,
+ isLoading,
+ isSaving,
+ isOpen,
+ onOpen,
+ onClose,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -79,8 +82,6 @@ export const TableItems = ({
  const [rowsPerPage, setRowsPerPage] = useState(5);
  const [page, setPage] = React.useState(1);
  const hasSearchFilter = Boolean(filterValue);
- const [isSearching, setIsSearching] = useState(false);
- const [isOpen, setIsOpen] = useState(false);
  const values = {
   name: undefined,
   slug: undefined,
@@ -91,19 +92,24 @@ export const TableItems = ({
   thumbnail: undefined,
   banner: undefined,
  };
+
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
  );
+
  const [sortByName, setSortDescriptor] = useState<SortDescriptor>({
   column: "name",
   direction: "ascending",
  });
+
  const plugin = React.useRef(
   Autoplay({ delay: 2000, stopOnInteraction: true })
  );
+
  const handleNewItem = () => {
-  setIsOpen(!isOpen);
+  // setIsOpen(!isOpen);
  };
+
  const headerColumns = React.useMemo(() => {
   if (visibleColumns === "all") return cols;
 
@@ -126,19 +132,6 @@ export const TableItems = ({
    filteredItem = filteredItem.filter(
     (i) => i?.isActive == statusFilterSelected
    );
-   // if (
-   //   statusFilter == "all" &&
-   //   Array.from(statusFilter).length !== statusOptions.length
-   // ) {
-   //   console.log(statusFilter);
-   //   filteredItem = filteredItem.filter((i) => {
-   //     if (type === "tasks") {
-   //       Array.from(statusFilter).includes(i?.status);
-   //     } else {
-   //       Array.from(statusFilter).includes(i?.isActive ? "true" : "false");
-   //     }
-   //   });
-   // }
   }
 
   return filteredItem;
@@ -167,229 +160,56 @@ export const TableItems = ({
   async (i: Items, columnKey: React.Key) => {
    const cellValue = i[columnKey as keyof Items];
 
-   let img = "";
-   if (type === "files") {
-    if (i.type.includes("application")) {
-     img = `https://placehold.co/600x400?text=${i.type.split("/")[1]}`;
-    } else {
-     img = i.image;
-    }
-   }
-
    switch (columnKey) {
     case "name":
-     if (type === "tasks") {
-      return (
-       <>
-        <h3 className="font-medium text-ellipsis  overflow-hidden  break-words line-clamp-2 ">
-         {cellValue}
-        </h3>
-        <span className=" text-tiny text-slate-400 truncate text-ellipsis line-clamp-1 ">
-         Due {format(i.dueDate)}
-        </span>
-       </>
-      );
-     } else {
-      return (
-       <User
-        // className="my-auto flex items-center justify-start"
-        avatarProps={{
-         isBordered: type === "members" ? true : false,
-         className: `shrink-0 m-auto ${
-          i.role === "SUPERADMIN"
-           ? "bg-primary text-foreground"
-           : i.role === "ADMIN"
-           ? "bg-foreground text-primary"
-           : "bg-default text-default-foreground"
-         }`,
-         color:
-          i.role === "SUPERADMIN" || i.role === "ADMIN" ? "primary" : "default",
-         size: "sm",
-         radius: type === "members" ? "full" : "none",
-         src:
-          type === "files"
-           ? img
-           : type === "members"
-           ? i.tempUrl || i.image
-           : type === "events"
-           ? i.images[0]["url"]
-           : i.tempThumbnail,
-        }}
-        description={
-         <span className="truncate text-ellipsis line-clamp-1 ">
-          {type === "members" && i.username ? `@${i.username}` : i.email}
-          {i.dates &&
-           dateFormat(i.dates?.start.dateTime, "ddd dd/mmm/yy - HH:MM")}
-          {i.size && `${(i.size / 1024).toFixed(2)}kB`}
-         </span>
-        }
-        name={
-         <span
-          className={`text-primary-foreground w-full text-ellipsis font-light overflow-hidden break-words line-clamp-${
-           type === "uploads" ? "1" : "2"
-          } `}
-         >
-          {type === "members" ? i.name : cellValue}
-         </span>
-        }
-       />
-      );
-     }
-    case "priority":
-     return (
-      <Chip size="sm" color={cellValue.color}>
-       {cellValue.name}
-      </Chip>
-     );
-    case "role":
-     return (
-      <Chip
-       variant="flat"
-       size="sm"
-       className={
-        i.role === "SUPERADMIN"
-         ? "bg-primary text-foreground"
-         : i.role === "ADMIN"
-         ? "bg-foreground text-primary"
-         : "bg-default"
-       }
-      >
-       {cellValue}
-      </Chip>
-     );
-    case "modifiedBy":
      return (
       <User
        avatarProps={{
-        isBordered: true,
-        className: `shrink-0 ${
-         cellValue.role === "SUPERADMIN"
-          ? "bg-primary text-foreground"
-          : cellValue.role === "ADMIN"
-          ? "bg-foreground text-primary"
-          : "bg-default text-default-foreground"
-        }`,
-        color: cellValue.role === "USER" ? "default" : "primary",
-        size: "sm",
-        radius: "full",
-        src: cellValue.image,
+        className: `shrink-0 m-auto rounded-md`,
+        size: "lg",
+        src: i.tempThumbnail,
        }}
        description={
         <span className="truncate text-ellipsis line-clamp-1 ">
-         @{cellValue.username}
+         {format(i.createdAt)} • On {dateFormat(i.createdAt, "dd/mmm/yy")}
         </span>
        }
        name={
         <span
-         className={`text-ellipsis overflow-hidden break-words line-clamp-1 `}
+         className={`text-default-foreground w-full text-ellipsis font-normal overflow-hidden break-words line-clamp-2`}
         >
-         {cellValue.name}
+         {cellValue}
         </span>
        }
       />
      );
+    case "modifiedBy":
     case "createdBy":
      return (
       <User
        avatarProps={{
+        className: `shrink-0 bg-default text-default-foreground`,
         size: "sm",
-        isBordered: true,
-        className: `shrink-0 ${
-         i.user.role === "SUPERADMIN"
-          ? "bg-primary text-foreground"
-          : i.user.role === "ADMIN"
-          ? "bg-foreground text-primary"
-          : "bg-default text-default-foreground"
-        }`,
-        color:
-         i.user.role === "SUPERADMIN" || i.user.role === "ADMIN"
-          ? "primary"
-          : "default",
-        src: i.user.image,
+        radius: "full",
+        src: cellValue.image || i.user.image,
        }}
        description={
-        <span className="truncate text-ellipsis line-clamp-1 ">
-         @{i.user.username}
+        <span className="truncate text-ellipsis line-clamp-1 text-tiny">
+         @{cellValue.username || i.user.username}
         </span>
        }
        name={
-        <span className="truncate text-ellipsis line-clamp-1 ">
-         {i.user.name}
+        <span
+         className={`text-ellipsis overflow-hidden break-words line-clamp-1 text-sm`}
+        >
+         {cellValue.name || i.user.name}
         </span>
        }
       />
      );
-    case "assignTo":
-     if (cellValue.length === 1) {
-      return (
-       <User
-        avatarProps={{
-         size: "sm",
-         isBordered: true,
-         className: `shrink-0 ${
-          cellValue[0].role === "SUPERADMIN"
-           ? "bg-primary text-foreground"
-           : cellValue[0].role === "ADMIN"
-           ? "bg-foreground text-primary"
-           : "bg-default text-default-foreground"
-         }`,
-         color:
-          cellValue[0].role === "SUPERADMIN" || cellValue[0].role === "ADMIN"
-           ? "primary"
-           : "default",
-         src: cellValue[0].image,
-        }}
-        description={
-         <span className="truncate text-ellipsis line-clamp-1 ">
-          @{cellValue[0].username}
-         </span>
-        }
-        name={
-         <span className="truncate text-ellipsis line-clamp-1 ">
-          {cellValue[0].name}
-         </span>
-        }
-       />
-      );
-     } else {
-      return (
-       <AvatarGroup
-        size="sm"
-        isBordered
-        max={3}
-        className=" px-3 justify-start"
-       >
-        {cellValue.map((val: any) => {
-         return (
-          <>
-           <Tooltip showArrow={true} content={val.name}>
-            <Avatar
-             size="sm"
-             src={val.image}
-             isBordered
-             className={`shrink-0 ${
-              val.role === "SUPERADMIN"
-               ? "bg-primary text-foreground"
-               : val.role === "ADMIN"
-               ? "bg-foreground text-primary"
-               : "bg-default text-default-foreground"
-             }`}
-             color={
-              val.role === "SUPERADMIN" || val.role === "ADMIN"
-               ? "primary"
-               : "default"
-             }
-            />
-           </Tooltip>
-          </>
-         );
-        })}
-       </AvatarGroup>
-      );
-     }
     case "categories":
      return (
-      <div className="grid gap-1">
+      <div className="flex gap-1 flex-wrap">
        {i.categories.map((category: any) => {
         return (
          <Chip size="sm" color="primary" key={category.id}>
@@ -398,45 +218,6 @@ export const TableItems = ({
         );
        })}
       </div>
-     );
-    case "type":
-     return (
-      <Chip size="sm" color="primary">
-       {i.type.split("/")[1].toUpperCase()}
-      </Chip>
-     );
-    case "priceRanges":
-     return (
-      <p>
-       {cellValue &&
-        cellValue[0].min +
-         " - " +
-         cellValue[0].max +
-         " " +
-         cellValue[0].currency}
-      </p>
-     );
-    case "onSale":
-     return (
-      <Chip
-       className="capitalize border-none gap-1 text-default-600"
-       color={i.dates.status.code === "onsale" ? "success" : "default"}
-       size="sm"
-       variant="dot"
-      >
-       {i.dates.status.code === "onsale" ? "On sale" : "Sold out"}
-      </Chip>
-     );
-    case "status":
-     return (
-      <Chip
-       className="capitalize border-none gap-1 text-default-600"
-       color={cellValue.color}
-       size="sm"
-       variant="dot"
-      >
-       {cellValue.name}
-      </Chip>
      );
     case "isActive":
      return (
@@ -449,6 +230,8 @@ export const TableItems = ({
        {i.isActive ? "Active" : "Draft"}
       </Chip>
      );
+    case "slug":
+     return <small className="text-default">{cellValue}</small>;
     case "actions":
      return (
       <div className="relative flex items-center gap-2 justify-end">
@@ -459,9 +242,6 @@ export const TableItems = ({
          radius="full"
          color="default"
          variant="light"
-         // onClick={() =>
-         //   type === "files" ? window.open(i.tempUrl) : handleView(i)
-         // }
          onClick={() => handleView(i)}
         >
          <EyeOpenIcon />
@@ -511,19 +291,16 @@ export const TableItems = ({
 
  const onSearchChange = React.useCallback((value?: string) => {
   if (value) {
-   setIsSearching(true);
    setFilterValue(value);
    setPage(1);
   } else {
    setFilterValue("");
-   setIsSearching(false);
   }
  }, []);
 
  const onClear = React.useCallback(() => {
   setFilterValue("");
   setPage(1);
-  setIsSearching(false);
  }, []);
 
  const topContent = React.useMemo(() => {
@@ -551,7 +328,7 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={handleNewItem}
+        onPress={() => onOpen()}
        />
       </Tooltip>
      </div>
@@ -600,23 +377,11 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={handleNewItem}
+        onPress={() => onOpen()}
        />
       </Tooltip>
      </div>
     </div>
-
-    {/* <Button
-            color="primary"
-            className="hidden md:flex"
-            size="md"
-            radius="sm"
-            endContent={<PlusIcon />}
-            onPress={handleNewItem}
-          >
-            New
-          </Button> */}
-
     {/* FILTERS END*/}
     <div className="flex justify-between items-center">
      <span className="text-default-400 text-small">
@@ -702,7 +467,7 @@ export const TableItems = ({
     </TableHeader>
     <TableBody
      items={sortedItems}
-     isLoading={isPending}
+     isLoading={isLoading}
      loadingContent={<Spinner label="Loading..." />}
     >
      {(item) => (
@@ -714,57 +479,65 @@ export const TableItems = ({
      )}
     </TableBody>
    </Table>
-   {/* <Modal
-        backdrop="blur"
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        radius="sm"
-        classNames={{
-          body: "py-0 max-h-screen",
-          backdrop: "bg-black/50 backdrop-opacity-40",
-          base: "bg-secondary",
-          closeButton: "hover:bg-white/5 active:bg-white/10",
-        }}
-      >
-        <ModalContent
-          className="max-h-screen overflow-y-scroll"
-          style={{ overflow: scroll }}
-        >
-          {(onClose) => (
-            <>
-              {type === "tasks" && (
-                <NewTaskForm
-                  type={type}
-                  onSubmit={onSubmit}
-                  onClose={onClose}
-                />
-              )}
-              {type === "files" && (
-                <NewFilesForm
-                  type={type}
-                  onSubmit={onSubmit}
-                  onClose={onClose}
-                />
-              )}
-              {type === "blogs" && (
-                <NewBlogForm
-                  type={type}
-                  onSubmit={onSubmit}
-                  onClose={onClose}
-                />
-              )}
-              {type === "members" && (
-                <NewMemberForm
-                  type={type}
-                  onSubmit={onSubmit}
-                  onClose={onClose}
-                />
-              )}
-            </>
-          )}
-        </ModalContent>
-      </Modal> */}
+
    <Modal
+    size="3xl"
+    isOpen={isOpen}
+    onClose={onClose}
+    scrollBehavior="inside"
+    shouldBlockScroll
+    className="rounded-md"
+   >
+    <ModalContent>
+     {(onClose) => (
+      <>
+       <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
+       <BlogForm
+        values={values}
+        onSubmit={onSaveBlog}
+        isSaving={isSaving}
+        // onClose={onClose}
+       />
+      </>
+     )}
+    </ModalContent>
+   </Modal>
+   {/* <Modal
+    backdrop="blur"
+    isOpen={isOpen}
+    onOpenChange={isOpen}
+    radius="sm"
+    classNames={{
+     body: "py-0 max-h-screen",
+     backdrop: "bg-black/50 backdrop-opacity-40",
+     base: "bg-secondary",
+     closeButton: "hover:bg-white/5 active:bg-white/10",
+    }}
+   >
+    <ModalContent
+     className="max-h-screen overflow-y-scroll"
+     style={{ overflow: scroll }}
+    >
+     {(onClose) => (
+      <>
+       {type === "tasks" && (
+        <NewTaskForm type={type} onSubmit={onSubmit} onClose={onClose} />
+       )}
+       {type === "files" && (
+        <NewFilesForm type={type} onSubmit={onSubmit} onClose={onClose} />
+       )}
+       {type === "blogs" && (
+        <NewBlogForm type={type} onSubmit={onSubmit} onClose={onClose} />
+       )}
+       {type === "members" && (
+        <NewMemberForm type={type} onSubmit={onSubmit} onClose={onClose} />
+       )}
+      </>
+     )}
+    </ModalContent>
+   </Modal> */}
+   {/* <Modal
+    backdrop="blur"
     open={isOpen}
     onClose={handleNewItem}
     className="flex flex-1 flex-col gap-6 items-center justify-center z-0"
@@ -799,7 +572,7 @@ export const TableItems = ({
      )}
      {type === "members" && <NewMemberForm type={type} onSubmit={onSubmit} />}
     </Box>
-   </Modal>
+   </Modal> */}
   </>
  );
 };
