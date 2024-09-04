@@ -38,7 +38,7 @@ import {
  PlusIcon,
  TrashIcon,
 } from "@radix-ui/react-icons";
-import { BlogForm } from "@/app/(protected)/hws/blogs/_components/BlogForm";
+import { AddBlog } from "./Add";
 import { format } from "timeago.js";
 import { Title } from "@/components/title";
 import Box from "@mui/material/Box";
@@ -469,7 +469,7 @@ export const TableItems = ({
      )}
     </TableBody>
    </Table>
-
+   {/* ADD NEW BLOG */}
    <Modal
     size="3xl"
     isOpen={isNewBlogOpen}
@@ -479,18 +479,13 @@ export const TableItems = ({
     className="rounded-md"
    >
     <ModalContent>
-     {/* {(onClose) => ( */}
-     <>
-      <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
-      <BlogForm
-       onSubmit={onSaveBlog}
-       isSaving={isSaving}
-       // onClose={onClose}
-      />
-     </>
-     {/* )} */}
+     <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
+     <AddBlog onSubmit={onSaveBlog} isSaving={isSaving} />
     </ModalContent>
    </Modal>
+   {/* ADD NEW BLOG ENDS */}
+
+   {/* EDIT BLOG ENDS */}
    {/* <Modal
     backdrop="blur"
     isOpen={isOpen}

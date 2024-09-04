@@ -39,7 +39,7 @@ import {
  PlusIcon,
  TrashIcon,
 } from "@radix-ui/react-icons";
-import { BlogForm } from "../app/(protected)/hws/blogs/_components/BlogForm";
+import { BlogForm } from "../app/(protected)/hws/blogs/_components/Add";
 import { NewFilesForm } from "./newFilesForm";
 import { TaskFormModal } from "./taskFormModal";
 import { format } from "timeago.js";

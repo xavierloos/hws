@@ -3,7 +3,7 @@ import * as React from "react";
 import { useEffect, useState, useTransition } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { BlogForm } from "@/app/(protected)/hws/blogs/_components/BlogForm";
+import { BlogForm } from "@/app/(protected)/hws/blogs/_components/Add";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Button } from "@nextui-org/react";
