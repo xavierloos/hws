@@ -38,7 +38,7 @@ import {
  PlusIcon,
  TrashIcon,
 } from "@radix-ui/react-icons";
-import { BlogForm } from "@/components/blogForm";
+import { BlogForm } from "@/app/(protected)/hws/blogs/_components/BlogForm";
 import { format } from "timeago.js";
 import { Title } from "@/components/title";
 import Box from "@mui/material/Box";
@@ -493,7 +493,7 @@ export const TableItems = ({
       <>
        <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
        <BlogForm
-        values={values}
+        // values={values}
         onSubmit={onSaveBlog}
         isSaving={isSaving}
         // onClose={onClose}

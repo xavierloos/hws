@@ -78,8 +78,8 @@ export const POST = async (req: Request, res: Response) => {
 
   if (existingSlug)
    return NextResponse.json(
-    { message: "Slug already in use" },
-    { status: 500 }
+    { message: "Slug already in use", type: "warning" },
+    { status: 200 }
    );
 
   await db.blog.create({
@@ -93,7 +93,7 @@ export const POST = async (req: Request, res: Response) => {
   });
 
   return NextResponse.json(
-   { message: `${blog.title} created successfully` },
+   { message: `${blog.title} created successfully`, type: "success" },
    { status: 200 }
   );
  } catch (error) {

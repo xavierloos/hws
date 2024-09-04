@@ -7,16 +7,12 @@ import {
  cn,
  Button,
  Textarea,
- ModalFooter,
  ModalBody,
  Avatar,
  Tooltip,
- Chip,
  Spinner,
 } from "@nextui-org/react";
-
 import { useEffect, useState, useTransition } from "react";
-
 import { useCurrentUser } from "@/hooks/use-current-user";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -29,20 +25,16 @@ import {
  ImageIcon,
  MagicWandIcon,
  PaperPlaneIcon,
- PersonIcon,
  PlusIcon,
 } from "@radix-ui/react-icons";
-import { BlogSkeleton } from "./blogSkeleton";
 
 type BlogFormProps = {
- values: any;
  onSubmit: (e: any, values: any) => {};
  isSaving: boolean;
  //  onClose: () => {};
 };
 
 export const BlogForm = ({
- values,
  onSubmit,
  isSaving,
 }: //  onClose,
@@ -65,7 +57,16 @@ BlogFormProps) => {
  const [contentLoading, setContentLoading] = useState(false);
  const [newImagePreview, setNewImagePreview] = useState(null);
  const [descriptionLoading, setDescriptionLoading] = useState(false);
- const [fields, setFields] = useState(values);
+ const [fields, setFields] = useState({
+  name: undefined,
+  slug: undefined,
+  description: undefined,
+  isActive: false,
+  categories: new Set<undefined>(),
+  content: undefined,
+  thumbnail: undefined,
+  banner: undefined,
+ });
  const modules = {
   toolbar: [
    [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -126,7 +127,6 @@ BlogFormProps) => {
  const createSlug = (value: string) => {
   const trimmedText = value.toLowerCase().trim();
   const alphanumericText = trimmedText.replace(/\W+/g, "-");
-  // setFields({ ...fields, slug: alphanumericText.replace(/(^-|-$)/g, "") });
   return alphanumericText.replace(/(^-|-$)/g, "");
  };
 
@@ -207,6 +207,7 @@ BlogFormProps) => {
     });
   });
  };
+
  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
   if (e.target.files) {
    setNewImage(e?.target?.files[0]);
@@ -229,8 +230,26 @@ BlogFormProps) => {
   });
  };
 
- const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  setFields({ ...fields, categories: new Set(e.target.value.split(",")) });
+ const imageSelectPreview = (item: any) => {
+  return (
+   <SelectItem key={item.name} value={item.name}>
+    <div className="flex gap-x-0.5 items-center">
+     <Avatar
+      radius="none"
+      alt={item.name}
+      className="flex-shrink-0"
+      size="md"
+      src={item.tempUrl}
+     />
+     <div className="flex flex-col">
+      <span className="text-small">{item.name}</span>
+      <span className="text-tiny text-default-400">
+       {item.size && `${(item.size / 1024).toFixed(2)}kB`}
+      </span>
+     </div>
+    </div>
+   </SelectItem>
+  );
  };
 
  return (
@@ -250,7 +269,6 @@ BlogFormProps) => {
          type="text"
          radius="none"
          label="Title"
-         placeholder={fields.name}
          value={fields.name}
          onValueChange={(v) => {
           setFields({
@@ -292,8 +310,8 @@ BlogFormProps) => {
           input: "resize-y min-h-[10px] max-h-[60px]",
          }}
          value={fields.description}
-         onChange={(v) => {
-          setFields({ ...fields, description: v.target.value });
+         onValueChange={(e) => {
+          setFields({ ...fields, description: e });
          }}
         />
         {isRegenateButtonActive && (
@@ -372,76 +390,45 @@ BlogFormProps) => {
           <div className="grid gap-3 grid-cols-2 w-full">
            <Select
             size="sm"
+            required
             isRequired
             radius="none"
+            label="Thumbnail"
+            isDisabled={isPending}
+            renderValue={(items) => items.map((i) => i.key)}
+            onChange={(e) =>
+             setFields({
+              ...fields,
+              thumbnail: e.target.value,
+             })
+            }
             className="w-full overflow-ellipsis line-clamp-1 break-all"
             style={{
              transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
             }}
-            label="Thumbnail"
-            isDisabled={isPending}
-            defaultSelectedKeys={[fields?.thumbnail]}
-            onChange={(e) => {
-             fields.thumbnail = e.target.value;
-            }}
-            renderValue={(images) => {
-             return images.map((i) => i.key);
-            }}
            >
-            {images.map((i: any) => (
-             <SelectItem key={i.name} value={i.name}>
-              <div className="flex gap-x-1 items-center">
-               <Avatar
-                radius="none"
-                alt={i.name}
-                className="flex-shrink-0"
-                size="md"
-                src={i.tempUrl}
-               />
-               <div className="flex flex-col">
-                <span className="text-small">{i.name}</span>
-                <span className="text-tiny text-default-400">
-                 {i.size && `${(i.size / 1024).toFixed(2)}kB`}
-                </span>
-               </div>
-              </div>
-             </SelectItem>
-            ))}
+            {images.map((item: any) => imageSelectPreview(item))}
            </Select>
+
            <Select
             size="sm"
             isRequired
             radius="none"
             label="Banner"
-            items={images}
             isDisabled={isPending}
+            renderValue={(items) => items.map((i) => i.key)}
+            onChange={(e) =>
+             setFields({
+              ...fields,
+              banner: e.target.value,
+             })
+            }
+            className="w-full overflow-ellipsis line-clamp-1 break-all"
             style={{
              transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
             }}
-            defaultSelectedKeys={[fields?.banner]}
-            renderValue={(items) => items.map((i) => i.key)}
-            onChange={(e) => (fields.banner = e.target.value)}
-            className="w-full overflow-ellipsis line-clamp-1 break-all"
            >
-            {(i: any) => (
-             <SelectItem key={i.name} value={i.name}>
-              <div className="flex gap-x-1 items-center">
-               <Avatar
-                size="sm"
-                alt={i.name}
-                radius="none"
-                src={i.tempUrl}
-                className="flex-shrink-0"
-               />
-               <div className="flex flex-col">
-                <span className="text-small">{i.name}</span>
-                <span className="text-tiny text-default-400">
-                 {i.size && `${(i.size / 1024).toFixed(2)}kB`}
-                </span>
-               </div>
-              </div>
-             </SelectItem>
-            )}
+            {images.map((item: any) => imageSelectPreview(item))}
            </Select>
           </div>
           <Tooltip content="Add image" size="sm">
@@ -482,10 +469,10 @@ BlogFormProps) => {
            type="text"
            radius="none"
            label="Add category"
+           isDisabled={isSavingCategory}
            onValueChange={(v) =>
             setNewCategory(v.charAt(0).toUpperCase() + v.slice(1))
            }
-           isDisabled={isSavingCategory}
            autoFocus
            style={{
             transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
@@ -495,9 +482,9 @@ BlogFormProps) => {
            <Button
             size="sm"
             isIconOnly
+            radius="full"
             color="danger"
             variant="flat"
-            radius="full"
             isDisabled={isSavingCategory}
             onClick={(e) => setAdd({ ...add, category: !add.category })}
            >
@@ -508,11 +495,10 @@ BlogFormProps) => {
            <Button
             size="sm"
             isIconOnly
+            radius="full"
             color="primary"
             isDisabled={!newCategory || isSavingCategory}
             isLoading={isSavingCategory}
-            radius="full"
-            className=""
             onClick={() => addCategory()}
            >
             <PaperPlaneIcon />
@@ -523,32 +509,20 @@ BlogFormProps) => {
          <>
           <Select
            size="sm"
+           fullWidth
            isRequired
-           items={categories}
            radius="none"
            label="Categories"
+           isMultiline={false}
            isDisabled={isPending}
            selectionMode="multiple"
-           isMultiline={false}
-           style={{
-            transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
-           }}
-           className="w-full"
-           renderValue={(items) => {
-            return (
-             <div className="w-full flex gap-x-1 overflow-x-scrool">
-              {items.map((item) => (
-               <Chip size="sm" key={item.key}>
-                {item.rendered}
-               </Chip>
-              ))}
-             </div>
-            );
-           }}
-           onChange={handleSelectionChange}
+           onSelectionChange={(e) => setFields({ ...fields, categories: e })}
            description={
             openAICategories && `Suggested categories: ${openAICategories}`
            }
+           style={{
+            transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
+           }}
           >
            {categories.map((i: any) => (
             <SelectItem key={i.id} value={i.name}>
@@ -655,7 +629,15 @@ BlogFormProps) => {
          color="primary"
          type="submit"
          radius="none"
-         isDisabled={isSaving}
+         isDisabled={
+          isSaving ||
+          !fields.name ||
+          !fields.description ||
+          !fields.banner ||
+          !fields.thumbnail ||
+          !fields.categories ||
+          !fields.content
+         }
          spinnerPlacement="end"
          endContent={!isSaving && <PaperPlaneIcon />}
          isLoading={isSaving}

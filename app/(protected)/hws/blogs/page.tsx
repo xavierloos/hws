@@ -3,7 +3,7 @@ import * as React from "react";
 import { useEffect, useState, useTransition } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { BlogForm } from "@/components/blogForm";
+import { BlogForm } from "@/app/(protected)/hws/blogs/_components/BlogForm";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { Button } from "@nextui-org/react";
@@ -61,9 +61,10 @@ const BlogPage = () => {
 
    await axios
     .post("/api/blogs", inputs)
-    .then((res) => {
-     getData();
-     return onClose;
+    .then(async (res: any) => {
+     //  await getData();
+     console.log(res);
+     //  return onClose;
     })
     .catch((e) => {
      toast.error(e.response.data.message);
