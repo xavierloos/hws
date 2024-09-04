@@ -629,15 +629,15 @@ BlogFormProps) => {
          color="primary"
          type="submit"
          radius="none"
-         isDisabled={
-          isSaving ||
-          !fields.name ||
-          !fields.description ||
-          !fields.banner ||
-          !fields.thumbnail ||
-          !fields.categories ||
-          !fields.content
-         }
+         //  isDisabled={
+         //   isSaving ||
+         //   !fields.name ||
+         //   !fields.description ||
+         //   !fields.banner ||
+         //   !fields.thumbnail ||
+         //   !fields.categories ||
+         //   !fields.content
+         //  }
          spinnerPlacement="end"
          endContent={!isSaving && <PaperPlaneIcon />}
          isLoading={isSaving}

@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 import {
  Table,
  TableHeader,
@@ -48,15 +48,15 @@ type TableItemsProps = {
  cols: any;
  initialCols: any;
  type: string;
- onDelete?: (id: any, name: any) => {};
+ onDelete: (id: any, name: any) => {};
  onSaveBlog: (e: any, files?: any) => {};
  statusOptions?: any;
  handleView: (item: any) => {};
  isLoading: boolean;
  isSaving: boolean;
- isOpen: boolean;
- onOpen: () => void;
- onClose: () => void;
+ isNewBlogOpen: boolean;
+ onNewBlogOpen: () => void;
+ onNewBlogClose: () => void;
 };
 
 export const TableItems = ({
@@ -70,9 +70,9 @@ export const TableItems = ({
  handleView,
  isLoading,
  isSaving,
- isOpen,
- onOpen,
- onClose,
+ isNewBlogOpen,
+ onNewBlogOpen,
+ onNewBlogClose,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -82,16 +82,6 @@ export const TableItems = ({
  const [rowsPerPage, setRowsPerPage] = useState(5);
  const [page, setPage] = React.useState(1);
  const hasSearchFilter = Boolean(filterValue);
- const values = {
-  name: undefined,
-  slug: undefined,
-  description: undefined,
-  isActive: false,
-  categories: undefined,
-  content: undefined,
-  thumbnail: undefined,
-  banner: undefined,
- };
 
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
@@ -328,7 +318,7 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={() => onOpen()}
+        onPress={() => onNewBlogOpen()}
        />
       </Tooltip>
      </div>
@@ -377,7 +367,7 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={() => onOpen()}
+        onPress={() => onNewBlogOpen()}
        />
       </Tooltip>
      </div>
@@ -482,24 +472,23 @@ export const TableItems = ({
 
    <Modal
     size="3xl"
-    isOpen={isOpen}
-    onClose={onClose}
+    isOpen={isNewBlogOpen}
+    onClose={onNewBlogClose}
     scrollBehavior="inside"
     shouldBlockScroll
     className="rounded-md"
    >
     <ModalContent>
-     {(onClose) => (
-      <>
-       <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
-       <BlogForm
-        // values={values}
-        onSubmit={onSaveBlog}
-        isSaving={isSaving}
-        // onClose={onClose}
-       />
-      </>
-     )}
+     {/* {(onClose) => ( */}
+     <>
+      <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
+      <BlogForm
+       onSubmit={onSaveBlog}
+       isSaving={isSaving}
+       // onClose={onClose}
+      />
+     </>
+     {/* )} */}
     </ModalContent>
    </Modal>
    {/* <Modal

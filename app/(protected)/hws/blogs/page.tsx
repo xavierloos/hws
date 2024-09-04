@@ -62,14 +62,20 @@ const BlogPage = () => {
    await axios
     .post("/api/blogs", inputs)
     .then(async (res: any) => {
-     //  await getData();
-     console.log(res);
-     //  return onClose;
+     if (res.data.type === "warning") return toast.warning(res.data.message);
+     toast.success(res.data.message);
+     await getData().then(() => {
+      return handleOnClose();
+     });
     })
     .catch((e) => {
      toast.error(e.response.data.message);
     });
   });
+ };
+
+ const handleOnClose = () => {
+  return onClose();
  };
 
  const onDelete = async (id: string, name: string) => {
@@ -78,9 +84,14 @@ const BlogPage = () => {
     label: "YES",
     onClick: async () => {
      try {
-      const res = await axios.delete(`/api/blogs?id=${id}`);
-      toast.success(res.data.message);
-      getData();
+      await axios
+       .delete(`/api/blogs?id=${id}`)
+       .then((res) => {
+        toast.success(res.data.message);
+       })
+       .then(() => {
+        getData();
+       });
      } catch (e) {
       toast.error(e.response.data.error.meta.cause);
      }
@@ -111,9 +122,9 @@ const BlogPage = () => {
     // handleView={handleView}
     isLoading={isLoding}
     isSaving={isSaving}
-    isOpen={isOpen}
-    onOpen={onOpen}
-    onClose={onClose}
+    isNewBlogOpen={isOpen}
+    onNewBlogOpen={onOpen}
+    onNewBlogClose={handleOnClose}
    />
    {/* <Modal
     open={isOpen}

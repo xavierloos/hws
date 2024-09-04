@@ -75,7 +75,7 @@ export const POST = async (req: Request, res: Response) => {
   const existingSlug = await db.blog.findUnique({
    where: { slug: blog.slug },
   });
-
+  console.log(existingSlug);
   if (existingSlug)
    return NextResponse.json(
     { message: "Slug already in use", type: "warning" },
@@ -93,7 +93,7 @@ export const POST = async (req: Request, res: Response) => {
   });
 
   return NextResponse.json(
-   { message: `${blog.title} created successfully`, type: "success" },
+   { message: `New blog created successfully`, type: "success" },
    { status: 200 }
   );
  } catch (error) {
@@ -116,7 +116,7 @@ export const DELETE = async (req: any) => {
   });
 
   return NextResponse.json(
-   { message: `Blog deleted successfully` },
+   { message: `Blog deleted successfully`, type: "success" },
    { status: 200 }
   );
  } catch (error) {
