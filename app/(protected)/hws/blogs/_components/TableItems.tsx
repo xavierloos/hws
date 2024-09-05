@@ -53,7 +53,6 @@ type TableItemsProps = {
  onDelete: (id: any, name: any) => {};
  onSaveBlog: (e: any, files?: any) => {};
  statusOptions?: any;
- handleView: (item: any) => {};
  isLoading: boolean;
  isSaving: boolean;
  isNewBlogOpen: boolean;
@@ -69,7 +68,6 @@ export const TableItems = ({
  onDelete,
  onSaveBlog,
  statusOptions,
- handleView,
  isLoading,
  isSaving,
  isNewBlogOpen,
