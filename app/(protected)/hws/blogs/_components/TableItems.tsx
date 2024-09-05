@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 import {
  Table,
  TableHeader,
@@ -32,6 +32,7 @@ import Autoplay from "embla-carousel-autoplay";
 import {
  CrossCircledIcon,
  DrawingPinIcon,
+ ExternalLinkIcon,
  EyeOpenIcon,
  MagnifyingGlassIcon,
  Pencil1Icon,
@@ -42,6 +43,7 @@ import { AddBlog } from "./Add";
 import { format } from "timeago.js";
 import { Title } from "@/components/title";
 import Box from "@mui/material/Box";
+import { EditBlog } from "./Edit";
 
 type TableItemsProps = {
  data: any;
@@ -80,8 +82,10 @@ export const TableItems = ({
  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
  const [statusFilter, setStatusFilter] = useState("all");
  const [rowsPerPage, setRowsPerPage] = useState(5);
- const [page, setPage] = React.useState(1);
+ const [page, setPage] = useState(1);
  const hasSearchFilter = Boolean(filterValue);
+ const [editItem, setEditItem] = useState(undefined);
+ const { isOpen, onOpen, onClose } = useDisclosure();
 
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
@@ -139,6 +143,7 @@ export const TableItems = ({
  const sortedItems = React.useMemo(() => {
   return [...items].sort((a: Items, b: Items) => {
    const first = a[sortByName.column as keyof Items] as number;
+
    const second = b[sortByName.column as keyof Items] as number;
    const cmp = first < second ? -1 : first > second ? 1 : 0;
 
@@ -232,9 +237,9 @@ export const TableItems = ({
          radius="full"
          color="default"
          variant="light"
-         onClick={() => handleView(i)}
+         onClick={() => router.push(`/blogs/${i.slug}`, { scroll: false })}
         >
-         <EyeOpenIcon />
+         <ExternalLinkIcon />
         </Button>
        </Tooltip>
        <Tooltip color="danger" content="Delete" size="sm">
@@ -318,7 +323,9 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={() => onNewBlogOpen()}
+        onPress={() => {
+         return onNewBlogOpen();
+        }}
        />
       </Tooltip>
      </div>
@@ -367,7 +374,9 @@ export const TableItems = ({
         isIconOnly
         size="md"
         endContent={<PlusIcon />}
-        onPress={() => onNewBlogOpen()}
+        onPress={() => {
+         return onNewBlogOpen();
+        }}
        />
       </Tooltip>
      </div>
@@ -420,6 +429,11 @@ export const TableItems = ({
   );
  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
+ const onEditItem = (id: any) => {
+  setEditItem(data.filter((i: any) => i.id === id));
+
+  return onOpen();
+ };
  return (
   <>
    <Title text={type} className="items-start" />
@@ -436,7 +450,9 @@ export const TableItems = ({
     topContentPlacement="outside"
     onSelectionChange={setSelectedKeys}
     onSortChange={setSortDescriptor}
-    onRowAction={(e) => console.log(e)}
+    onRowAction={(id) => {
+     return onEditItem(id);
+    }}
     classNames={{
      wrapper: "p-0 border-none shadow-md rounded-md",
      table: "min-h-[200px]  ",
@@ -456,7 +472,7 @@ export const TableItems = ({
      )}
     </TableHeader>
     <TableBody
-     items={sortedItems}
+     items={items}
      isLoading={isLoading}
      loadingContent={<Spinner label="Loading..." />}
     >
@@ -484,7 +500,20 @@ export const TableItems = ({
     </ModalContent>
    </Modal>
    {/* ADD NEW BLOG ENDS */}
-
+   {/* EDIT BLOG */}
+   <Modal
+    size="3xl"
+    isOpen={isOpen}
+    onClose={onClose}
+    scrollBehavior="inside"
+    shouldBlockScroll
+    className="rounded-md"
+   >
+    <ModalContent>
+     <ModalHeader className="flex flex-col gap-1">Edit Blog</ModalHeader>
+     <EditBlog item={editItem} onSubmit={onSaveBlog} isSaving={isSaving} />
+    </ModalContent>
+   </Modal>
    {/* EDIT BLOG ENDS */}
    {/* <Modal
     backdrop="blur"

@@ -100,62 +100,22 @@ const BlogPage = () => {
   });
  };
 
- //  const handleView = (item?: any) => {
- //   setIsOpen(!isOpen);
- //   setDetails(item);
- //  };
-
- //  const handleModal = () => {
- //   setIsOpen(!isOpen);
- //  };
-
  return (
-  <div>
-   <TableItems
-    data={data}
-    cols={cols}
-    initialCols={initialCols}
-    type="blogs"
-    onDelete={onDelete}
-    onSaveBlog={onSubmit}
-    statusOptions={statusOptions}
-    // handleView={handleView}
-    isLoading={isLoding}
-    isSaving={isSaving}
-    isNewBlogOpen={isOpen}
-    onNewBlogOpen={onOpen}
-    onNewBlogClose={handleOnClose}
-   />
-   {/* <Modal
-    open={isOpen}
-    onClose={handleView}
-    className="flex flex-1 flex-col gap-6 items-center justify-center z-0 w-full "
-   >
-    <Box
-     style={{
-      overflow: "scroll",
-     }}
-     className="flex flex-col gap-3 relative z-50 w-full box-border outline-none mx-1 my-1 sm:mx-6 sm:my-16 max-w-md rounded-large shadow-small overflow-y-hidden bg-white p-6 h-full"
-    >
-     <div className="flex justify-between w-full">
-      <div className="flex items-center">
-       <h1 className=" text-large font-semibold uppercase ">{details.name}</h1>
-      </div>
-      <Button
-       onClick={handleModal}
-       size="sm"
-       isIconOnly
-       color="danger"
-       variant="light"
-       className="p-0 rounded-full"
-      >
-       <CrossCircledIcon />
-      </Button>
-     </div>
-     <BlogForm values={details} onSubmit={onSubmit} onClose={handleModal} />
-    </Box>
-   </Modal> */}
-  </div>
+  <TableItems
+   data={data}
+   cols={cols}
+   initialCols={initialCols}
+   type="blogs"
+   onDelete={onDelete}
+   onSaveBlog={onSubmit}
+   statusOptions={statusOptions}
+   // handleView={handleView}
+   isLoading={isLoding}
+   isSaving={isSaving}
+   isNewBlogOpen={isOpen}
+   onNewBlogOpen={onOpen}
+   onNewBlogClose={handleOnClose}
+  />
  );
 };
 

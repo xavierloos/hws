@@ -1,3 +1,4 @@
+"use client";
 import {
  Input,
  Select,
@@ -27,12 +28,13 @@ import {
  PlusIcon,
 } from "@radix-ui/react-icons";
 
-type AddProps = {
+type EditProps = {
+ item: any;
  onSubmit: (e: any, values: any) => {};
  isSaving: boolean;
 };
 
-export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
+export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
  const [add, setAdd] = useState({
   image: false,
   category: false,
@@ -51,16 +53,8 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
  const [contentLoading, setContentLoading] = useState(false);
  const [newImagePreview, setNewImagePreview] = useState(null);
  const [descriptionLoading, setDescriptionLoading] = useState(false);
- const [fields, setFields] = useState({
-  name: undefined,
-  slug: undefined,
-  description: undefined,
-  isActive: false,
-  categories: new Set<undefined>(),
-  content: undefined,
-  thumbnail: undefined,
-  banner: undefined,
- });
+ const [fields, setFields] = useState(item?.[0]);
+
  const modules = {
   toolbar: [
    [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -94,17 +88,24 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
  useEffect(() => {
   getCategories();
   getImages();
+  getSelectedCategories(item?.[0].categories);
  }, []);
 
  const getCategories = () => {
   startTransition(async () => {
    await axios
     .get("/api/categories")
-    .then((res) => {
+    .then(async (res) => {
      setCategories(res.data);
     })
     .catch(() => {});
   });
+ };
+
+ const getSelectedCategories = async (arr) => {
+  let categories: Array<string> = [];
+  arr.forEach((element: any) => categories.push(element.id));
+  return setFields({ ...fields, categories: categories });
  };
 
  const getImages = () => {
@@ -122,27 +123,6 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
   const trimmedText = value.toLowerCase().trim();
   const alphanumericText = trimmedText.replace(/\W+/g, "-");
   return alphanumericText.replace(/(^-|-$)/g, "");
- };
-
- const generate = async () => {
-  startGenerating(async () => {
-   await axios
-    .get("/api/chat")
-    .then((res) => {
-     setFields({
-      ...fields,
-      name: JSON.parse(res.data.content).title,
-      slug: JSON.parse(res.data.content).slug,
-      description: JSON.parse(res.data.content).description,
-      content: JSON.parse(res.data.content).content,
-     });
-     setOpenAICategories(JSON.parse(res.data.content).categories);
-     setIsRegenateButtonActive(true);
-    })
-    .catch((e) => {
-     toast.error(e.response.data.message);
-    });
-  });
  };
 
  const regenerate = async (input: string) => {
@@ -273,21 +253,19 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
          }}
          description={fields.slug}
         />
-        {isRegenateButtonActive && (
-         <Tooltip content="Regenerate title" size="sm">
-          <Button
-           size="sm"
-           isIconOnly
-           radius="full"
-           variant="solid"
-           isLoading={titleLoading}
-           className="bg-primary"
-           onClick={() => regenerate("name")}
-          >
-           <MagicWandIcon />
-          </Button>
-         </Tooltip>
-        )}
+        <Tooltip content="Regenerate title" size="sm">
+         <Button
+          size="sm"
+          isIconOnly
+          radius="full"
+          variant="solid"
+          isLoading={titleLoading}
+          className="bg-primary"
+          onClick={() => regenerate("name")}
+         >
+          <MagicWandIcon />
+         </Button>
+        </Tooltip>
        </div>
        <div className="flex flex-row items-top gap-3">
         <Textarea
@@ -308,21 +286,19 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
           setFields({ ...fields, description: e });
          }}
         />
-        {isRegenateButtonActive && (
-         <Tooltip content="Regenerate description" size="sm">
-          <Button
-           size="sm"
-           isIconOnly
-           radius="full"
-           variant="solid"
-           className="bg-primary"
-           isLoading={descriptionLoading}
-           onClick={() => regenerate("description")}
-          >
-           <MagicWandIcon />
-          </Button>
-         </Tooltip>
-        )}
+        <Tooltip content="Regenerate description" size="sm">
+         <Button
+          size="sm"
+          isIconOnly
+          radius="full"
+          variant="solid"
+          className="bg-primary"
+          isLoading={descriptionLoading}
+          onClick={() => regenerate("description")}
+         >
+          <MagicWandIcon />
+         </Button>
+        </Tooltip>
        </div>
        <div
         className="flex gap-3 items-center w-full"
@@ -389,6 +365,7 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
             radius="none"
             label="Thumbnail"
             isDisabled={isPending}
+            selectedKeys={[fields.thumbnail]}
             renderValue={(items) => items.map((i) => i.key)}
             onChange={(e) =>
              setFields({
@@ -410,6 +387,7 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
             radius="none"
             label="Banner"
             isDisabled={isPending}
+            selectedKeys={[fields.banner]}
             renderValue={(items) => items.map((i) => i.key)}
             onChange={(e) =>
              setFields({
@@ -509,6 +487,7 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
            label="Categories"
            isMultiline={false}
            isDisabled={isPending}
+           selectedKeys={fields.categories}
            selectionMode="multiple"
            onSelectionChange={(e) => setFields({ ...fields, categories: e })}
            description={
@@ -556,22 +535,21 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
           setFields({ ...fields, content: v });
          }}
         />
-        {isRegenateButtonActive && (
-         <Tooltip content="Regenerate content" size="sm">
-          <Button
-           size="sm"
-           isIconOnly
-           radius="full"
-           className="bg-primary"
-           onClick={() => regenerate("content")}
-           isLoading={contentLoading}
-          >
-           <MagicWandIcon />
-          </Button>
-         </Tooltip>
-        )}
+        <Tooltip content="Regenerate content" size="sm">
+         <Button
+          size="sm"
+          isIconOnly
+          radius="full"
+          className="bg-primary"
+          onClick={() => regenerate("content")}
+          isLoading={contentLoading}
+         >
+          <MagicWandIcon />
+         </Button>
+        </Tooltip>
        </div>
        <Switch
+        isSelected={fields.isActive}
         onValueChange={(e) => {
          setFields({
           ...fields,
@@ -610,16 +588,6 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
        <div className="flex justify-end items-center gap-3 w-fll mb-3">
         <Button
          size="md"
-         radius="none"
-         color="default"
-         endContent={<MagicWandIcon />}
-         onClick={generate}
-         isDisabled={isSaving}
-        >
-         GENERATE
-        </Button>
-        <Button
-         size="md"
          color="primary"
          type="submit"
          radius="none"
@@ -636,7 +604,7 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
          endContent={!isSaving && <PaperPlaneIcon />}
          isLoading={isSaving}
         >
-         SAVE
+         UPDATE
         </Button>
        </div>
       </>
