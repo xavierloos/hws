@@ -10,7 +10,6 @@ const BlogPage = () => {
  const [isSaving, startSaving] = useTransition();
  const [isLoding, startLoading] = useTransition();
  const [data, setData] = useState([]);
- const [details, setDetails] = useState([]);
  const initialCols = ["name", "isActive", "actions"];
  const { isOpen, onOpen, onClose } = useDisclosure();
  const cols = [
@@ -33,10 +32,10 @@ const BlogPage = () => {
   getData();
  }, []);
 
- const getData = async () => {
+ const getData = async (sorting: string = "modified-desc") => {
   startLoading(async () => {
    await axios
-    .get("/api/blogs")
+    .get(`/api/blogs?sortby=${sorting}`)
     .then((res) => {
      setData(res.data);
     })

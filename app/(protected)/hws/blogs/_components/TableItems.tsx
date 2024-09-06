@@ -39,7 +39,6 @@ type TableItemsProps = {
  data: any;
  cols: any;
  initialCols: any;
-
  onDelete: (id: any, name: any) => {};
  onSaveBlog: (e: any, files?: any) => {};
  statusOptions?: any;
@@ -48,7 +47,7 @@ type TableItemsProps = {
  isNewBlogOpen: boolean;
  onNewBlogOpen: () => void;
  onNewBlogClose: () => void;
- getData: () => {};
+ getData: (sort?: string) => {};
 };
 
 export const TableItems = ({
@@ -111,8 +110,7 @@ export const TableItems = ({
      return onClose();
     })
     .catch((e) => {
-     console.log(e);
-     //  toast.error(e.response.data.message);
+     toast.error(e.response.data.message);
     });
   });
  };
@@ -396,20 +394,38 @@ export const TableItems = ({
     </div>
     {/* FILTERS END*/}
     <div className="flex justify-between items-center">
-     <span className="text-default-400 text-small">
+     <span className="text-default-400 text-tiny">
       Total {data.length} blogs
      </span>
-     <label className="flex items-center text-default-400 text-small">
-      Items:
-      <select
-       className="bg-transparent outline-none text-default-400 text-small"
-       onChange={onRowsPerPageChange}
-      >
-       <option value="5">5</option>
-       <option value="10">10</option>
-       <option value="15">15</option>
-      </select>
-     </label>
+     <div className="flex gap-3">
+      <label className="flex items-center text-default-400 text-tiny">
+       Sort by:
+       <select
+        className="bg-transparent outline-none text-default-400 text-tiny"
+        onChange={(e) => getData(e.target.value)}
+       >
+        <option value="modified-asc">Last updated (asc)</option>
+        <option value="modified-desc" selected>
+         Last updated (desc)
+        </option>
+        <option value="created-asc">Date (asc)</option>
+        <option value="created-desc">Date (desc)</option>
+        <option value="name-asc">Name (asc)</option>
+        <option value="name-desc">Name (desc)</option>
+       </select>
+      </label>
+      <label className="flex items-center text-default-400 text-tiny">
+       Items:
+       <select
+        className="bg-transparent outline-none text-default-400 text-tiny"
+        onChange={onRowsPerPageChange}
+       >
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+       </select>
+      </label>{" "}
+     </div>
     </div>
    </div>
   );

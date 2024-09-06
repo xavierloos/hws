@@ -5,29 +5,47 @@ import { NextResponse } from "next/server";
 
 export const GET = async (req: Request) => {
  try {
-  // const url = new URL(req.url);
-  // const searchParams = new URLSearchParams(url.searchParams);
-  // const sortBy = searchParams.get("sortby");
-  // console.log(sortBy);
-  // let sorting: any;
-  // switch (sortBy) {
-  //  case "modified-asc":
-  //   sorting = {
-  //    modifiedAt: "asc", // or 'desc' for descending order
-  //   };
-  //   break;
+  const url = new URL(req.url);
+  const searchParams = new URLSearchParams(url.searchParams);
+  const sortBy = searchParams.get("sortby");
+  console.log(sortBy);
+  let sorting: any;
+  switch (sortBy) {
+   case "modified-asc":
+    sorting = {
+     modifiedAt: "asc", // or 'desc' for descending order
+    };
+    break;
+   case "created-asc":
+    sorting = {
+     createdAt: "asc", // or 'desc' for descending order
+    };
+    break;
+   case "created-desc":
+    sorting = {
+     createdAt: "desc", // or 'desc' for descending order
+    };
+    break;
+   case "name-asc":
+    sorting = {
+     name: "asc", // or 'desc' for descending order
+    };
+    break;
+   case "name-desc":
+    sorting = {
+     name: "desc", // or 'desc' for descending order
+    };
+    break;
 
-  //  default:
-  //   sorting = {
-  //    modifiedAt: "desc", // or 'desc' for descending order
-  //   };
-  //   break;
-  // }
+   default:
+    sorting = {
+     modifiedAt: "desc", // or 'desc' for descending order
+    };
+    break;
+  }
 
   const blogs = await db.blog.findMany({
-   orderBy: {
-    modifiedAt: "asc", // or 'desc' for descending order
-   },
+   orderBy: sorting,
    include: { user: true },
   });
 
