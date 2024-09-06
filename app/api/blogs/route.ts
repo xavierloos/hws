@@ -5,9 +5,28 @@ import { NextResponse } from "next/server";
 
 export const GET = async (req: Request) => {
  try {
+  // const url = new URL(req.url);
+  // const searchParams = new URLSearchParams(url.searchParams);
+  // const sortBy = searchParams.get("sortby");
+  // console.log(sortBy);
+  // let sorting: any;
+  // switch (sortBy) {
+  //  case "modified-asc":
+  //   sorting = {
+  //    modifiedAt: "asc", // or 'desc' for descending order
+  //   };
+  //   break;
+
+  //  default:
+  //   sorting = {
+  //    modifiedAt: "desc", // or 'desc' for descending order
+  //   };
+  //   break;
+  // }
+
   const blogs = await db.blog.findMany({
    orderBy: {
-    createdAt: "desc", // or 'desc' for descending order
+    modifiedAt: "asc", // or 'desc' for descending order
    },
    include: { user: true },
   });
@@ -75,7 +94,7 @@ export const POST = async (req: Request, res: Response) => {
   const existingSlug = await db.blog.findUnique({
    where: { slug: blog.slug },
   });
-  console.log(existingSlug);
+
   if (existingSlug)
    return NextResponse.json(
     { message: "Slug already in use", type: "warning" },
@@ -94,6 +113,55 @@ export const POST = async (req: Request, res: Response) => {
 
   return NextResponse.json(
    { message: `New blog created successfully`, type: "success" },
+   { status: 200 }
+  );
+ } catch (error) {
+  return NextResponse.json(
+   { message: "Something went wrong", error },
+   { status: 500 }
+  );
+ }
+};
+
+export const PUT = async (req: Request, res: Response) => {
+ try {
+  const user = await currentUser();
+  if (!user) return { error: "Unathorized" };
+
+  // TODO: check if user has writing permissions
+
+  const blog = await req.json();
+
+  const existingSlug = await db.blog.findMany({
+   where: { id: { not: blog.id }, slug: blog.slug },
+  });
+
+  if (existingSlug.length)
+   return NextResponse.json(
+    { message: "Slug already in use", type: "warning" },
+    { status: 200 }
+   );
+
+  await db.blog.update({
+   where: {
+    id: blog.id,
+   },
+   data: {
+    name: blog.name,
+    slug: blog.slug,
+    description: blog.description,
+    thumbnail: blog.thumbnail,
+    banner: blog.banner,
+    categories: blog.categories,
+    content: blog.content,
+    isActive: blog.isActive,
+    modifiedBy: user?.id,
+    modifiedAt: new Date(),
+   },
+  });
+
+  return NextResponse.json(
+   { message: `Blog updated successfully`, type: "success" },
    { status: 200 }
   );
  } catch (error) {

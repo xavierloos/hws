@@ -20,36 +20,26 @@ import {
  Modal,
  ModalContent,
  ModalHeader,
- ModalBody,
- ModalFooter,
  useDisclosure,
 } from "@nextui-org/react";
 import React, { useState } from "react";
-
 import { useRouter } from "next/navigation";
 import dateFormat from "dateformat";
 import Autoplay from "embla-carousel-autoplay";
-import {
- CrossCircledIcon,
- DrawingPinIcon,
- ExternalLinkIcon,
- EyeOpenIcon,
- MagnifyingGlassIcon,
- Pencil1Icon,
- PlusIcon,
- TrashIcon,
-} from "@radix-ui/react-icons";
+import { ExternalLinkIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { AddBlog } from "./Add";
 import { format } from "timeago.js";
 import { Title } from "@/components/title";
-import Box from "@mui/material/Box";
 import { EditBlog } from "./Edit";
+import { useTransition } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 type TableItemsProps = {
  data: any;
  cols: any;
  initialCols: any;
- type: string;
+
  onDelete: (id: any, name: any) => {};
  onSaveBlog: (e: any, files?: any) => {};
  statusOptions?: any;
@@ -58,13 +48,13 @@ type TableItemsProps = {
  isNewBlogOpen: boolean;
  onNewBlogOpen: () => void;
  onNewBlogClose: () => void;
+ getData: () => {};
 };
 
 export const TableItems = ({
  data,
  cols,
  initialCols,
- type,
  onDelete,
  onSaveBlog,
  statusOptions,
@@ -73,6 +63,7 @@ export const TableItems = ({
  isNewBlogOpen,
  onNewBlogOpen,
  onNewBlogClose,
+ getData,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -84,6 +75,7 @@ export const TableItems = ({
  const hasSearchFilter = Boolean(filterValue);
  const [editItem, setEditItem] = useState(undefined);
  const { isOpen, onOpen, onClose } = useDisclosure();
+ const [isSavingEdit, startSavingEdit] = useTransition();
 
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
@@ -98,8 +90,31 @@ export const TableItems = ({
   Autoplay({ delay: 2000, stopOnInteraction: true })
  );
 
- const handleNewItem = () => {
-  // setIsOpen(!isOpen);
+ const onSubmitEdit = async (
+  e: React.FormEvent<HTMLFormElement>,
+  inputs: any
+ ) => {
+  e.preventDefault();
+
+  startSavingEdit(async () => {
+   let categories: Array<string> = [];
+   inputs.categories.forEach((element: any) => categories.push(element));
+   inputs.categories = categories;
+
+   await axios
+    .put("/api/blogs", inputs)
+    .then(async (res: any) => {
+     console.log(res);
+     if (res.data.type === "warning") return toast.warning(res.data.message);
+     toast.success(res.data.message);
+     getData();
+     return onClose();
+    })
+    .catch((e) => {
+     console.log(e);
+     //  toast.error(e.response.data.message);
+    });
+  });
  };
 
  const headerColumns = React.useMemo(() => {
@@ -164,7 +179,7 @@ export const TableItems = ({
        }}
        description={
         <span className="truncate text-ellipsis line-clamp-1 ">
-         {format(i.createdAt)} • On {dateFormat(i.createdAt, "dd/mmm/yy")}
+         {format(i.modifiedAt)} • On {dateFormat(i.modifiedAt, "dd/mmm/yy")}
         </span>
        }
        name={
@@ -382,7 +397,7 @@ export const TableItems = ({
     {/* FILTERS END*/}
     <div className="flex justify-between items-center">
      <span className="text-default-400 text-small">
-      Total {data.length} {type}
+      Total {data.length} blogs
      </span>
      <label className="flex items-center text-default-400 text-small">
       Items:
@@ -429,16 +444,15 @@ export const TableItems = ({
 
  const onEditItem = (id: any) => {
   setEditItem(data.filter((i: any) => i.id === id));
-
   return onOpen();
  };
+
  return (
   <>
-   <Title text={type} className="items-start" />
+   <Title text="Blogs" className="items-start" />
    <Table
     radius="none"
     isHeaderSticky
-    // removeWrapper
     bottomContent={bottomContent}
     bottomContentPlacement="outside"
     selectedKeys={selectedKeys}
@@ -470,6 +484,7 @@ export const TableItems = ({
      )}
     </TableHeader>
     <TableBody
+     emptyContent={"Your items will appear here."}
      items={items}
      isLoading={isLoading}
      loadingContent={<Spinner label="Loading..." />}
@@ -509,81 +524,14 @@ export const TableItems = ({
    >
     <ModalContent>
      <ModalHeader className="flex flex-col gap-1">Edit Blog</ModalHeader>
-     <EditBlog item={editItem} onSubmit={onSaveBlog} isSaving={isSaving} />
+     <EditBlog
+      item={editItem}
+      onSubmit={onSubmitEdit}
+      isSaving={isSavingEdit}
+     />
     </ModalContent>
    </Modal>
    {/* EDIT BLOG ENDS */}
-   {/* <Modal
-    backdrop="blur"
-    isOpen={isOpen}
-    onOpenChange={isOpen}
-    radius="sm"
-    classNames={{
-     body: "py-0 max-h-screen",
-     backdrop: "bg-black/50 backdrop-opacity-40",
-     base: "bg-secondary",
-     closeButton: "hover:bg-white/5 active:bg-white/10",
-    }}
-   >
-    <ModalContent
-     className="max-h-screen overflow-y-scroll"
-     style={{ overflow: scroll }}
-    >
-     {(onClose) => (
-      <>
-       {type === "tasks" && (
-        <NewTaskForm type={type} onSubmit={onSubmit} onClose={onClose} />
-       )}
-       {type === "files" && (
-        <NewFilesForm type={type} onSubmit={onSubmit} onClose={onClose} />
-       )}
-       {type === "blogs" && (
-        <NewBlogForm type={type} onSubmit={onSubmit} onClose={onClose} />
-       )}
-       {type === "members" && (
-        <NewMemberForm type={type} onSubmit={onSubmit} onClose={onClose} />
-       )}
-      </>
-     )}
-    </ModalContent>
-   </Modal> */}
-   {/* <Modal
-    backdrop="blur"
-    open={isOpen}
-    onClose={handleNewItem}
-    className="flex flex-1 flex-col gap-6 items-center justify-center z-0"
-   >
-    <Box
-     style={{
-      overflow: "scroll",
-     }}
-     className="flex flex-col gap-3 relative z-50 w-full box-border outline-none mx-1 my-1 sm:mx-6 sm:my-16 max-w-md rounded-large shadow-small overflow-y-hidden bg-white p-6 h-full"
-    >
-     <div className="flex justify-between w-full">
-      <div className="flex items-center">
-       <h1 className=" text-large font-semibold uppercase ">New {type}</h1>
-      </div>
-      <Button
-       onClick={handleNewItem}
-       size="sm"
-       isIconOnly
-       color="danger"
-       variant="light"
-       className="p-0 rounded-full"
-      >
-       <CrossCircledIcon />
-      </Button>
-     </div>
-     {type === "tasks" && (
-      <TaskFormModal type={type} onSubmit={onSubmit} isPending={isPending} />
-     )}
-     {type === "files" && <NewFilesForm type={type} onSubmit={onSubmit} />}
-     {type === "blogs" && (
-      <BlogForm values={values} type={type} onSubmit={onSubmit} />
-     )}
-     {type === "members" && <NewMemberForm type={type} onSubmit={onSubmit} />}
-    </Box>
-   </Modal> */}
   </>
  );
 };

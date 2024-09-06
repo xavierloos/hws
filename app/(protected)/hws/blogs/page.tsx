@@ -99,7 +99,6 @@ const BlogPage = () => {
    data={data}
    cols={cols}
    initialCols={initialCols}
-   type="blogs"
    onDelete={onDelete}
    onSaveBlog={onSubmit}
    statusOptions={statusOptions}
@@ -108,6 +107,7 @@ const BlogPage = () => {
    isNewBlogOpen={isOpen}
    onNewBlogOpen={onOpen}
    onNewBlogClose={handleOnClose}
+   getData={getData}
   />
  );
 };
