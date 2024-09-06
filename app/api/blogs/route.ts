@@ -5,10 +5,15 @@ import { NextResponse } from "next/server";
 
 export const GET = async (req: Request) => {
  try {
+  const user = await currentUser();
+  if (!user) return { error: "Unathorized" };
+
+  console.log(user);
+
   const url = new URL(req.url);
   const searchParams = new URLSearchParams(url.searchParams);
   const sortBy = searchParams.get("sortby");
-  console.log(sortBy);
+
   let sorting: any;
   switch (sortBy) {
    case "modified-asc":
@@ -47,6 +52,12 @@ export const GET = async (req: Request) => {
   const blogs = await db.blog.findMany({
    orderBy: sorting,
    include: { user: true },
+   where: {
+    OR: [
+     { isActive: true }, // All active blogs of all users
+     { createdBy: user.email }, // All blogs made by the specific user
+    ],
+   },
   });
 
   if (blogs.length > 0) {
