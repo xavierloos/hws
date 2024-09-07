@@ -8,8 +8,6 @@ export const GET = async (req: Request) => {
   const user = await currentUser();
   if (!user) return { error: "Unathorized" };
 
-  console.log(user);
-
   const url = new URL(req.url);
   const searchParams = new URLSearchParams(url.searchParams);
   const sortBy = searchParams.get("sortby");
@@ -18,33 +16,33 @@ export const GET = async (req: Request) => {
   switch (sortBy) {
    case "modified-asc":
     sorting = {
-     modifiedAt: "asc", // or 'desc' for descending order
+     modifiedAt: "asc",
     };
     break;
    case "created-asc":
     sorting = {
-     createdAt: "asc", // or 'desc' for descending order
+     createdAt: "asc",
     };
     break;
    case "created-desc":
     sorting = {
-     createdAt: "desc", // or 'desc' for descending order
+     createdAt: "desc",
     };
     break;
    case "name-asc":
     sorting = {
-     name: "asc", // or 'desc' for descending order
+     name: "asc",
     };
     break;
    case "name-desc":
     sorting = {
-     name: "desc", // or 'desc' for descending order
+     name: "desc",
     };
     break;
 
    default:
     sorting = {
-     modifiedAt: "desc", // or 'desc' for descending order
+     modifiedAt: "desc",
     };
     break;
   }
