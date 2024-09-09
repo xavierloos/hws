@@ -15,42 +15,26 @@ import {
  Chip,
  Spinner,
  Button,
- Select,
- SelectItem,
- Modal,
- ModalContent,
- ModalHeader,
- useDisclosure,
 } from "@nextui-org/react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import dateFormat from "dateformat";
 import Autoplay from "embla-carousel-autoplay";
-import { ExternalLinkIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
-import { Add } from "./Add";
-import { format } from "timeago.js";
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Title } from "@/components/title";
-import { Edit } from "./Edit";
-import { useTransition } from "react";
-import axios from "axios";
-import { toast } from "sonner";
 
 type TableItemsProps = {
  data: any;
  cols: any;
  initialCols: any;
- statusOptions?: any;
  isLoading: boolean;
- getData: (sort?: string) => {};
 };
 
 export const TableItems = ({
  data,
  cols,
  initialCols,
- statusOptions,
  isLoading,
- getData,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -60,9 +44,6 @@ export const TableItems = ({
  const [rowsPerPage, setRowsPerPage] = useState(5);
  const [page, setPage] = useState(1);
  const hasSearchFilter = Boolean(filterValue);
- const [editItem, setEditItem] = useState(undefined);
- const { isOpen, onOpen, onClose } = useDisclosure();
- const [isSavingEdit, startSavingEdit] = useTransition();
 
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
@@ -77,32 +58,6 @@ export const TableItems = ({
   Autoplay({ delay: 2000, stopOnInteraction: true })
  );
 
- const onSubmitEdit = async (
-  e: React.FormEvent<HTMLFormElement>,
-  inputs: any
- ) => {
-  e.preventDefault();
-
-  startSavingEdit(async () => {
-   let categories: Array<string> = [];
-   inputs.categories.forEach((element: any) => categories.push(element));
-   inputs.categories = categories;
-
-   await axios
-    .put("/api/blogs", inputs)
-    .then(async (res: any) => {
-     console.log(res);
-     if (res.data.type === "warning") return toast.warning(res.data.message);
-     toast.success(res.data.message);
-     getData();
-     return onClose();
-    })
-    .catch((e) => {
-     toast.error(e.response.data.message);
-    });
-  });
- };
-
  const headerColumns = React.useMemo(() => {
   if (visibleColumns === "all") return cols;
 
@@ -113,32 +68,11 @@ export const TableItems = ({
 
  const filteredItems = React.useMemo(() => {
   let filteredItem = [...data];
-
   if (hasSearchFilter) {
    filteredItem = filteredItem.filter((i) =>
     i?.name.toLowerCase().includes(filterValue.toLowerCase())
    );
   }
-  if (statusOptions) {
-   if (statusFilter === "all") return filteredItem;
-   let statusFilterSelected = statusFilter === "true" ? true : false;
-   filteredItem = filteredItem.filter(
-    (i) => i?.isActive == statusFilterSelected
-   );
-  }
-  // if (hasSearchFilter) {
-  //  filteredItem = filteredItem.filter((i) =>
-  //   i?.name.toLowerCase().includes(filterValue.toLowerCase())
-  //  );
-  // }
-  // if (statusOptions) {
-  //  if (statusFilter === "all") return filteredItem;
-  //  let statusFilterSelected = statusFilter === "true" ? true : false;
-  //  filteredItem = filteredItem.filter(
-  //   (i) => i?.isActive == statusFilterSelected
-  //  );
-  // }
-
   return filteredItem;
  }, [data, filterValue, statusFilter]);
 
@@ -167,76 +101,42 @@ export const TableItems = ({
 
    switch (columnKey) {
     case "name":
-     return cellValue;
-    // <User
-    //  avatarProps={{
-    //   className: `shrink-0 m-auto rounded-md`,
-    //   size: "lg",
-    //   src: i.images[0]["url"],
-    //  }}
-    //  description={
-    //   <span className="truncate text-ellipsis line-clamp-1 ">
-    //    {i.dates &&
-    //     dateFormat(i.dates?.start.dateTime, "ddd dd/mmm/yy - HH:MM")}
-    //   </span>
-    //  }
-    //  name={
-    //   <span
-    //    className={`text-default-foreground w-full text-ellipsis font-normal overflow-hidden break-words line-clamp-2`}
-    //   >
-    //    {cellValue}
-    //   </span>
-    //  }
-    // />
-    // case "modifiedBy":
-    // case "createdBy":
-    //  return (
-    //   <User
-    //    avatarProps={{
-    //     className: `shrink-0 bg-default text-default-foreground`,
-    //     size: "sm",
-    //     radius: "full",
-    //     src: cellValue.image || i.user.image,
-    //    }}
-    //    description={
-    //     <span className="truncate text-ellipsis line-clamp-1 text-tiny">
-    //      @{cellValue.username || i.user.username}
-    //     </span>
-    //    }
-    //    name={
-    //     <span
-    //      className={`text-ellipsis overflow-hidden break-words line-clamp-1 text-sm`}
-    //     >
-    //      {cellValue.name || i.user.name}
-    //     </span>
-    //    }
-    //   />
-    //  );
-    // case "categories":
-    //  return (
-    //   <div className="flex gap-1 flex-wrap">
-    //    {i.categories.map((category: any) => {
-    //     return (
-    //      <Chip size="sm" color="primary" key={category.id}>
-    //       {category.name}
-    //      </Chip>
-    //     );
-    //    })}
-    //   </div>
-    //  );
-    // case "isActive":
-    //  return (
-    //   <Chip
-    //    className={`border-none text-${i.isActive ? "success" : "default"}`}
-    //    color={i.isActive ? "success" : "default"}
-    //    size="sm"
-    //    variant="dot"
-    //   >
-    //    {i.isActive ? "Active" : "Draft"}
-    //   </Chip>
-    //  );
-    // case "slug":
-    //  return <small className="text-default">{cellValue}</small>;
+     return (
+      <User
+       avatarProps={{
+        className: `shrink-0 m-auto rounded-md`,
+        size: "lg",
+        src: i.images[0]["url"],
+       }}
+       description={
+        <span className="truncate text-ellipsis line-clamp-1 ">
+         {i.dates &&
+          dateFormat(i.dates?.start.dateTime, "ddd dd/mm/yy • HH:MM")}
+        </span>
+       }
+       name={
+        <span
+         className={`text-default-foreground w-full text-ellipsis font-normal overflow-hidden break-words line-clamp-2`}
+        >
+         {cellValue}
+        </span>
+       }
+      />
+     );
+    case "onSale":
+     return (
+      <Chip
+       className="capitalize border-none gap-1 text-default-600"
+       color={i.dates.status.code === "onsale" ? "success" : "default"}
+       size="sm"
+       variant="dot"
+      >
+       {i.dates.status.code === "onsale"
+        ? i.dates.status.code
+        : i.dates.status.code}
+      </Chip>
+     );
+
     case "actions":
      return (
       <div className="relative flex items-center gap-2 justify-end">
@@ -247,7 +147,7 @@ export const TableItems = ({
          radius="full"
          color="default"
          variant="light"
-         onClick={() => router.push(`/blogs/${i.slug}`, { scroll: false })}
+         onClick={() => router.push(`${i.url}`, { scroll: false })}
         >
          <ExternalLinkIcon />
         </Button>
@@ -300,93 +200,34 @@ export const TableItems = ({
   return (
    <div className="flex flex-col gap-4">
     {/* FILTERS START */}
-    <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-     <div className="flex gap-3 items-center">
-      <Input
-       size="sm"
-       fullWidth
-       type="text"
-       isClearable
-       radius="none"
-       value={filterValue}
-       label="Search"
-       onClear={() => onClear()}
-       onValueChange={onSearchChange}
-      />
-     </div>
-     <div className="flex gap-3 items-center w-full">
-      <div className="w-full">
-       <div className={`grid gap-3 grid-cols-2`}>
-        {statusOptions && (
-         <Select
-          size="sm"
-          fullWidth
-          radius="none"
-          label="Status"
-          disabledKeys={statusFilter}
-          defaultSelectedKeys={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-         >
-          {statusOptions?.map((status: any) => (
-           <SelectItem key={status.uid}>{status.name}</SelectItem>
-          ))}
-         </Select>
-        )}
-        {cols && (
-         <Select
-          size="sm"
-          fullWidth
-          radius="none"
-          label="Columns"
-          selectionMode="multiple"
-          disabledKeys={["name"]}
-          // className=" overflow-hidden"
-          defaultSelectedKeys={visibleColumns}
-          onSelectionChange={setVisibleColumns}
-         >
-          {cols?.map((i: any) => (
-           <SelectItem key={i.uid}>{i.name}</SelectItem>
-          ))}
-         </Select>
-        )}
-       </div>
-      </div>
-     </div>
-    </div>
+    <Input
+     size="sm"
+     fullWidth
+     type="text"
+     isClearable
+     radius="none"
+     value={filterValue}
+     label="Search"
+     onClear={() => onClear()}
+     onValueChange={onSearchChange}
+    />
     {/* FILTERS END*/}
     <div className="flex justify-between items-center">
      <span className="text-default-400 text-tiny">
       Total {data.length} blogs
      </span>
-     <div className="flex gap-3">
-      <label className="flex items-center text-default-400 text-tiny">
-       Sort by:
-       <select
-        className="bg-transparent outline-none text-default-400 text-tiny"
-        onChange={(e) => getData(e.target.value)}
-       >
-        <option value="modified-asc">Last updated (asc)</option>
-        <option value="modified-desc" selected>
-         Last updated (desc)
-        </option>
-        <option value="created-asc">Date (asc)</option>
-        <option value="created-desc">Date (desc)</option>
-        <option value="name-asc">Name (asc)</option>
-        <option value="name-desc">Name (desc)</option>
-       </select>
-      </label>
-      <label className="flex items-center text-default-400 text-tiny">
-       Items:
-       <select
-        className="bg-transparent outline-none text-default-400 text-tiny"
-        onChange={onRowsPerPageChange}
-       >
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="15">15</option>
-       </select>
-      </label>{" "}
-     </div>
+
+     <label className="flex items-center text-default-400 text-tiny">
+      Items:
+      <select
+       className="bg-transparent outline-none text-default-400 text-tiny"
+       onChange={onRowsPerPageChange}
+      >
+       <option value="5">5</option>
+       <option value="10">10</option>
+       <option value="15">15</option>
+      </select>
+     </label>
     </div>
    </div>
   );
@@ -419,11 +260,6 @@ export const TableItems = ({
   );
  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
- const onEditItem = (id: any) => {
-  setEditItem(data.filter((i: any) => i.id === id));
-  return onOpen();
- };
-
  return (
   <>
    <Title text="Blogs" className="items-start" />
@@ -439,9 +275,6 @@ export const TableItems = ({
     topContentPlacement="outside"
     onSelectionChange={setSelectedKeys}
     onSortChange={setSortDescriptor}
-    onRowAction={(id) => {
-     return onEditItem(id);
-    }}
     classNames={{
      wrapper: "p-0 border-none shadow-md rounded-md",
      table: "min-h-[200px]  ",
@@ -475,36 +308,6 @@ export const TableItems = ({
      )}
     </TableBody>
    </Table>
-   {/* ADD NEW BLOG */}
-   {/* <Modal
-    size="3xl"
-    isOpen={isNewBlogOpen}
-    onClose={onNewBlogClose}
-    scrollBehavior="inside"
-    shouldBlockScroll
-    className="rounded-md"
-   >
-    <ModalContent>
-     <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
-     <Add onSubmit={onSaveBlog} isSaving={isSaving} />
-    </ModalContent>
-   </Modal> */}
-   {/* ADD NEW BLOG ENDS */}
-   {/* EDIT BLOG */}
-   <Modal
-    size="3xl"
-    isOpen={isOpen}
-    onClose={onClose}
-    scrollBehavior="inside"
-    shouldBlockScroll
-    className="rounded-md"
-   >
-    <ModalContent>
-     <ModalHeader className="flex flex-col gap-1">Edit Blog</ModalHeader>
-     <Edit item={editItem} onSubmit={onSubmitEdit} isSaving={isSavingEdit} />
-    </ModalContent>
-   </Modal>
-   {/* EDIT BLOG ENDS */}
   </>
  );
 };
