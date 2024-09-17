@@ -8,7 +8,7 @@ import { useDisclosure } from "@nextui-org/react";
 
 const BlogPage = () => {
  const [isSaving, startSaving] = useTransition();
- const [isLoding, startLoading] = useTransition();
+ const [isLoading, startLoading] = useTransition();
  const [data, setData] = useState([]);
  const initialCols = ["name", "isActive", "actions"];
  const { isOpen, onOpen, onClose } = useDisclosure();
@@ -101,7 +101,7 @@ const BlogPage = () => {
    onDelete={onDelete}
    onSaveBlog={onSubmit}
    statusOptions={statusOptions}
-   isLoading={isLoding}
+   isLoading={isLoading}
    isSaving={isSaving}
    isNewBlogOpen={isOpen}
    onNewBlogOpen={onOpen}

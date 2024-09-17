@@ -110,6 +110,7 @@ model File {
   lastModified Int
   createdBy    String
   createdAt    DateTime @default(now())
+  isPrivate    Boolean  @default(false)
   user         User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 }
 

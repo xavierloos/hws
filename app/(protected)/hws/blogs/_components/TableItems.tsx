@@ -75,16 +75,13 @@ export const TableItems = ({
  const [editItem, setEditItem] = useState(undefined);
  const { isOpen, onOpen, onClose } = useDisclosure();
  const [isSavingEdit, startSavingEdit] = useTransition();
-
  const [visibleColumns, setVisibleColumns] = useState<Selection>(
   new Set(initialCols)
  );
-
  const [sortByName, setSortDescriptor] = useState<SortDescriptor>({
   column: "name",
   direction: "ascending",
  });
-
  const plugin = React.useRef(
   Autoplay({ delay: 2000, stopOnInteraction: true })
  );

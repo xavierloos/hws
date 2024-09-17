@@ -34,6 +34,7 @@ import { EditBlog } from "./Edit";
 import { useTransition } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { CardItem } from "./CardItem";
 
 type TableItemsProps = {
  data: any;
@@ -44,9 +45,9 @@ type TableItemsProps = {
  statusOptions?: any;
  isLoading: boolean;
  isSaving: boolean;
- isNewBlogOpen: boolean;
- onNewBlogOpen: () => void;
- onNewBlogClose: () => void;
+ isNewOpen: boolean;
+ onNewOpen: () => void;
+ onNewClose: () => void;
  getData: (sort?: string) => {};
 };
 
@@ -59,9 +60,9 @@ export const TableItems = ({
  statusOptions,
  isLoading,
  isSaving,
- isNewBlogOpen,
- onNewBlogOpen,
- onNewBlogClose,
+ isNewOpen,
+ onNewOpen,
+ onNewClose,
  getData,
 }: TableItemsProps) => {
  const router = useRouter();
@@ -168,6 +169,7 @@ export const TableItems = ({
 
    switch (columnKey) {
     case "name":
+     console.log(i);
      return (
       <User
        avatarProps={{
@@ -466,6 +468,12 @@ export const TableItems = ({
  return (
   <>
    <Title text="Blogs" className="items-start" />
+
+   <div className="max-w-full grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    {items?.map((item) => (
+     <CardItem item={item} key={item.id} />
+    ))}
+   </div>
    <Table
     radius="none"
     isHeaderSticky
@@ -515,7 +523,7 @@ export const TableItems = ({
     </TableBody>
    </Table>
    {/* ADD NEW BLOG */}
-   <Modal
+   {/* <Modal
     size="3xl"
     isOpen={isNewBlogOpen}
     onClose={onNewBlogClose}
@@ -527,10 +535,10 @@ export const TableItems = ({
      <ModalHeader className="flex flex-col gap-1">New Blog</ModalHeader>
      <AddBlog onSubmit={onSaveBlog} isSaving={isSaving} />
     </ModalContent>
-   </Modal>
+   </Modal> */}
    {/* ADD NEW BLOG ENDS */}
    {/* EDIT BLOG */}
-   <Modal
+   {/* <Modal
     size="3xl"
     isOpen={isOpen}
     onClose={onClose}
@@ -546,7 +554,7 @@ export const TableItems = ({
       isSaving={isSavingEdit}
      />
     </ModalContent>
-   </Modal>
+   </Modal> */}
    {/* EDIT BLOG ENDS */}
   </>
  );
