@@ -84,9 +84,9 @@ export const CardItem = ({ item }: CardItemProps) => {
     </div>
     <Dropdown size="sm" className="max-w-[200px] rounded-md">
      <DropdownTrigger>
-      <Button variant="flat" size="sm" isIconOnly radius="full">
+      <div className="flex justify-center items-center min-w-[25px] min-h-[25px] bg-default rounded-full text-black shadow-sm my-1">
        <DotsVerticalIcon />
-      </Button>
+      </div>
      </DropdownTrigger>
      <DropdownMenu aria-label="Static Actions">
       <DropdownItem

@@ -7,65 +7,98 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/gcp";
 
 export const GET = async () => {
-  try {
-    const user = await currentUser();
+ try {
+  const user = await currentUser();
 
-    const res = await db.user.findMany({
-      where: {
-        id: {
-          not: user?.id,
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        role: true,
-        image: true,
-      },
-    });
+  const res = await db.user.findMany({
+   where: {
+    id: {
+     not: user?.id,
+    },
+   },
+  });
 
-    return new NextResponse(JSON.stringify(res, { status: 200 }));
-  } catch (error) {
-    return NextResponse.json(
-      {
-        message: "Something went wrong",
-      },
-      { status: 500 }
-    );
+  for (const key in res) {
+   if (Object.prototype.hasOwnProperty.call(res, key)) {
+    const element = res[key];
+    const options = {
+     version: "v2", // defaults to 'v2' if missing.
+     action: "read",
+     expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
+    };
+
+    const [url] = await storage
+     .bucket(`${process.env.GCP_BUCKET}`)
+     .file(`profiles/${element.id}/${element.image}`)
+     .getSignedUrl(options);
+    element.tempUrl = url;
+   }
   }
+
+  return new NextResponse(JSON.stringify(res, { status: 200 }));
+ } catch (error) {
+  return NextResponse.json(
+   {
+    message: "Something went wrong",
+   },
+   { status: 500 }
+  );
+ }
 };
 
 export const POST = async (req: Request) => {
-  try {
-    const user = await currentUser();
-    if (!user) return { error: "Unathorized" };
+ try {
+  const user = await currentUser();
+  if (!user) return { error: "Unathorized" };
 
-    const email = await req.json();
+  const { email } = await req.json();
 
-    const existingEmail = await getUserByEmail(email.value);
+  const existingEmail = await getUserByEmail(email);
 
-    if (existingEmail) {
-      return NextResponse.json(
-        { message: "Email already in use, please try again!", type: "warning" },
-        { status: 200 }
-      );
-    }
-
-    const token = await generateToken(email.value);
-
-    await sendRegisterInvitation(token.email, token.token);
-
-    return NextResponse.json(
-      { message: `An email has been sent to ${email.value}`, type: "success" },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      {
-        message: "Something went wrong",
-      },
-      { status: 500 }
-    );
+  if (existingEmail != null) {
+   return NextResponse.json(
+    { message: "Email already in use, please try again!", type: "warning" },
+    { status: 200 }
+   );
   }
+
+  const token = await generateToken(email);
+
+  await sendRegisterInvitation(token.email, token.token, user?.name);
+
+  return NextResponse.json(
+   { message: `An email has been sent to ${email}`, type: "success" },
+   { status: 200 }
+  );
+ } catch (error) {
+  return NextResponse.json(
+   {
+    message: "Something went wrong",
+   },
+   { status: 500 }
+  );
+ }
+};
+
+export const DELETE = async (req: any) => {
+ try {
+  const searchParams = req.nextUrl.searchParams;
+  const id = searchParams.get("id");
+
+  await db.user.delete({
+   where: {
+    id,
+   },
+  });
+
+  return NextResponse.json(
+   { message: `User deleted successfully`, type: "success" },
+   { status: 200 }
+  );
+ } catch (error) {
+  return NextResponse.json(
+   { message: "Something went wrong", error },
+   { status: 500 }
+  );
+ }
 };
