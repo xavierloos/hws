@@ -28,6 +28,7 @@ type TableItemsProps = {
  cols: any;
  initialCols: any;
  isLoading: boolean;
+ permission: string;
 };
 
 export const TableItems = ({
@@ -214,7 +215,7 @@ export const TableItems = ({
     {/* FILTERS END*/}
     <div className="flex justify-between items-center">
      <span className="text-default-400 text-tiny">
-      Total {data.length} blogs
+      Total {data.length} events
      </span>
 
      <label className="flex items-center text-default-400 text-tiny">
@@ -262,7 +263,7 @@ export const TableItems = ({
 
  return (
   <>
-   <Title text="Blogs" className="items-start" />
+   <Title text="Events" className="items-start" />
    <Table
     radius="none"
     isHeaderSticky

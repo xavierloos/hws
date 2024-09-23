@@ -48,6 +48,7 @@ type TableItemsProps = {
  onNewBlogOpen: () => void;
  onNewBlogClose: () => void;
  getData: (sort?: string) => {};
+ permission: string;
 };
 
 export const TableItems = ({
@@ -63,6 +64,7 @@ export const TableItems = ({
  onNewBlogOpen,
  onNewBlogClose,
  getData,
+ permission,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -258,6 +260,9 @@ export const TableItems = ({
          color="danger"
          variant="light"
          onClick={() => onDelete(i.id, i.name)}
+         isDisabled={
+          permission == "DELETE" || permission == "ALL" ? false : true
+         }
         >
          <TrashIcon color="red" />
         </Button>
@@ -334,6 +339,9 @@ export const TableItems = ({
         onPress={() => {
          return onNewBlogOpen();
         }}
+        isDisabled={
+         permission == "CREATE" || permission == "ALL" ? false : true
+        }
        />
       </Tooltip>
      </div>
@@ -385,6 +393,9 @@ export const TableItems = ({
         onPress={() => {
          return onNewBlogOpen();
         }}
+        isDisabled={
+         permission == "CREATE" || permission == "ALL" ? false : true
+        }
        />
       </Tooltip>
      </div>

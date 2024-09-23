@@ -35,20 +35,22 @@ import { useTransition } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { View } from "./View";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type TableItemsProps = {
  data: any;
  cols: any;
  initialCols: any;
- onDelete: (id: any, name: any) => {};
- onSaveBlog: (e: any, files?: any) => {};
+ onDelete: (id: any, name: any, isActive: boolean) => {};
+ onSave: (e: any, files?: any) => {};
  statusOptions?: any;
  isLoading: boolean;
  isLoadingInvite: boolean;
- isNewBlogOpen: boolean;
- onNewBlogOpen: () => void;
- onNewBlogClose: () => void;
+ isNewOpen: boolean;
+ onNewOpen: () => void;
+ onNewClose: () => void;
  getData: (sort?: string) => {};
+ permission: string;
 };
 
 export const TableItems = ({
@@ -56,14 +58,15 @@ export const TableItems = ({
  cols,
  initialCols,
  onDelete,
- onSaveBlog,
+ onSave,
  statusOptions,
  isLoading,
  isLoadingInvite,
- isNewBlogOpen,
- onNewBlogOpen,
- onNewBlogClose,
+ isNewOpen,
+ onNewOpen,
+ onNewClose,
  getData,
+ permission,
 }: TableItemsProps) => {
  const router = useRouter();
  type Items = (typeof data)[0];
@@ -256,6 +259,9 @@ export const TableItems = ({
          radius="full"
          color="danger"
          variant="light"
+         isDisabled={
+          permission === "DELETE" || permission === "ALL" ? false : true
+         }
          onClick={() => onDelete(i.id, i.name, i.isActive)}
         >
          <TrashIcon color="red" />
@@ -324,6 +330,9 @@ export const TableItems = ({
       />
       <Tooltip content="ADD NEW" showArrow>
        <Button
+        isDisabled={
+         permission == "CREATE" || permission == "ALL" ? false : true
+        }
         color="primary"
         className="flex sm:hidden shadow-md"
         radius="full"
@@ -331,7 +340,7 @@ export const TableItems = ({
         size="md"
         endContent={<PlusIcon />}
         onPress={() => {
-         return onNewBlogOpen();
+         return onNewOpen();
         }}
        />
       </Tooltip>
@@ -375,6 +384,9 @@ export const TableItems = ({
       </div>
       <Tooltip content="ADD NEW" showArrow>
        <Button
+        isDisabled={
+         permission == "CREATE" || permission == "ALL" ? false : true
+        }
         color="primary"
         className="sm:flex hidden shadow-md"
         radius="full"
@@ -382,7 +394,7 @@ export const TableItems = ({
         size="md"
         endContent={<PlusIcon />}
         onPress={() => {
-         return onNewBlogOpen();
+         return onNewOpen();
         }}
        />
       </Tooltip>
@@ -513,15 +525,15 @@ export const TableItems = ({
    {/* ADD NEW */}
    <Modal
     size="md"
-    isOpen={isNewBlogOpen}
-    onClose={onNewBlogClose}
+    isOpen={isNewOpen}
+    onClose={onNewClose}
     scrollBehavior="inside"
     shouldBlockScroll
     className="rounded-md"
    >
     <ModalContent>
      <ModalHeader className="flex flex-col gap-1">Invite teammate</ModalHeader>
-     <Add onSubmit={onSaveBlog} isLoading={isLoadingInvite} />
+     <Add onSubmit={onSave} isLoading={isLoadingInvite} />
     </ModalContent>
    </Modal>
    {/* ADD NEWG ENDS */}

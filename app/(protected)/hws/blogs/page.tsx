@@ -5,8 +5,10 @@ import axios from "axios";
 import { toast } from "sonner";
 import { TableItems } from "./_components/TableItems";
 import { useDisclosure } from "@nextui-org/react";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const BlogPage = () => {
+ const user = useCurrentUser();
  const [isSaving, startSaving] = useTransition();
  const [isLoading, startLoading] = useTransition();
  const [data, setData] = useState([]);
@@ -107,6 +109,7 @@ const BlogPage = () => {
    onNewBlogOpen={onOpen}
    onNewBlogClose={handleOnClose}
    getData={getData}
+   permission={user?.permission}
   />
  );
 };

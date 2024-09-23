@@ -35,6 +35,7 @@ type EditProps = {
 };
 
 export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
+ const user = useCurrentUser();
  const [add, setAdd] = useState({
   image: false,
   category: false,
@@ -252,6 +253,9 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           });
          }}
          description={fields.slug}
+         isDisabled={
+          user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+         }
         />
         <Tooltip content="Regenerate title" size="sm">
          <Button
@@ -262,6 +266,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           isLoading={titleLoading}
           className="bg-primary"
           onClick={() => regenerate("name")}
+          isDisabled={
+           user?.permission == "EDIT" || user?.permission == "ALL"
+            ? false
+            : true
+          }
          >
           <MagicWandIcon />
          </Button>
@@ -285,6 +294,9 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
          onValueChange={(e) => {
           setFields({ ...fields, description: e });
          }}
+         isDisabled={
+          user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+         }
         />
         <Tooltip content="Regenerate description" size="sm">
          <Button
@@ -295,6 +307,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           className="bg-primary"
           isLoading={descriptionLoading}
           onClick={() => regenerate("description")}
+          isDisabled={
+           user?.permission == "EDIT" || user?.permission == "ALL"
+            ? false
+            : true
+          }
          >
           <MagicWandIcon />
          </Button>
@@ -337,6 +354,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
              setNewImage([]);
              setAdd({ ...add, image: !add.image });
             }}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <Cross1Icon />
            </Button>
@@ -350,6 +372,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             isDisabled={!newImagePreview || isSavingImage}
             className="rounded-full hover:opacity-100"
             onClick={() => onSubmitImage(newImage)}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <PaperPlaneIcon />
            </Button>
@@ -377,6 +404,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             style={{
              transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
             }}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             {images.map((item: any) => imageSelectPreview(item))}
            </Select>
@@ -399,6 +431,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             style={{
              transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
             }}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             {images.map((item: any) => imageSelectPreview(item))}
            </Select>
@@ -415,6 +452,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
              })
             }
             className="rounded-full bg-primary"
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <PlusIcon />
            </Button>
@@ -449,6 +491,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
            style={{
             transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
            }}
+           isDisabled={
+            user?.permission == "EDIT" || user?.permission == "ALL"
+             ? false
+             : true
+           }
           />
           <Tooltip content="Cancel" size="sm">
            <Button
@@ -459,6 +506,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             variant="flat"
             isDisabled={isSavingCategory}
             onClick={(e) => setAdd({ ...add, category: !add.category })}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <Cross1Icon />
            </Button>
@@ -472,6 +524,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             isDisabled={!newCategory || isSavingCategory}
             isLoading={isSavingCategory}
             onClick={() => addCategory()}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <PaperPlaneIcon />
            </Button>
@@ -496,6 +553,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
            style={{
             transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
            }}
+           isDisabled={
+            user?.permission == "EDIT" || user?.permission == "ALL"
+             ? false
+             : true
+           }
           >
            {categories.map((i: any) => (
             <SelectItem key={i.id} value={i.name}>
@@ -511,6 +573,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
             variant="solid"
             className="bg-primary"
             onClick={(e) => setAdd({ ...add, category: !add.category })}
+            isDisabled={
+             user?.permission == "EDIT" || user?.permission == "ALL"
+              ? false
+              : true
+            }
            >
             <PlusIcon
              className={`origin-center ${add.category && "rotate-45 "}`}
@@ -534,6 +601,9 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
          onChange={(v) => {
           setFields({ ...fields, content: v });
          }}
+         readOnly={
+          user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+         }
         />
         <Tooltip content="Regenerate content" size="sm">
          <Button
@@ -543,6 +613,11 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           className="bg-primary"
           onClick={() => regenerate("content")}
           isLoading={contentLoading}
+          isDisabled={
+           user?.permission == "EDIT" || user?.permission == "ALL"
+            ? false
+            : true
+          }
          >
           <MagicWandIcon />
          </Button>
@@ -572,6 +647,9 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           "group-data-[selected]:group-data-[pressed]:ml-4"
          ),
         }}
+        isDisabled={
+         user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+        }
        >
         <div className="flex flex-col gap-1">
          <span className="text-small text-default-600 font-normal">
@@ -598,7 +676,10 @@ export const EditBlog = ({ item, onSubmit, isSaving }: EditProps) => {
           !fields.banner ||
           !fields.thumbnail ||
           !fields.categories ||
-          !fields.content
+          !fields.content ||
+          (user?.permission == "EDIT" || user?.permission == "ALL"
+           ? false
+           : true)
          }
          spinnerPlacement="end"
          endContent={!isSaving && <PaperPlaneIcon />}

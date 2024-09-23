@@ -1,4 +1,5 @@
 "use client";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { TableItems } from "./_components/TableItems";
 import axios from "axios";
 import { useEffect, useState, useTransition } from "react";
@@ -37,7 +38,6 @@ const EventsPage = () => {
    await axios
     .post("/api/events", { filters })
     .then((res) => {
-     console.log(res);
      setData(res.data._embedded.events);
     })
     .catch((e) => {});

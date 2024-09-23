@@ -44,7 +44,9 @@ type ViewProps = {
 };
 
 export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
- console.log(item);
+ const user = useCurrentUser();
+ console.log(user?.permission);
+
  const [add, setAdd] = useState({
   image: false,
   category: false,
@@ -349,6 +351,9 @@ export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
        size="sm"
        className="max-w-[150px]"
        defaultSelectedKeys={["superadmin"]}
+       isDisabled={
+        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+       }
       >
        <SelectItem key="superadmin">Superadmin</SelectItem>
        <SelectItem key="admin">Admin</SelectItem>
@@ -357,7 +362,14 @@ export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
      </div>
      <div className="w-full flex justify-between items-center">
       <h5>Permissions</h5>
-      <Select size="sm" className="max-w-[150px]" defaultSelectedKeys={["all"]}>
+      <Select
+       size="sm"
+       className="max-w-[150px]"
+       defaultSelectedKeys={["all"]}
+       isDisabled={
+        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+       }
+      >
        <SelectItem key="all">All</SelectItem>
        <SelectItem key="edit">Edit</SelectItem>
        <SelectItem key="create">Create</SelectItem>
@@ -366,7 +378,14 @@ export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
      </div>
      <div className="w-full flex justify-between items-center">
       <h5>Status</h5>
-      <Switch size="sm" defaultSelected color="success">
+      <Switch
+       size="sm"
+       defaultSelected
+       color="success"
+       isDisabled={
+        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+       }
+      >
        Active
       </Switch>
      </div>
@@ -379,6 +398,9 @@ export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
      variant="light"
      onClick={() => regenerate("content")}
      fullWidth
+     isDisabled={
+      user?.permission == "DELETE" || user?.permission == "ALL" ? false : true
+     }
     >
      DELETE PROFILE
     </Button>

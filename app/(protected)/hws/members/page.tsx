@@ -4,8 +4,12 @@ import axios from "axios";
 import { toast } from "sonner";
 import { TableItems } from "./_components/TableItems";
 import { useDisclosure } from "@nextui-org/react";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { LockClosedIcon } from "@radix-ui/react-icons";
 
 const MembersPage = () => {
+ const user = useCurrentUser();
+
  const [data, setData] = useState([]);
  const { isOpen, onOpen, onClose } = useDisclosure();
  const [isLoading, startLoading] = useTransition();
@@ -98,14 +102,15 @@ const MembersPage = () => {
     cols={cols}
     initialCols={initialCols}
     onDelete={onDelete}
-    onSaveBlog={onSubmit}
+    onSave={onSubmit}
     statusOptions={statusOptions}
     isLoading={isLoading}
     isLoadingInvite={isLoadingInvite}
-    isNewBlogOpen={isOpen}
-    onNewBlogOpen={onOpen}
-    onNewBlogClose={handleOnClose}
+    isNewOpen={isOpen}
+    onNewOpen={onOpen}
+    onNewClose={handleOnClose}
     getData={getData}
+    permission={user?.permission}
    />
   </div>
  );
