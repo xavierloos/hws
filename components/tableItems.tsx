@@ -130,7 +130,6 @@ export const TableItems = ({
    //   statusFilter == "all" &&
    //   Array.from(statusFilter).length !== statusOptions.length
    // ) {
-   //   console.log(statusFilter);
    //   filteredItem = filteredItem.filter((i) => {
    //     if (type === "tasks") {
    //       Array.from(statusFilter).includes(i?.status);
@@ -502,7 +501,6 @@ export const TableItems = ({
 
  const onRowsPerPageChange = React.useCallback(
   (e: React.ChangeEvent<HTMLSelectElement>) => {
-   console.log(e.target.value);
    setRowsPerPage(Number(e.target.value));
    setPage(1);
   },

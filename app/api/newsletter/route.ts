@@ -5,15 +5,11 @@ import { sendRegisterInvitation } from "@/lib/mailer";
 import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {
-  console.log("here");
   try {
     const { email } = await req.json();
-    console.log(email);
 
     const existingEmail = await getUserByEmail(email);
     const existingSubscriber = await getSubscriberByEmail(email);
-
-    console.log(existingEmail, existingSubscriber);
 
     if (existingEmail || existingSubscriber) {
       return NextResponse.json(
@@ -32,7 +28,6 @@ export const POST = async (req: Request) => {
       },
     });
 
-    console.log(token);
     return NextResponse.json(
       {
         message: `Thank you for subscribing. An email has been sent to ${email} to verify`,

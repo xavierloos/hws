@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // const { slug } = params;
   // const product = "";
   // await axios.get(`/api/blogs/${slug}`).then((res) => {
-  //   console.log(res.data);
+ 
   // });
 
-  // console.log(product);
+ 
   // optionally access and extend (rather than replace) parent metadata
   //   const previousImages = (await parent).openGraph?.images || [];
 

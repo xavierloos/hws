@@ -18,7 +18,6 @@ export const Footer = ({ item }: any) => {
     axios
       .put(`/api/newsletter`, { value })
       .then(async (res) => {
-        console.log(res);
         if (res.data.type === "warning") return toast.warning(res.data.message);
         return toast.success(res.data.message);
       })

@@ -127,9 +127,10 @@ model File {
 model Task {
   id          String   @id @default(cuid()) @map("_id")
   name        String
+  type        String?
   priority    Json
   dueDate     String
-  assignTo    Json
+  assignTo    String[]
   attachments Json?
   description String
   status      Json

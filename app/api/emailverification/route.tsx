@@ -4,10 +4,8 @@ import { sendVerificationEmail } from "@/lib/mailer";
 import { NextResponse } from "next/server";
 
 export const POST = async (req: Request, res: Response) => {
-  console.log("eher");
   try {
     const { email, type } = await req.json();
-    console.log(email, type);
 
     const existingEmail = await getUserByEmail(email);
 

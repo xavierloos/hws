@@ -1,31 +1,35 @@
 "use client";
 import { TaskViewModal } from "@/components/taskViewModal";
-import { TableItems } from "@/components/tableItems";
+import { TableItems } from "./_components/TableItems";
 import axios from "axios";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useDisclosure } from "@nextui-org/react";
 
 const TasksPage = () => {
-  const [isPending, startTransition] = useTransition();
+  const user = useCurrentUser()
   const [data, setData] = useState([]);
   const [details, setDetails] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
-  const initialCols = ["name", "status", "assignTo", "actions"];
+  const [isLoading, startLoading] = useTransition();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isSaving, startSaving] = useTransition();
+  const initialCols = ["name", "status", "createdBy", "assignTo", "actions"];
   const cols = [
     { name: "NAME", uid: "name", sortable: true },
-    { name: "PRIORITY", uid: "priority", sortable: true },
-    { name: "CREATED BY", uid: "createdBy", sortable: true },
     { name: "ASSIGNED TO", uid: "assignTo", sortable: true },
     { name: "STATUS", uid: "status", sortable: true },
+    { name: "PRIORITY", uid: "priority", sortable: true },
+    { name: "CREATED BY", uid: "createdBy", sortable: true },
     { name: "ACTIONS", uid: "actions" },
   ];
   const statusOptions = [
-    { name: "Pending", uid: "pending" },
-    { name: "In Progress", uid: "inProgress" },
-    { name: "Completed", uid: "completed" },
-    { name: "Blocked", uid: "blocked" },
-    { name: "Cancelled", uid: "cancelled" },
+    { name: "All", uid: "All" },
+    { name: "Pending", uid: "Pending" },
+    { name: "In Progress", uid: "In Progress" },
+    { name: "Completed", uid: "Completed" },
+    { name: "Blocked", uid: "Blocked" },
+    { name: "Canceled", uid: "Canceled" },
   ];
 
   useEffect(() => {
@@ -33,16 +37,17 @@ const TasksPage = () => {
   }, []);
 
   const getData = async () => {
-    setLoading(true);
-    await axios
-      .get("/api/tasks")
-      .then((res) => {
-        setData(res.data);
-      })
-      .catch((e) => {
-        toast.error(e.response.data.message);
-      });
-    setLoading(false);
+    startLoading(async () => {
+      await axios
+        .get("/api/tasks")
+        .then((res) => {
+          console.log(res)
+          setData(res.data);
+        })
+        .catch((e) => {
+          toast.error(e.response.data.message);
+        });
+    });
   };
 
   const onSubmit = async (
@@ -113,9 +118,8 @@ const TasksPage = () => {
     });
   };
 
-  const handleView = (item?: any) => {
-    setIsOpen(!isOpen);
-    setDetails(item);
+  const handleOnClose = () => {
+    return onClose();
   };
 
   return (
@@ -124,21 +128,24 @@ const TasksPage = () => {
         data={data}
         cols={cols}
         initialCols={initialCols}
-        type="tasks"
         onDelete={onDelete}
-        onSubmit={onSubmit}
-        loading={loading}
+        onSave={onSubmit}
         statusOptions={statusOptions}
-        handleView={handleView}
-        isPending={isPending}
+        isLoading={isLoading}
+        isSaving={isSaving}
+        isNewBlogOpen={isOpen}
+        onNewBlogOpen={onOpen}
+        onNewBlogClose={handleOnClose}
+        getData={getData}
+        permission={user?.permission}
       />
 
-      <TaskViewModal
+      {/* <TaskViewModal
         data={details}
         isOpen={isOpen}
         handleView={handleView}
         getData={getData}
-      />
+      />  */}
     </div>
   );
 };

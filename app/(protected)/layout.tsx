@@ -18,22 +18,15 @@ const ProtectedLayout = async ({ children }: ProtectedLayoutProps) => {
     <Providers>
      <div className="flex flex-col sm:flex-row max-h-screen overflow-y-hidden transition-all">
       <Sidebar />
-      <div className="w-full min-h-screen  overflow-scroll">
+      <div className="w-full min-h-screen overflow-scroll">
        <Header />
        <div className="container">
         <div className="p-2 md:p-4 max-w-[1096px] m-auto">
          {children}
-         <div
-          role="alert"
-          className="flex items-center justify-start align-middle p-3 gap-2 relative w-full rounded-md border-none text-sm bg-primary/20 text-foreground mt-3"
-         >
-          <div>
-           <LockClosedIcon />
-          </div>
-          <div className="flex gap-1 items-center">
-           <span>Permissions:</span>
-           <span>{session?.user?.permission}</span>
-          </div>
+         <div></div>
+         <div className="flex items-center justify-end p-3 gap-2 rounded-md border-none text-sm font-medium bg-primary/20 text-primary bottom-2 absolute">
+          <LockClosedIcon />
+          <span>Permissions: {session?.user?.permission}</span>
          </div>
         </div>
        </div>

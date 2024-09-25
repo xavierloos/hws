@@ -3,16 +3,36 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
 import { storage } from "@/lib/gcp";
 import { getUserById } from "@/data/user";
+import { getTemporaryUrlImage } from "@/temporaryUrlImage";
 
 export const GET = async (req: Request) => {
   try {
+    const user = await currentUser();
+    if (!user) return { error: "Unathorized" };
     const options = {
       version: "v2", // defaults to 'v2' if missing.
       action: "read",
       expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in one hour
     };
 
-    const res = await db.task.findMany({ include: { user: true } });
+    console.log(user.id)
+    const myId = 'clvr3c08j0005xa9cy3rh0g4u';
+
+    const res = await db.task.findMany({
+      include: { user: true },
+      where: {
+         assignTo: {
+              array_contains: [{ 'id': myId }],
+            }
+        // OR: [
+        //   {
+           
+        //   },
+        //   // { assignTo: { some: { id:  user.id  } } },
+        //   // { createdBy: user.email }, // made by me
+        // ],
+      },
+    });
 
     for (const item of res) {
       if (item.attachments) {
@@ -24,10 +44,20 @@ export const GET = async (req: Request) => {
           i.url = url;
         }
       }
+      console.log(item.user.image)
+      item.user.image = await getTemporaryUrlImage(
+        "profiles",
+        item.user.image,
+        item.user.id
+      );
 
       for (const i of item.assignTo) {
         const user = await getUserById(i.id);
-        i.image = user.image;
+        i.image = await getTemporaryUrlImage(
+          "profiles",
+          user.image,
+          user.id
+        );
         i.name = user.name;
         i.username = user.username;
         i.role = user.role;
@@ -37,7 +67,7 @@ export const GET = async (req: Request) => {
     return NextResponse.json(res, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { message: "Something went wrong with blogs" },
+      { message: "Something went wrong" },
       { status: 500 }
     );
   }

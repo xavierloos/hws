@@ -54,11 +54,8 @@ export const POST = async (req: Request) => {
 
   const data = await req.formData();
   const dataValues = Array.from(data.values());
-  console.log(data);
-  console.log(JSON.stringify(data.values));
 
   for (const v of dataValues) {
-   console.log(v);
    if (typeof v === "object" && "arrayBuffer" in v) {
     const file = v as unknown as Blob;
     const buffer = await file.arrayBuffer();
@@ -78,7 +75,6 @@ export const POST = async (req: Request) => {
     } else {
      const rand = crypto.randomInt(10, 1_00).toString();
      const fName = `${v.name.split(".")[0]}-${rand}.${file.type.split("/")[1]}`;
-     console.log(data);
      //  await storage
      //   .bucket(`${process.env.GCP_BUCKET}`)
      //   .file(`${type}/${fName}`)

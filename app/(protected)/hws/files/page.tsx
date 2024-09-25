@@ -67,7 +67,6 @@ const FilesPage = () => {
     isPrivate: item.isPrivate,
     item, // Reference to the actual file
    };
-   console.log(fileData);
 
    const fileDataJson = JSON.parse(fileData);
    data.append(item.name, fileDataJson);
@@ -76,7 +75,6 @@ const FilesPage = () => {
   await axios
    .post(`/api/files?type=files`, data)
    .then((res) => {
-    console.log(res);
     toast.success(res.data.message);
     getData();
    })

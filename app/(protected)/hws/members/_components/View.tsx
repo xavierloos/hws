@@ -45,8 +45,6 @@ type ViewProps = {
 
 export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
  const user = useCurrentUser();
- console.log(user?.permission);
-
  const [add, setAdd] = useState({
   image: false,
   category: false,

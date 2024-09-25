@@ -176,7 +176,6 @@ export const TableItems = ({
 
  const onRowsPerPageChange = React.useCallback(
   (e: React.ChangeEvent<HTMLSelectElement>) => {
-   console.log(e.target.value);
    setRowsPerPage(Number(e.target.value));
    setPage(1);
   },

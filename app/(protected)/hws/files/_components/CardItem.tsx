@@ -33,7 +33,6 @@ type CardItemProps = {
 };
 
 export const CardItem = ({ item }: CardItemProps) => {
- console.log(item);
  const router = useRouter();
  const [image, setImage] = useState("");
  useEffect(() => {

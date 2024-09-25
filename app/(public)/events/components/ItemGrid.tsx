@@ -21,7 +21,6 @@ type CardItemProps = {
 
 export const ItemGrid = ({ item }: CardItemProps) => {
   const router = useRouter();
-  // console.log(item?.classifications[0]?.genre?.name);
   const openItem = () => {
     router.push(`${item.url}`);
   };

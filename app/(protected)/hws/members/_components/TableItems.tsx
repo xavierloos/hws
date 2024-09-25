@@ -105,7 +105,6 @@ export const TableItems = ({
    await axios
     .put("/api/blogs", inputs)
     .then(async (res: any) => {
-     console.log(res);
      if (res.data.type === "warning") return toast.warning(res.data.message);
      toast.success(res.data.message);
      getData();
@@ -167,7 +166,6 @@ export const TableItems = ({
  const renderCell = React.useCallback(
   async (i: Items, columnKey: React.Key) => {
    const cellValue = i[columnKey as keyof Items];
-   console.log(i);
    switch (columnKey) {
     case "name":
      return (
@@ -290,7 +288,6 @@ export const TableItems = ({
 
  const onRowsPerPageChange = React.useCallback(
   (e: React.ChangeEvent<HTMLSelectElement>) => {
-   console.log(e.target.value);
    setRowsPerPage(Number(e.target.value));
    setPage(1);
   },

@@ -8,7 +8,6 @@ export const getItems = async (type: string) => {
         return res.data;
       })
       .catch((e) => {});
-    console.log(res);
     return res;
   } catch {
     return null;

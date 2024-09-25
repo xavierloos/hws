@@ -53,7 +53,7 @@ export const {
    if (token.role && session.user) session.user.role = token.role as UserRole;
 
    if (session.user) session.user.otpEnabled = token.otpEnabled as boolean;
-   console.log(session.user, token);
+ 
 
    if (session.user) {
     session.user.username = token.username;
@@ -74,7 +74,7 @@ export const {
      .getSignedUrl(options);
     session.user.tempUrl = url;
    }
-   console.log(session);
+ 
    return session;
   },
   async jwt({ token }) {
@@ -85,8 +85,6 @@ export const {
 
    const existingAccount = await getAccountByUserId(existingUser.id);
    if (!existingUser) return token;
-
-   console.log(existingUser);
 
    token.id = existingUser.id;
    token.isOAuth = !!existingAccount;

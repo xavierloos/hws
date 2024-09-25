@@ -20,7 +20,7 @@ export const Hero = () => {
       axios
         .post(`/api/invites`, { email })
         .then(async (res) => {
-          console.log(email);
+
           // if (res.data.type === "warning") return toast.warning(res.data.message);
           // return toast.success(res.data.message);
         })
