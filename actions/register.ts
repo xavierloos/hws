@@ -43,7 +43,7 @@ export const register = async (values: any, token?: string | null) => {
       email,
       username,
       password: hashedPassword,
-      emailVerified: token ? new Date() : null,
+      emailVerified: token ? true : false,
     },
   });
 

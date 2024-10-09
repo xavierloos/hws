@@ -17,7 +17,7 @@ const TasksPage = () => {
   const initialCols = ["name", "status", "createdBy", "assignTo", "actions"];
   const cols = [
     { name: "NAME", uid: "name", sortable: true },
-    { name: "ASSIGNED TO", uid: "assignTo", sortable: true },
+    { name: "ASSIGNED TO", uid: "assignedTo", sortable: true },
     { name: "STATUS", uid: "status", sortable: true },
     { name: "PRIORITY", uid: "priority", sortable: true },
     { name: "CREATED BY", uid: "createdBy", sortable: true },
@@ -36,12 +36,11 @@ const TasksPage = () => {
     getData();
   }, []);
 
-  const getData = async () => {
+  const getData = (sorting: string = "due-date") => {
     startLoading(async () => {
       await axios
-        .get("/api/tasks")
+        .get(`/api/tasks?sortby=${sorting}`)
         .then((res) => {
-          console.log(res)
           setData(res.data);
         })
         .catch((e) => {
@@ -53,10 +52,10 @@ const TasksPage = () => {
   const onSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
     values: any,
-    files: any
+    files?: any
   ) => {
     e.preventDefault();
-    startTransition(async () => {
+    startSaving(async () => {
       const data = new FormData();
       if (files.length > 0) {
         values.attachments = [];
@@ -68,13 +67,6 @@ const TasksPage = () => {
           }); //Append files to values
         });
       }
-
-      const details = []; //Temporary
-      values.assignTo.forEach((item: any) => {
-        details.push({ id: item });
-      });
-
-      values.assignTo = details;
 
       const taskId = await axios
         .post("/api/tasks", values)
@@ -89,7 +81,7 @@ const TasksPage = () => {
         await axios
           .post(`/api/files?type=tasks`, data)
           .then((res) => {
-            toast.success(res.data.message);
+            toast.success("Task added successfully");
           })
           .catch((e) => {
             toast.error(e.response.data.message);
@@ -133,9 +125,9 @@ const TasksPage = () => {
         statusOptions={statusOptions}
         isLoading={isLoading}
         isSaving={isSaving}
-        isNewBlogOpen={isOpen}
-        onNewBlogOpen={onOpen}
-        onNewBlogClose={handleOnClose}
+        isNewOpen={isOpen}
+        onNewOpen={onOpen}
+        onNewClose={handleOnClose}
         getData={getData}
         permission={user?.permission}
       />

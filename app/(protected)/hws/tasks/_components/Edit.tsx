@@ -1,16 +1,12 @@
-"use client";
 import {
+  User,
   Input,
   Select,
   SelectItem,
-  Switch,
-  cn,
   Button,
-  Textarea,
   ModalBody,
   Avatar,
-  Tooltip,
-  Spinner,
+  DatePicker, AvatarGroup, Tooltip, Popover, PopoverTrigger, PopoverContent, CheckboxGroup, Checkbox, Textarea, Tabs, Tab
 } from "@nextui-org/react";
 import { useEffect, useState, useTransition } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -18,6 +14,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import axios from "axios";
 import { toast } from "sonner";
+import { format } from "timeago.js";
 import {
   AvatarIcon,
   Cross1Icon,
@@ -25,88 +22,101 @@ import {
   ImageIcon,
   MagicWandIcon,
   PaperPlaneIcon,
-  PlusIcon,
+  PlusIcon, ArrowDownIcon, ArrowUpIcon, ArrowRightIcon, FilePlusIcon, ChatBubbleIcon, FileIcon
 } from "@radix-ui/react-icons";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import {
+  now,
+  getLocalTimeZone,
+  DateValue,
+  today, parseAbsoluteToLocal
+} from "@internationalized/date";
+import { FilePreviewer } from "@/components/filePreviewer";
+import { modules, formats } from "@/react-quill-settings";
 
-type EditProps = {
+type Props = {
   item: any;
-  onSubmit: (e: any, values: any) => {};
+  onSubmit: (e: any, values: any, files: any) => {};
   isSaving: boolean;
 };
 
-export const Edit = ({ item, onSubmit, isSaving }: EditProps) => {
+export const Edit = ({ item, onSubmit, isSaving }: Props) => {
   const user = useCurrentUser();
+
+  const [groupSelected, setGroupSelected] = useState([]);
+  const [searchMember, setSearchMember] = useState(null);
+  const [team, setTeam] = useState([]);
+  const [images, setImages] = useState([]);
+  const [isPending, startTransition] = useTransition();
+  const [files, setFiles] = useState<File[]>([]);
+  const [fields, setFields] = useState(item?.[0]);
+  const [comments, setComments] = useState([]);
   const [add, setAdd] = useState({
     image: false,
     category: false,
   });
-  const [images, setImages] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [isRegenateButtonActive, setIsRegenateButtonActive] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
-  const [newImage, setNewImage] = useState<File[]>([]);
-  const [isGenerating, startGenerating] = useTransition();
-  const [isSavingCategory, startSavingCategory] = useTransition();
-  const [isSavingImage, startSavingImage] = useTransition();
-  const [isPending, startTransition] = useTransition();
-  const [titleLoading, setTitleLoading] = useState(false);
-  const [openAICategories, setOpenAICategories] = useState(null);
-  const [contentLoading, setContentLoading] = useState(false);
-  const [newImagePreview, setNewImagePreview] = useState(null);
-  const [descriptionLoading, setDescriptionLoading] = useState(false);
-  const [fields, setFields] = useState(item?.[0]);
-
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
-      [
-        { list: "ordered" },
-        { list: "bullet" },
-        { indent: "-1" },
-        { indent: "+1" },
-      ],
-      ["link", "image", "video"],
-      ["clean"],
-    ],
-  };
-
-  const formats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "list",
-    "bullet",
-    "indent",
-    "link",
-    "image",
-    "video",
+  const [inputs, setInputs] = useState({
+    comment: undefined,
+    attachments: null,
+    relatedId: undefined,
+  });
+  let priorities = [
+    { name: "High", color: "danger" },
+    { name: "Medium", color: "primary" },
+    { name: "Low", color: "default" },
+  ];
+  let status = [
+    { name: "Completed", color: "success" },
+    { name: "To Do", color: "default" },
+    { name: "In Progress", color: "foreground" },
+    { name: "Blocked", color: "warning" },
+    { name: "Cancelled", color: "danger" },
+  ];
+  let types = [
+    { key: "Bug", label: "Bug" },
+    { key: "Documentation", label: "Documentation" },
+    { key: "Testing", label: "Testing" },
+    { key: "Research", label: "Research" },
+    { key: "Feature", label: "Feature" },
+    { key: "Story", label: "Story" },
+    { key: "Urgent", label: "Urgent" },
+    { key: "Critical", label: "Critical" },
+    { key: "Maintenance", label: "Maintenance" }
   ];
 
   useEffect(() => {
-    getCategories();
-    getImages();
-    getSelectedCategories(item?.[0].categories);
-  }, []);
-
-  const getCategories = () => {
-    startTransition(async () => {
-      await axios
-        .get("/api/categories")
-        .then(async (res) => {
-          setCategories(res.data);
-        })
-        .catch(() => { });
+    const members = [];
+    item?.assignTo?.map((i) => {
+      members.push(i.id);
     });
+    setGroupSelected(members);
+    getComments()
+    getMembers()
+  }, [item]);
+
+  const getComments = async () => {
+    await axios
+      .get(`/api/comments?id=${fields.id}`)
+      .then(async (res) => {
+        setComments(res.data);
+      })
+      .catch((e) => { });
+
+    getMembers()
   };
 
-  const getSelectedCategories = async (arr) => {
-    let categories: Array<string> = [];
-    arr.forEach((element: any) => categories.push(element.id));
-    return setFields({ ...fields, categories: categories });
+  const getMembers = async () => {
+    await axios
+      .get("/api/members")
+      .then((res) => {
+        setTeam(res.data);
+      })
+      .catch(() => { });
   };
 
   const getImages = () => {
@@ -120,577 +130,444 @@ export const Edit = ({ item, onSubmit, isSaving }: EditProps) => {
     });
   };
 
-  const createSlug = (value: string) => {
-    const trimmedText = value.toLowerCase().trim();
-    const alphanumericText = trimmedText.replace(/\W+/g, "-");
-    return alphanumericText.replace(/(^-|-$)/g, "");
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const _files = Array.from(e.target.files);
+      setFiles([...files, ..._files]);
+    }
   };
 
-  const regenerate = async (input: string) => {
-    let value;
-    switch (input) {
-      case "name":
-        value = fields.name;
-        setTitleLoading(true);
-        break;
-      case "description":
-        value = fields.description;
-        setDescriptionLoading(true);
-        break;
-      case "content":
-        value = fields.content;
-        setContentLoading(true);
-        break;
-      default:
-        break;
-    }
+  const onDeleteSelected = (index: number) => {
+    const _files = Array.from(files);
+    _files.splice(index, 1);
+    setFiles(_files);
+  };
+
+  const updateMembers = async (ids: any) => {
+    // data?.assignTo?.splice(id, 1);
+    const newMembers = [];
+    ids.map((i) => {
+      newMembers.push({ id: i });
+    });
 
     await axios
-      .post(`/api/chat`, { value })
-      .then((res) => {
-        const content = res.data.content;
-        if (input === "name") {
-          setFields({ ...fields, name: content, slug: createSlug(content) });
-          setTitleLoading(false);
-        }
-        if (input === "description") {
-          setFields({ ...fields, description: content });
-          setDescriptionLoading(false);
-        }
-        if (input === "content") {
-          setFields({ ...fields, content });
-          setContentLoading(false);
-        }
+      .put(`/api/tasks/${data.id}?type=members`, newMembers)
+      .then(async (res) => {
+        // await getData();
+        toast.success("Task updated successfully");
+      })
+      .catch((e) => { });
+  };
+
+
+  const onSubmitComment = async (
+    e: React.FormEvent<HTMLFormElement>,
+    values: any,
+    files: any,
+    id: string
+  ) => {
+    e.preventDefault();
+    const data = new FormData();
+    values.relatedId = id;
+
+
+    if (files.length > 0) {
+      values.attachments = [];
+      files.forEach((item: any) => {
+        values.attachments.push({
+          name: item.name,
+          url: null,
+          type: item.type,
+        }); //Append files to values
+      });
+    }
+    console.log(values)
+
+    await axios
+      .post("/api/comments", values)
+      .then(async (res) => {
+        setInputs({
+          comment: undefined,
+          attachments: null,
+          relatedId: undefined,
+        });
+        getComments();
+
+
+        // if (files.length > 0) {
+        //   files.forEach((item: any) => {
+        //     data.append(res.data.message, item, item.name);
+        //   });
+        //   await axios
+        //     .post(`/api/tasks/${res.data.message}`, data)
+        //     .then((res) => {
+        //       toast.success(res.data.message);
+        //     })
+        //     .catch((e) => {
+        //       toast.error(e.response.data.message);
+        //     });
+        // } else {
+        //   toast.success("Task added successfully");
+        // }
       })
       .catch((e) => {
-        toast.error(e.stack);
+        toast.error(e.response.data.message);
       });
+    // getData();
   };
 
-  const addCategory = () => {
-    startSavingCategory(async () => {
-      await axios
-        .post("/api/categories", { newCategory })
-        .then((res) => {
-          if (res.data.type === "warning") return toast.warning(res.data.message);
-          if (res.data.type === "success") toast.success(res.data.message);
-          getCategories();
-          setAdd({ ...add, category: !add.category });
-        })
-        .catch((e) => {
-          toast.error(e.response.data.message);
-        });
-    });
-  };
-
-  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewImage(e?.target?.files[0]);
-      setNewImagePreview(URL.createObjectURL(e.target.files[0]));
-    }
-  };
-
-  const onSubmitImage = async (newImage: any) => {
-    startSavingImage(async () => {
-      if (newImagePreview) {
-        const data = new FormData();
-        data.append(newImage?.name, newImage);
-        await axios.post(`/api/files?type=files`, data).then((res) => {
-          if (res.data.type === "success") toast.success(res.data.message);
-          getImages();
-          setAdd({ ...add, image: false });
-          setNewImage([]);
-        });
-      }
-    });
-  };
-
-  const imageSelectPreview = (item: any) => {
-    return (
-      <SelectItem key={item.name} value={item.name}>
-        <div className="flex gap-x-0.5 items-center">
-          <Avatar
-            radius="none"
-            alt={item.name}
-            className="flex-shrink-0"
-            size="md"
-            src={item.tempUrl}
-          />
-          <div className="flex flex-col">
-            <span className="text-small">{item.name}</span>
-            <span className="text-tiny text-default-400">
-              {item.size && `${(item.size / 1024).toFixed(2)}kB`}
-            </span>
-          </div>
-        </div>
-      </SelectItem>
-    );
+  const onDeleteComment = async (id: string) => {
+    await axios.delete(`/api/comments?id=${id}`);
+    getComments();
   };
 
   return (
-    <>
-      <ModalBody>
-        <form onSubmit={async (e) => onSubmit(e, fields)} className="grid gap-3">
-          {isGenerating ? (
-            <div className="flex items-center justify-center min-h-[200px]">
-              <Spinner size="lg" label="Generating..." />
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-row items-top gap-3">
-                <Input
-                  size="sm"
-                  isRequired
-                  type="text"
-                  radius="none"
-                  label="Title"
-                  value={fields.name}
-                  onValueChange={(v) => {
-                    setFields({
-                      ...fields,
-                      name: v,
-                      slug: createSlug(v),
-                    });
-                  }}
-                  description={fields.slug}
-                  isDisabled={
-                    user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-                  }
-                />
-                <Tooltip content="Regenerate title" size="sm">
-                  <Button
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    variant="solid"
-                    isLoading={titleLoading}
-                    className="bg-primary"
-                    onClick={() => regenerate("name")}
-                    isDisabled={
-                      user?.permission == "EDIT" || user?.permission == "ALL"
-                        ? false
-                        : true
-                    }
-                  >
-                    <MagicWandIcon />
-                  </Button>
-                </Tooltip>
-              </div>
-              <div className="flex flex-row items-top gap-3">
-                <Textarea
-                  size="sm"
-                  minRows={1}
-                  maxRows={4}
-                  isRequired
-                  type="text"
-                  radius="none"
-                  label="Description"
-                  disableAutosize
-                  classNames={{
-                    base: "w-full",
-                    input: "resize-y min-h-[10px] max-h-[60px]",
-                  }}
-                  value={fields.description}
-                  onValueChange={(e) => {
-                    setFields({ ...fields, description: e });
-                  }}
-                  isDisabled={
-                    user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-                  }
-                />
-                <Tooltip content="Regenerate description" size="sm">
-                  <Button
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    variant="solid"
-                    className="bg-primary"
-                    isLoading={descriptionLoading}
-                    onClick={() => regenerate("description")}
-                    isDisabled={
-                      user?.permission == "EDIT" || user?.permission == "ALL"
-                        ? false
-                        : true
-                    }
-                  >
-                    <MagicWandIcon />
-                  </Button>
-                </Tooltip>
-              </div>
-              <div
-                className="flex gap-3 items-center w-full"
-                style={{ transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)" }}
-              >
-                {add.image ? (
-                  <>
-                    <label
-                      htmlFor="uploadImage"
-                      className="bg-default-100 text-foreground-500 text-sm  hover:opacity-80 w-full h-12 hover:cursor-pointer hover:bg-default-200 rounded-none px-3 py-3 flex items-center"
-                      style={{ transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)" }}
-                    >
-                      {newImagePreview ? (
-                        <Avatar
-                          radius="none"
-                          src={newImagePreview}
-                          className="w-5 h-full me-2 shrink-0 my-auto"
-                        />
-                      ) : (
-                        <ImageIcon className="w-5 h-5 me-2 shrink-0 my-auto" />
-                      )}
-                      <span className=" inline-flex item-center justify-start overflow-ellipsis line-clamp-1 break-all">
-                        {newImage?.name ? newImage?.name : "Select image..."}
-                      </span>
-                    </label>
-                    <Tooltip content="Cancel" size="sm">
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        color="danger"
-                        variant="flat"
-                        isDisabled={isSavingImage}
-                        className="rounded-full hover:opacity-100"
-                        onClick={() => {
-                          setNewImagePreview(null);
-                          setNewImage([]);
-                          setAdd({ ...add, image: !add.image });
-                        }}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        <Cross1Icon />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content="Save image" size="sm">
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        color="primary"
-                        isLoading={isSavingImage}
-                        isDisabled={!newImagePreview || isSavingImage}
-                        className="rounded-full hover:opacity-100"
-                        onClick={() => onSubmitImage(newImage)}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        <PaperPlaneIcon />
-                      </Button>
-                    </Tooltip>
-                  </>
-                ) : (
-                  <>
-                    <div className="grid gap-3 grid-cols-2 w-full">
-                      <Select
-                        size="sm"
-                        required
-                        isRequired
-                        radius="none"
-                        label="Thumbnail"
-                        isDisabled={isPending}
-                        selectedKeys={[fields.thumbnail]}
-                        renderValue={(items) => items.map((i) => i.key)}
-                        onChange={(e) =>
-                          setFields({
-                            ...fields,
-                            thumbnail: e.target.value,
-                          })
-                        }
-                        className="w-full overflow-ellipsis line-clamp-1 break-all"
-                        style={{
-                          transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
-                        }}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        {images.map((item: any) => imageSelectPreview(item))}
-                      </Select>
 
-                      <Select
-                        size="sm"
-                        isRequired
-                        radius="none"
-                        label="Banner"
-                        isDisabled={isPending}
-                        selectedKeys={[fields.banner]}
-                        renderValue={(items) => items.map((i) => i.key)}
-                        onChange={(e) =>
-                          setFields({
-                            ...fields,
-                            banner: e.target.value,
-                          })
-                        }
-                        className="w-full overflow-ellipsis line-clamp-1 break-all"
-                        style={{
-                          transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
-                        }}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        {images.map((item: any) => imageSelectPreview(item))}
-                      </Select>
-                    </div>
-                    <Tooltip content="Add image" size="sm">
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        variant="solid"
-                        onClick={() =>
-                          setAdd({
-                            ...add,
-                            image: !add.image,
-                          })
-                        }
-                        className="rounded-full bg-primary"
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        <PlusIcon />
-                      </Button>
-                    </Tooltip>
-                  </>
-                )}
-                <input
-                  id="uploadImage"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageSelected}
+    <ModalBody>
+      <form onSubmit={(e) => onSubmit(e, fields, files)} className="grid gap-3">
+        <div className="flex flex-row items-top gap-3">
+          <Input
+            size="sm"
+            // isRequired
+            type="text"
+            radius="none"
+            label="Title"
+            value={fields.name}
+
+            onValueChange={(v) => {
+              setFields({
+                ...fields,
+                name: v,
+
+              });
+            }}
+            description={`Created by ${fields.createdBy == user.email ? 'me' : fields.user.name} (${format(fields.createdAt)})`}
+            isDisabled={fields.createdBy == user.email ? false : true}
+          />
+        </div>
+        <div className="grid gap-3 grid-cols-3 w-full">
+          <Select
+            size="sm"
+            // isRequired
+            radius="none"
+            label="Priority"
+            items={priorities}
+            selectedKeys={[fields.priority.name]}
+            disabledKeys={[fields.priority.name]}
+            color={fields.priority.color}
+            onChange={
+              (item: any) =>
+                priorities.map(
+                  (p) =>
+                    p.name == item.target.value &&
+                    setFields({ ...fields, priority: p })
+                )
+              //
+            }
+            renderValue={(items: any) => items.map((i: any) => i.key)}
+            isDisabled={fields.createdBy == user.email ? false : true}
+          >
+            {(i: any) => (
+              <SelectItem key={i.name} value={i.name} rounded='none'>
+                <div className="flex gap-1 items-center">
+                  <span className="text-small">{i.name}</span>
+                </div>
+              </SelectItem>
+            )}
+          </Select>
+          <Select
+            size="sm"
+            // isRequired
+            radius="none"
+            label="Type"
+            selectedKeys={[fields.type]}
+            disabledKeys={[fields.type]}
+            onChange={(e) => setFields({ ...fields, type: e.target.value })}
+          // renderValue={(items: any) => items.map((i: any) => i.key)}
+          >
+            {types.map((type) => (
+              <SelectItem key={type.key}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </Select>
+          <DatePicker
+            size="sm"
+            radius="none"
+            // isRequired
+            hourCycle={24}
+            hideTimeZone={true}
+            label="Due Date & Time"
+            showMonthAndYearPickers
+            defaultValue={parseAbsoluteToLocal(fields.dueDate)}
+            placeholderValue={now("America/New_York")}
+            className="w-full flex flex-col-reverse flex-wrap-reverse overflow-hidden"
+            onChange={(date: any) => {
+              const m = `${date?.month <= 9 ? "0" : ""}${date?.month}`;
+              const d = `${date?.day <= 9 ? "0" : ""}${date?.day}`;
+              const h = `${date?.hour <= 9 ? "0" : ""}${date?.hour}`;
+              const min = `${date?.minute <= 9 ? "0" : ""}${date?.minute}`;
+              setFields({
+                ...fields,
+                dueDate: `${date?.year}-${m}-${d}T${h}:${min}Z`,
+              });
+            }}
+          />
+        </div>
+        <div
+          className={`grid gap-3 sm:grid-cols-2`}
+        >
+          <Select
+            size="sm"
+            // isRequired
+            radius="none"
+            items={team}
+            label="Assign to"
+            description={fields.assignedIds.includes(user.id) ? `Assigned to me` : ''}
+            selectionMode="multiple"
+            selectedKeys={fields.assignedIds}
+            onChange={(e) =>
+              setFields({ ...fields, assignedIds: e.target.value.split(",") })
+            }
+            renderValue={(items: any) => {
+              return <p>{items.length} selected</p>;
+            }}
+          >
+            {(i: any) => (
+              <SelectItem key={i.key} value={i.name}>
+                <div className="flex gap-1 items-center">
+                  <Avatar
+                    size="sm"
+                    radius="full"
+                    alt={i.name}
+                    src={i.tempUrl}
+                    className="flex-shrink-0"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-small">{i.name}</span>
+                    <span className="text-tiny text-default-400">
+                      @{i.username}
+                    </span>
+                  </div>
+                </div>
+              </SelectItem>
+            )}
+          </Select>
+          <Select
+            size="sm"
+            // isRequired
+            radius="none"
+            label="Status"
+            items={status}
+            selectedKeys={[fields.status.name]}
+            disabledKeys={[fields.status.name]}
+            color={fields.status.color}
+            onChange={
+              (item: any) =>
+                status.map(
+                  (s) =>
+                    s.name == item.target.value &&
+                    setFields({ ...fields, status: s })
+                )
+              //
+            }
+            renderValue={(items: any) => items.map((i: any) => i.key)}
+            isDisabled={fields.createdBy == user.email ? false : true}
+          >
+            {(i: any) => (
+              <SelectItem key={i.name} value={i.name} rounded='none'>
+                <div className="flex gap-1 items-center">
+                  <span className="text-small">{i.name}</span>
+                </div>
+              </SelectItem>
+            )}
+          </Select>
+          {/* <div>
+            <label
+              htmlFor="attachments"
+              className="relative w-full inline-flex shadow-sm tap-highlight-transparent bg-default-100 hover:bg-default-200 rounded-none flex-col items-start justify-center gap-0 outline-none h-12 min-h-12 py-1.5 px-3 text-sm text-foreground-500"
+            >
+              {fields.attachments ? `(${fields.attachments.length}) Attach more... `
+                : "Attachments"}
+            </label>
+            <input
+              id="attachments"
+              type="file"
+              multiple
+              accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf"
+              className="hidden"
+              onChange={handleFileSelected}
+            />
+          </div> */}
+        </div>
+        <div className="flex gap-3 w-full items-top mb-0">
+          <ReactQuill
+            theme="snow"
+            placeholder="Write your content"
+            className="min-h-[200px] rounded-none bg-content2 w-full"
+            modules={modules}
+            formats={formats}
+            value={fields.description}
+            onChange={(v) => {
+              setFields({ ...fields, description: v });
+            }}
+          />
+        </div>
+      </form>
+      <div>
+        <Tabs aria-label="Options" color='primary'>
+          <Tab key="comments" title={
+            < div className="flex items-center space-x-2">
+              <ChatBubbleIcon />
+              <span>{comments.length} Comments</span>
+            </div>
+          }
+          >
+            <form
+              onSubmit={(e) => onSubmitComment(e, inputs, files, fields?.id)}
+              className="grid gap-3 mb-3"
+            >
+              <div className="flex">
+                <Avatar
+                  src={user?.tempUrl}
+                  size='sm'
+                  className="me-2 shrink-0"
                 />
-              </div>
-              <div
-                className={`flex gap-3 ${openAICategories ? "items-start" : "items-center"
-                  }`}
-              >
-                {add.category ? (
-                  <>
-                    <Input
-                      size="sm"
-                      type="text"
-                      radius="none"
-                      label="Add category"
-                      isDisabled={isSavingCategory}
-                      onValueChange={(v) =>
-                        setNewCategory(v.charAt(0).toUpperCase() + v.slice(1))
-                      }
-                      autoFocus
-                      style={{
-                        transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
-                      }}
-                      isDisabled={
-                        user?.permission == "EDIT" || user?.permission == "ALL"
-                          ? false
-                          : true
-                      }
-                    />
-                    <Tooltip content="Cancel" size="sm">
+                <Textarea
+                  placeholder="What are you thinking?"
+                  size="sm"
+                  radius="sm"
+                  className="w-full text-tiny"
+                  color="default"
+                  isRequired
+                  minRows={1}
+                  description={`Files attached`}
+                  // value={inputs.comment}
+                  onValueChange={(e) => setInputs({ ...inputs, comment: e })}
+                  endContent={
+                    <>
                       <Button
                         size="sm"
                         isIconOnly
-                        radius="full"
-                        color="danger"
+                        color="foreground"
+                        // type="submit"
                         variant="flat"
-                        isDisabled={isSavingCategory}
-                        onClick={(e) => setAdd({ ...add, category: !add.category })}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
+                        className="ms-2 rounded-full"
                       >
-                        <Cross1Icon />
+                        <FilePlusIcon />
                       </Button>
-                    </Tooltip>
-                    <Tooltip content="Save category" size="sm">
                       <Button
                         size="sm"
                         isIconOnly
-                        radius="full"
                         color="primary"
-                        isDisabled={!newCategory || isSavingCategory}
-                        isLoading={isSavingCategory}
-                        onClick={() => addCategory()}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
+                        type="submit"
+                        className="ms-2 rounded-full"
                       >
                         <PaperPlaneIcon />
                       </Button>
-                    </Tooltip>
-                  </>
-                ) : (
-                  <>
-                    <Select
-                      size="sm"
-                      fullWidth
-                      isRequired
-                      radius="none"
-                      label="Categories"
-                      isMultiline={false}
-                      isDisabled={isPending}
-                      selectedKeys={fields.categories}
-                      selectionMode="multiple"
-                      onSelectionChange={(e) => setFields({ ...fields, categories: e })}
-                      description={
-                        openAICategories && `Suggested categories: ${openAICategories}`
-                      }
-                      style={{
-                        transition: "all 0.4s cubic-bezier(0.175,0.885,0.32,1.1)",
-                      }}
-                      isDisabled={
-                        user?.permission == "EDIT" || user?.permission == "ALL"
-                          ? false
-                          : true
-                      }
-                    >
-                      {categories.map((i: any) => (
-                        <SelectItem key={i.id} value={i.name}>
-                          {i.name}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    <Tooltip content="Add category" size="sm">
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        radius="full"
-                        variant="solid"
-                        className="bg-primary"
-                        onClick={(e) => setAdd({ ...add, category: !add.category })}
-                        isDisabled={
-                          user?.permission == "EDIT" || user?.permission == "ALL"
-                            ? false
-                            : true
-                        }
-                      >
-                        <PlusIcon
-                          className={`origin-center ${add.category && "rotate-45 "}`}
-                          style={{
-                            transition: "all 0.5s cubic-bezier(0.175,0.885,0.32,1.1)",
-                          }}
-                        />
-                      </Button>
-                    </Tooltip>
-                  </>
-                )}
-              </div>
-              <div className="flex gap-3 w-full items-top">
-                <ReactQuill
-                  theme="snow"
-                  placeholder="Write your content"
-                  className="min-h-[200px] rounded-none bg-content2 w-full"
-                  modules={modules}
-                  formats={formats}
-                  value={fields.content}
-                  onChange={(v) => {
-                    setFields({ ...fields, content: v });
-                  }}
-                  readOnly={
-                    user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
+
+                    </>
                   }
                 />
-                <Tooltip content="Regenerate content" size="sm">
-                  <Button
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    className="bg-primary"
-                    onClick={() => regenerate("content")}
-                    isLoading={contentLoading}
-                    isDisabled={
-                      user?.permission == "EDIT" || user?.permission == "ALL"
-                        ? false
-                        : true
-                    }
+              </div>
+            </form>
+
+            <div className="comments">
+              {comments?.map((i) => {
+                return (
+                  <div
+                    className={`flex my-2 max-w-[80%] m-auto ${i.user?.id == user?.id
+                      ? "ms-0"
+                      : "flex-row-reverse me-0"
+                      }`}
                   >
-                    <MagicWandIcon />
-                  </Button>
-                </Tooltip>
-              </div>
-              <Switch
-                isSelected={fields.isActive}
-                onValueChange={(e) => {
-                  setFields({
-                    ...fields,
-                    isActive: e,
-                  });
-                }}
-                classNames={{
-                  base: cn(
-                    "inline-flex flex-row-reverse w-full max-w-full hover:bg-default-200 items-center",
-                    "justify-between cursor-pointer  rounded-none py-1.5 px-3 gap-2 border-2 border-transparent  bg-content2"
-                  ),
-                  wrapper: "p-0 h-4 overflow-visible",
-                  thumb: cn(
-                    "w-6 h-6 border-2 shadow-lg  bg-content1",
-                    "group-data-[hover=true]:border-primary",
-                    //selected
-                    "group-data-[selected=true]:ml-6",
-                    // pressed
-                    "group-data-[pressed=true]:w-7",
-                    "group-data-[selected]:group-data-[pressed]:ml-4"
-                  ),
-                }}
-                isDisabled={
-                  user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-                }
-              >
-                <div className="flex flex-col gap-1">
-                  <span className="text-small text-default-600 font-normal">
-                    Status: {fields.isActive ? "Active" : "Draft"}
-                  </span>
-                  <small className="text-tiny text-default-400 flex gap-1 items-center">
-                    <AvatarIcon /> Draft (default): Only visible to me
-                  </small>
-                  <small className="text-tiny text-default-400 flex gap-1 items-center">
-                    <GlobeIcon /> Active: Visible to the public
-                  </small>
-                </div>
-              </Switch>
-              <div className="flex justify-end items-center gap-3 w-fll mb-3">
-                <Button
-                  size="md"
-                  color="primary"
-                  type="submit"
-                  radius="none"
-                  isDisabled={
-                    isSaving ||
-                    !fields.name ||
-                    !fields.description ||
-                    !fields.banner ||
-                    !fields.thumbnail ||
-                    !fields.categories ||
-                    !fields.content ||
-                    (user?.permission == "EDIT" || user?.permission == "ALL"
-                      ? false
-                      : true)
-                  }
-                  spinnerPlacement="end"
-                  endContent={!isSaving && <PaperPlaneIcon />}
-                  isLoading={isSaving}
-                >
-                  UPDATE
-                </Button>
-              </div>
-            </>
-          )}
-        </form>
-      </ModalBody>
-    </>
+                    <Avatar
+                      src={i?.user?.tempUrl}
+                      size='sm'
+                      className={`shrink-0 ${i.user?.id === user?.id ? "me-2" : "ms-2"
+                        }`}
+                    />
+                    <div>
+                      <div
+                        className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words m-auto ${i.user?.id == user?.id
+                          ? "text-start ms-0 bg-primary rounded-tl-none"
+                          : "text-start me-0 bg-foreground-50 rounded-tr-none"
+                          }`}
+                      >
+                        {i?.comment}
+                      </div>
+                      <div
+                        className={`text-tiny text-foreground-400 truncate text-ellipsis line-clamp-1 ${i.user.id == user.id ? "text-start" : "text-end"
+                          }`}
+                      >
+                        <span>
+                          {i?.user?.id === user?.id
+                            ? "Me"
+                            : `@${i?.user?.username}`}
+                        </span>
+                        <span>
+                          {i?.attachments &&
+                            " • " + i?.attachments?.length + " files"}
+                        </span>
+                        <span> • {format(i?.createdAt)}</span>
+                        {i.user.id === user.id && (
+                          <>
+                            {" • "}
+                            <span
+                              className="text-danger hover:underline"
+                              onClick={() => onDeleteComment(i.id)}
+                            >
+                              Delete
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Tab>
+          {fields.attachments ? <Tab key="attachments" title={
+            <div className="flex items-center space-x-2">
+              <FileIcon />
+              <span>{fields.attachments.length} Attachments</span>
+            </div>
+          }>
+            {fields.attachments.map((item, index) => {
+              item.index = index; //To delete from the uploading list
+              return (
+                <FilePreviewer
+                  item={item}
+                  key={index}
+                  onDelete={onDeleteSelected}
+                />
+              );
+            })}
+          </Tab> : null
+          }
+        </Tabs>
+      </div>
+      {/* <div className="flex justify-end items-center gap-3 w-fll mb-3">
+          <Button
+            size="md"
+            color="primary"
+            type="submit"
+            radius="none"
+            // isDisabled={
+            //   isSaving ||
+            //   !fields.name ||
+            //   !fields.description
+            // }
+            spinnerPlacement="end"
+            endContent={!isSaving && <PaperPlaneIcon />}
+            isLoading={isSaving}
+          >
+            SAVE
+          </Button>
+        </div> */}
+
+    </ModalBody>
+
   );
 };

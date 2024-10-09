@@ -26,7 +26,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import dateFormat from "dateformat";
 import Autoplay from "embla-carousel-autoplay";
-import { ExternalLinkIcon, PlusIcon, TrashIcon, ReaderIcon, CheckCircledIcon, CircleBackslashIcon, ArrowDownIcon, ArrowUpIcon, ArrowRightIcon } from "@radix-ui/react-icons";
+import { ExternalLinkIcon, PlusIcon, TrashIcon, ReaderIcon, CheckCircledIcon, CircleBackslashIcon, LightningBoltIcon, ArrowDownIcon, ArrowUpIcon, CircleIcon, LapTimerIcon, ArrowRightIcon, CrumpledPaperIcon, CrossCircledIcon, GearIcon, MagicWandIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, ClipboardIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { Add } from "./Add";
 import { format } from "timeago.js";
 import { Title } from "@/components/title";
@@ -40,7 +40,7 @@ type TableItemsProps = {
   cols: any;
   initialCols: any;
   onDelete: (id: any, name: any) => {};
-  onSave: (e: any, files?: any) => {};
+  onSave: (e: any, values: any, files: any) => {};
   statusOptions?: any;
   isLoading: boolean;
   isSaving: boolean;
@@ -93,7 +93,6 @@ export const TableItems = ({
     inputs: any
   ) => {
     e.preventDefault();
-
     startSavingEdit(async () => {
       let categories: Array<string> = [];
       inputs.categories.forEach((element: any) => categories.push(element));
@@ -168,28 +167,58 @@ export const TableItems = ({
 
       switch (columnKey) {
         case "name":
-          console.log(i.type)
+          let icon
+          switch (i.type) {
+            case 'Documentation':
+              icon = <ReaderIcon />
+              break
+            case 'Feature':
+              icon = <LightningBoltIcon />
+              break
+            case 'Maintenance':
+              icon = <GearIcon />
+              break
+            case 'Story':
+              icon = <MagicWandIcon />
+              break
+            case 'Research':
+              icon = <MagnifyingGlassIcon />
+              break
+            case 'Testing':
+              icon = <ClipboardIcon />
+              break
+            case 'Urgent':
+              icon = <ExclamationTriangleIcon />
+              break
+            case 'Bug':
+              icon = <CrumpledPaperIcon />
+              break
+            default:
+              icon = <LinkBreak2Icon />
+          }
           return (
-            <User
-              avatarProps={{
-                className: `shrink-0 m-auto rounded-full`,
-                size: "sm",
-                icon: i.type == 'Documentation' ? <ReaderIcon /> : <TrashIcon />,
-                // src: i.tempThumbnail,
-              }}
-              description={
-                <span className="truncate text-ellipsis line-clamp-1 ">
-                  Due {format(i.dueDate)}
-                </span>
-              }
-              name={
-                <span
-                  className={`text-default-foreground w-full capitalize text-ellipsis font-normal overflow-hidden break-words line-clamp-2`}
-                >
-                  {cellValue}
-                </span>
-              }
-            />
+            <Tooltip content={i.type} size='sm' placement='top-start' >
+              <User
+                avatarProps={{
+                  className: `shrink-0 m-auto rounded-full`,
+                  size: "sm",
+                  icon
+                  // src: i.tempThumbnail,
+                }}
+                description={
+                  <span className="truncate text-ellipsis line-clamp-1 ">
+                    Due {format(i.dueDate)}
+                  </span>
+                }
+                name={
+                  <span
+                    className={`text-default-foreground w-full capitalize text-ellipsis font-normal overflow-hidden break-words line-clamp-2`}
+                  >
+                    {cellValue}
+                  </span>
+                }
+              />
+            </Tooltip >
           );
         case "modifiedBy":
         case "createdBy":
@@ -215,8 +244,7 @@ export const TableItems = ({
               }
             />
           );
-        case 'assignTo':
-          console.log(cellValue, 'here')
+        case 'assignedTo':
           if (cellValue.length === 1) {
             return (
               <User
@@ -260,59 +288,26 @@ export const TableItems = ({
               </AvatarGroup>
             );
           }
-        case "status":
-          console.log(cellValue)
-          return (
-            <Chip
-              className={`capitalize border-none gap-1 text-${cellValue.color}`}
-              color={cellValue.color}
-              size="sm"
-              variant="light"
-              startContent={cellValue.name == 'Completed' ? <CheckCircledIcon /> : <CircleBackslashIcon />}
-            >
-
-              {cellValue.name}
-            </Chip>
-          );
         case "priority":
-          console.log(cellValue)
+        case "status":
           return (
             <Chip
-              className={`capitalize border-none gap-1 text-${cellValue.color}`}
-              color={cellValue.color}
-              size="sm"
+              className={`capitalize text-${cellValue.color}`}
+              size="md"
               variant="light"
-              startContent={cellValue.name == 'Low' ? <ArrowDownIcon /> : cellValue.name == 'Medium' ? <ArrowRightIcon /> : <ArrowUpIcon />}
+              startContent={
+                cellValue.name == 'Low' ? <ArrowDownIcon /> :
+                  cellValue.name == 'Medium' ? <ArrowRightIcon /> :
+                    cellValue.name == 'High' ? <ArrowUpIcon /> :
+                      cellValue.name == 'To Do' ? <CircleIcon /> :
+                        cellValue.name == 'In Progress' ? <LapTimerIcon /> :
+                          cellValue.name == 'Completed' ? <CheckCircledIcon /> :
+                            cellValue.name == 'Blocked' ? <CircleBackslashIcon /> : <CrossCircledIcon />}
             >
 
               {cellValue.name}
-            </Chip>
+            </Chip >
           );
-        // case "categories":
-        //   return (
-        //     <div className="flex gap-1 flex-wrap">
-        //       {i.categories.map((category: any) => {
-        //         return (
-        //           <Chip size="sm" color="primary" key={category.id}>
-        //             {category.name}
-        //           </Chip>
-        //         );
-        //       })}
-        //     </div>
-        //   );
-        // case "isActive":
-        //   return (
-        //     <Chip
-        //       className={`border-none text-${i.isActive ? "success" : "default"}`}
-        //       color={i.isActive ? "success" : "default"}
-        //       size="sm"
-        //       variant="dot"
-        //     >
-        //       {i.isActive ? "Active" : "Draft"}
-        //     </Chip>
-        //   );
-        // case "slug":
-        //   return <small className="text-default">{cellValue}</small>;
         case "actions":
           return (
             <div className="relative flex items-center gap-2 justify-end">
@@ -475,8 +470,9 @@ export const TableItems = ({
                 className="bg-transparent outline-none text-default-400 text-tiny"
                 onChange={(e) => getData(e.target.value)}
               >
+                <option value="due-date" selected>Due date</option>
                 <option value="modified-asc">Last updated (asc)</option>
-                <option value="modified-desc" selected>
+                <option value="modified-desc" >
                   Last updated (desc)
                 </option>
                 <option value="created-asc">Date (asc)</option>
@@ -610,7 +606,7 @@ export const TableItems = ({
         className="rounded-md"
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Edit Task</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">Task</ModalHeader>
           <Edit
             item={editItem}
             onSubmit={onSubmitEdit}

@@ -9,32 +9,72 @@ export const GET = async (req: Request) => {
   try {
     const user = await currentUser();
     if (!user) return { error: "Unathorized" };
+
+    const url = new URL(req.url);
+    const searchParams = new URLSearchParams(url.searchParams);
+    const sortBy = searchParams.get("sortby");
+    console.log(sortBy)
+
     const options = {
       version: "v2", // defaults to 'v2' if missing.
       action: "read",
       expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in one hour
     };
 
-    console.log(user.id)
-    const myId = 'clvr3c08j0005xa9cy3rh0g4u';
+    let sorting: any;
+
+    switch (sortBy) {
+      case "modified-asc":
+        sorting = {
+          modifiedAt: "asc",
+        };
+        break;
+      case "created-asc":
+        sorting = {
+          createdAt: "asc",
+        };
+        break;
+      case "created-desc":
+        sorting = {
+          createdAt: "desc",
+        };
+        break;
+      case "name-asc":
+        sorting = {
+          name: "asc",
+        };
+        break;
+      case "name-desc":
+        sorting = {
+          name: "desc",
+        };
+        break;
+      default:
+        sorting = {
+          dueDate: "asc",
+        };
+        break;
+    }
+
+
 
     const res = await db.task.findMany({
+      orderBy: sorting,
       include: { user: true },
       where: {
-         assignTo: {
-              array_contains: [{ 'id': myId }],
-            }
-        // OR: [
-        //   {
-           
-        //   },
-        //   // { assignTo: { some: { id:  user.id  } } },
-        //   // { createdBy: user.email }, // made by me
-        // ],
+        OR: [
+          {
+            assignedIds: {
+              has: user.id
+            },
+          },
+          { createdBy: user.email }, // made by me
+        ],
       },
     });
 
     for (const item of res) {
+
       if (item.attachments) {
         for (const i of item.attachments) {
           const [url] = await storage
@@ -44,23 +84,25 @@ export const GET = async (req: Request) => {
           i.url = url;
         }
       }
-      console.log(item.user.image)
+
       item.user.image = await getTemporaryUrlImage(
         "profiles",
         item.user.image,
         item.user.id
       );
 
-      for (const i of item.assignTo) {
-        const user = await getUserById(i.id);
-        i.image = await getTemporaryUrlImage(
+      item.assignedTo = []
+
+      for (const i of item.assignedIds) {
+        const user = await getUserById(i);
+        const image = await getTemporaryUrlImage(
           "profiles",
           user.image,
           user.id
         );
-        i.name = user.name;
-        i.username = user.username;
-        i.role = user.role;
+        const name = user.name;
+        const username = user.username;
+        item.assignedTo.push({ image, name, username })
       }
     }
 
@@ -83,16 +125,15 @@ export const POST = async (req: Request) => {
     const res = await db.task.create({
       data: {
         ...task,
-        status: { name: "Pending", color: "default" },
+        status: { name: "To Do", color: "default" }, //Default status
         createdBy: user?.email,
         createdAt: new Date(),
+        modifiedAt: new Date(),
       },
     });
 
     return NextResponse.json(
-      {
-        message: res.id,
-      },
+      { message: res.id, type: "success" },
       { status: 200 }
     );
   } catch (error) {
