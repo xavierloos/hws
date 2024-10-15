@@ -11,11 +11,11 @@ export const GET = async () => {
   const user = await currentUser();
 
   const res = await db.user.findMany({
-   where: {
-    id: {
-     not: user?.id,
-    },
-   },
+  //  where: {
+  //   id: {
+  //    not: user?.id,
+  //   },
+  //  },
   });
 
   for (const key in res) {

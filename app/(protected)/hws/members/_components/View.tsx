@@ -1,409 +1,387 @@
-"use client";
+'use client';
 import {
- Input,
- Select,
- SelectItem,
- Switch,
- cn,
- Button,
- Textarea,
- ModalBody,
- Avatar,
- Tooltip,
- Spinner,
- Image,
-} from "@nextui-org/react";
-import { useEffect, useState, useTransition } from "react";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import axios from "axios";
-import { toast } from "sonner";
+	Input,
+	Select,
+	SelectItem,
+	Switch,
+	cn,
+	Button,
+	Textarea,
+	ModalBody,
+	Avatar,
+	Tooltip,
+	Spinner,
+	Image,
+} from '@nextui-org/react';
+import { useEffect, useState, useTransition } from 'react';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import axios from 'axios';
+import { toast } from 'sonner';
 import {
- AvatarIcon,
- Cross1Icon,
- EnvelopeClosedIcon,
- GitHubLogoIcon,
- GlobeIcon,
- ImageIcon,
- InstagramLogoIcon,
- LinkedInLogoIcon,
- MagicWandIcon,
- PaperPlaneIcon,
- PlusIcon,
- TwitterLogoIcon,
-} from "@radix-ui/react-icons";
-import dateFormat from "dateformat";
-import { BiPhone } from "react-icons/bi";
-import { FaFacebook } from "react-icons/fa";
+	AvatarIcon,
+	Cross1Icon,
+	EnvelopeClosedIcon,
+	GitHubLogoIcon,
+	GlobeIcon,
+	ImageIcon,
+	InstagramLogoIcon,
+	LinkedInLogoIcon,
+	MagicWandIcon,
+	PaperPlaneIcon,
+	PlusIcon,
+	TwitterLogoIcon,
+} from '@radix-ui/react-icons';
+import dateFormat from 'dateformat';
+import { BiPhone } from 'react-icons/bi';
+import { FaFacebook } from 'react-icons/fa';
 
 type ViewProps = {
- item: any;
- onSubmit: (e: any, values: any) => {};
- isSaving: boolean;
+	item: any;
+	onSubmit: (e: any, values: any) => {};
+	isSaving: boolean;
 };
 
 export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
- const user = useCurrentUser();
- const [add, setAdd] = useState({
-  image: false,
-  category: false,
- });
- const [images, setImages] = useState([]);
- const [categories, setCategories] = useState([]);
- const [isRegenateButtonActive, setIsRegenateButtonActive] = useState(false);
- const [newCategory, setNewCategory] = useState("");
- const [newImage, setNewImage] = useState<File[]>([]);
- const [isGenerating, startGenerating] = useTransition();
- const [isSavingCategory, startSavingCategory] = useTransition();
- const [isSavingImage, startSavingImage] = useTransition();
- const [isPending, startTransition] = useTransition();
- const [titleLoading, setTitleLoading] = useState(false);
- const [openAICategories, setOpenAICategories] = useState(null);
- const [contentLoading, setContentLoading] = useState(false);
- const [newImagePreview, setNewImagePreview] = useState(null);
- const [descriptionLoading, setDescriptionLoading] = useState(false);
- const [fields, setFields] = useState(item?.[0]);
+	const user = useCurrentUser();
+	const [add, setAdd] = useState({
+		image: false,
+		category: false,
+	});
+	const [images, setImages] = useState([]);
+	const [categories, setCategories] = useState([]);
+	const [isRegenateButtonActive, setIsRegenateButtonActive] = useState(false);
+	const [newCategory, setNewCategory] = useState('');
+	const [newImage, setNewImage] = useState<File[]>([]);
+	const [isGenerating, startGenerating] = useTransition();
+	const [isSavingCategory, startSavingCategory] = useTransition();
+	const [isSavingImage, startSavingImage] = useTransition();
+	const [isPending, startTransition] = useTransition();
+	const [titleLoading, setTitleLoading] = useState(false);
+	const [openAICategories, setOpenAICategories] = useState(null);
+	const [contentLoading, setContentLoading] = useState(false);
+	const [newImagePreview, setNewImagePreview] = useState(null);
+	const [descriptionLoading, setDescriptionLoading] = useState(false);
+	const [fields, setFields] = useState(item?.[0]);
 
- const modules = {
-  toolbar: [
-   [{ header: [1, 2, 3, 4, 5, 6, false] }],
-   ["bold", "italic", "underline", "strike", "blockquote"],
-   [
-    { list: "ordered" },
-    { list: "bullet" },
-    { indent: "-1" },
-    { indent: "+1" },
-   ],
-   ["link", "image", "video"],
-   ["clean"],
-  ],
- };
+	const modules = {
+		toolbar: [
+			[{ header: [1, 2, 3, 4, 5, 6, false] }],
+			['bold', 'italic', 'underline', 'strike', 'blockquote'],
+			[{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+			['link', 'image', 'video'],
+			['clean'],
+		],
+	};
 
- const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "video",
- ];
+	const formats = [
+		'header',
+		'bold',
+		'italic',
+		'underline',
+		'strike',
+		'blockquote',
+		'list',
+		'bullet',
+		'indent',
+		'link',
+		'image',
+		'video',
+	];
 
- useEffect(() => {
-  // getCategories();
-  // getImages();
-  // getSelectedCategories(item?.[0].categories);
- }, []);
+	useEffect(() => {
+		// getCategories();
+		// getImages();
+		// getSelectedCategories(item?.[0].categories);
+	}, []);
 
- const getCategories = () => {
-  startTransition(async () => {
-   await axios
-    .get("/api/categories")
-    .then(async (res) => {
-     setCategories(res.data);
-    })
-    .catch(() => {});
-  });
- };
+	const getCategories = () => {
+		startTransition(async () => {
+			await axios
+				.get('/api/categories')
+				.then(async (res) => {
+					setCategories(res.data);
+				})
+				.catch(() => {});
+		});
+	};
 
- const getSelectedCategories = async (arr) => {
-  let categories: Array<string> = [];
-  arr.forEach((element: any) => categories.push(element.id));
-  return setFields({ ...fields, categories: categories });
- };
+	const getSelectedCategories = async (arr) => {
+		let categories: Array<string> = [];
+		arr.forEach((element: any) => categories.push(element.id));
+		return setFields({ ...fields, categories: categories });
+	};
 
- const getImages = () => {
-  startTransition(async () => {
-   await axios
-    .get("/api/files?type=image")
-    .then((res) => {
-     setImages(res.data);
-    })
-    .catch(() => {});
-  });
- };
+	const getImages = () => {
+		startTransition(async () => {
+			await axios
+				.get('/api/files?type=image')
+				.then((res) => {
+					setImages(res.data);
+				})
+				.catch(() => {});
+		});
+	};
 
- const createSlug = (value: string) => {
-  const trimmedText = value.toLowerCase().trim();
-  const alphanumericText = trimmedText.replace(/\W+/g, "-");
-  return alphanumericText.replace(/(^-|-$)/g, "");
- };
+	const createSlug = (value: string) => {
+		const trimmedText = value.toLowerCase().trim();
+		const alphanumericText = trimmedText.replace(/\W+/g, '-');
+		return alphanumericText.replace(/(^-|-$)/g, '');
+	};
 
- const regenerate = async (input: string) => {
-  let value;
-  switch (input) {
-   case "name":
-    value = fields.name;
-    setTitleLoading(true);
-    break;
-   case "description":
-    value = fields.description;
-    setDescriptionLoading(true);
-    break;
-   case "content":
-    value = fields.content;
-    setContentLoading(true);
-    break;
-   default:
-    break;
-  }
+	const regenerate = async (input: string) => {
+		let value;
+		switch (input) {
+			case 'name':
+				value = fields.name;
+				setTitleLoading(true);
+				break;
+			case 'description':
+				value = fields.description;
+				setDescriptionLoading(true);
+				break;
+			case 'content':
+				value = fields.content;
+				setContentLoading(true);
+				break;
+			default:
+				break;
+		}
 
-  await axios
-   .post(`/api/chat`, { value })
-   .then((res) => {
-    const content = res.data.content;
-    if (input === "name") {
-     setFields({ ...fields, name: content, slug: createSlug(content) });
-     setTitleLoading(false);
-    }
-    if (input === "description") {
-     setFields({ ...fields, description: content });
-     setDescriptionLoading(false);
-    }
-    if (input === "content") {
-     setFields({ ...fields, content });
-     setContentLoading(false);
-    }
-   })
-   .catch((e) => {
-    toast.error(e.stack);
-   });
- };
+		await axios
+			.post(`/api/chat`, { value })
+			.then((res) => {
+				const content = res.data.content;
+				if (input === 'name') {
+					setFields({ ...fields, name: content, slug: createSlug(content) });
+					setTitleLoading(false);
+				}
+				if (input === 'description') {
+					setFields({ ...fields, description: content });
+					setDescriptionLoading(false);
+				}
+				if (input === 'content') {
+					setFields({ ...fields, content });
+					setContentLoading(false);
+				}
+			})
+			.catch((e) => {
+				toast.error(e.stack);
+			});
+	};
 
- const addCategory = () => {
-  startSavingCategory(async () => {
-   await axios
-    .post("/api/categories", { newCategory })
-    .then((res) => {
-     if (res.data.type === "warning") return toast.warning(res.data.message);
-     if (res.data.type === "success") toast.success(res.data.message);
-     getCategories();
-     setAdd({ ...add, category: !add.category });
-    })
-    .catch((e) => {
-     toast.error(e.response.data.message);
-    });
-  });
- };
+	const addCategory = () => {
+		startSavingCategory(async () => {
+			await axios
+				.post('/api/categories', { newCategory })
+				.then((res) => {
+					if (res.data.type === 'warning') return toast.warning(res.data.message);
+					if (res.data.type === 'success') toast.success(res.data.message);
+					getCategories();
+					setAdd({ ...add, category: !add.category });
+				})
+				.catch((e) => {
+					toast.error(e.response.data.message);
+				});
+		});
+	};
 
- const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files) {
-   setNewImage(e?.target?.files[0]);
-   setNewImagePreview(URL.createObjectURL(e.target.files[0]));
-  }
- };
+	const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files) {
+			setNewImage(e?.target?.files[0]);
+			setNewImagePreview(URL.createObjectURL(e.target.files[0]));
+		}
+	};
 
- const onSubmitImage = async (newImage: any) => {
-  startSavingImage(async () => {
-   if (newImagePreview) {
-    const data = new FormData();
-    data.append(newImage?.name, newImage);
-    await axios.post(`/api/files?type=files`, data).then((res) => {
-     if (res.data.type === "success") toast.success(res.data.message);
-     getImages();
-     setAdd({ ...add, image: false });
-     setNewImage([]);
-    });
-   }
-  });
- };
+	const onSubmitImage = async (newImage: any) => {
+		startSavingImage(async () => {
+			if (newImagePreview) {
+				const data = new FormData();
+				data.append(newImage?.name, newImage);
+				await axios.post(`/api/files?type=files`, data).then((res) => {
+					if (res.data.type === 'success') toast.success(res.data.message);
+					getImages();
+					setAdd({ ...add, image: false });
+					setNewImage([]);
+				});
+			}
+		});
+	};
 
- const imageSelectPreview = (item: any) => {
-  return (
-   <SelectItem key={item.name} value={item.name}>
-    <div className="flex gap-x-0.5 items-center">
-     <Avatar
-      radius="none"
-      alt={item.name}
-      className="flex-shrink-0"
-      size="md"
-      src={item.tempUrl}
-     />
-     <div className="flex flex-col">
-      <span className="text-small">{item.name}</span>
-      <span className="text-tiny text-default-400">
-       {item.size && `${(item.size / 1024).toFixed(2)}kB`}
-      </span>
-     </div>
-    </div>
-   </SelectItem>
-  );
- };
+	const imageSelectPreview = (item: any) => {
+		return (
+			<SelectItem key={item.name} value={item.name}>
+				<div className='flex gap-x-0.5 items-center'>
+					<Avatar radius='none' alt={item.name} className='flex-shrink-0' size='md' src={item.tempUrl} />
+					<div className='flex flex-col'>
+						<span className='text-small'>{item.name}</span>
+						<span className='text-tiny text-default-400'>
+							{item.size && `${(item.size / 1024).toFixed(2)}kB`}
+						</span>
+					</div>
+				</div>
+			</SelectItem>
+		);
+	};
 
- return (
-  <>
-   <ModalBody>
-    <div className="flex gap-1 flex-col justify-center items-center m-auto w-full">
-     <Image
-      radius="full"
-      className=" w-40 h-40 object-cover"
-      src={item[0].tempUrl}
-      alt={`${item[0].name} profile cover`}
-     />
-     <span className="font-semibold">{item[0].name}</span>
-     <small>@{item[0].username}</small>
-     <div className="flex gap-3 justify-center items-center w-full ">
-      <Tooltip content={`x.com/${item[0].username}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <TwitterLogoIcon />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`github.com/${item[0].username}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <GitHubLogoIcon />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`instagram.com/${item[0].username}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <InstagramLogoIcon />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`linkedin.com/${item[0].username}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <LinkedInLogoIcon />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`facebook.com/${item[0].username}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <FaFacebook />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`mailto:${item[0].email}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <EnvelopeClosedIcon />
-       </Button>
-      </Tooltip>
-      <Tooltip content={`tel:${item[0].tel}`} size="sm">
-       <Button
-        size="sm"
-        isIconOnly
-        radius="full"
-        color="primary"
-        // onClick={() => regenerate("content")}
-       >
-        <BiPhone />
-       </Button>
-      </Tooltip>
-     </div>
-    </div>
-    <div className="grid gap-2">
-     <div>
-      <h5>About me</h5>
-      <small className="italic font-light text-foreground">
-       {item[0].about}
-      </small>
-     </div>
-     <div className="w-full flex justify-between items-center">
-      <h5>Member since</h5>
-      <small>{dateFormat(item[0].createdAt, "dd/mmm/yy")}</small>
-     </div>
-     <div className="w-full flex justify-between items-center">
-      <h5>Birthday</h5>
-      <small>{dateFormat(item[0].birthday, "dd/mmm/yy")}</small>
-     </div>
-     <div className="w-full flex justify-between items-center">
-      <h5>Role</h5>
-      <Select
-       size="sm"
-       className="max-w-[150px]"
-       defaultSelectedKeys={["superadmin"]}
-       isDisabled={
-        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-       }
-      >
-       <SelectItem key="superadmin">Superadmin</SelectItem>
-       <SelectItem key="admin">Admin</SelectItem>
-       <SelectItem key="user">User</SelectItem>
-      </Select>
-     </div>
-     <div className="w-full flex justify-between items-center">
-      <h5>Permissions</h5>
-      <Select
-       size="sm"
-       className="max-w-[150px]"
-       defaultSelectedKeys={["all"]}
-       isDisabled={
-        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-       }
-      >
-       <SelectItem key="all">All</SelectItem>
-       <SelectItem key="edit">Edit</SelectItem>
-       <SelectItem key="create">Create</SelectItem>
-       <SelectItem key="delete">Delete</SelectItem>
-      </Select>
-     </div>
-     <div className="w-full flex justify-between items-center">
-      <h5>Status</h5>
-      <Switch
-       size="sm"
-       defaultSelected
-       color="success"
-       isDisabled={
-        user?.permission == "EDIT" || user?.permission == "ALL" ? false : true
-       }
-      >
-       Active
-      </Switch>
-     </div>
-    </div>
+	return (
+		<>
+			<ModalBody>
+				<div className='flex gap-1 flex-col justify-center items-center m-auto w-full'>
+					<Image
+						radius='full'
+						className=' w-40 h-40 object-cover'
+						src={item[0].tempUrl}
+						alt={`${item[0].name} profile cover`}
+					/>
+					<span className='font-semibold'>{item[0].name}</span>
+					<small>@{item[0].username}</small>
+					<div className='flex gap-3 justify-center items-center w-full '>
+						<Tooltip content={`x.com/${item[0].username}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<TwitterLogoIcon />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`github.com/${item[0].username}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<GitHubLogoIcon />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`instagram.com/${item[0].username}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<InstagramLogoIcon />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`linkedin.com/${item[0].username}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<LinkedInLogoIcon />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`facebook.com/${item[0].username}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<FaFacebook />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`mailto:${item[0].email}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<EnvelopeClosedIcon />
+							</Button>
+						</Tooltip>
+						<Tooltip content={`tel:${item[0].tel}`} size='sm'>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								color='primary'
+								// onClick={() => regenerate("content")}
+							>
+								<BiPhone />
+							</Button>
+						</Tooltip>
+					</div>
+				</div>
+				<div className='grid gap-2'>
+					<div>
+						<h5>About me</h5>
+						<small className='italic font-light text-foreground'>{item[0].about}</small>
+					</div>
+					<div className='w-full flex justify-between items-center'>
+						<h5>Member since</h5>
+						<small>{dateFormat(item[0].createdAt, 'dd/mmm/yy')}</small>
+					</div>
+					<div className='w-full flex justify-between items-center'>
+						<h5>Birthday</h5>
+						<small>{dateFormat(item[0].birthday, 'dd/mmm/yy')}</small>
+					</div>
+					<div className='w-full flex justify-between items-center'>
+						<h5>Role</h5>
+						<Select
+							size='sm'
+							className='max-w-[150px]'
+							defaultSelectedKeys={['superadmin']}
+							isDisabled={user?.permission == 'EDIT' || user?.permission == 'ALL' ? false : true}
+						>
+							<SelectItem key='superadmin'>Superadmin</SelectItem>
+							<SelectItem key='admin'>Admin</SelectItem>
+							<SelectItem key='user'>User</SelectItem>
+						</Select>
+					</div>
+					<div className='w-full flex justify-between items-center'>
+						<h5>Permissions</h5>
+						<Select
+							size='sm'
+							className='max-w-[150px]'
+							defaultSelectedKeys={['all']}
+							isDisabled={user?.permission == 'EDIT' || user?.permission == 'ALL' ? false : true}
+						>
+							<SelectItem key='all'>All</SelectItem>
+							<SelectItem key='edit'>Edit</SelectItem>
+							<SelectItem key='create'>Create</SelectItem>
+							<SelectItem key='delete'>Delete</SelectItem>
+						</Select>
+					</div>
+					<div className='w-full flex justify-between items-center'>
+						<h5>Status</h5>
+						<Switch
+							size='sm'
+							defaultSelected
+							color='success'
+							isDisabled={user?.permission == 'EDIT' || user?.permission == 'ALL' ? false : true}
+						>
+							Active
+						</Switch>
+					</div>
+				</div>
 
-    <Button
-     size="md"
-     color="danger"
-     radius="none"
-     variant="light"
-     onClick={() => regenerate("content")}
-     fullWidth
-     isDisabled={
-      user?.permission == "DELETE" || user?.permission == "ALL" ? false : true
-     }
-    >
-     DELETE PROFILE
-    </Button>
+				<Button
+					size='md'
+					color='danger'
+					radius='none'
+					variant='light'
+					fullWidth
+					isDisabled={user?.permission == 'DELETE' || user?.permission == 'ALL' ? false : true}
+				>
+					DELETE PROFILE
+				</Button>
 
-    {/* <form onSubmit={async (e) => onSubmit(e, fields)} className="grid gap-3">
+				{/* <form onSubmit={async (e) => onSubmit(e, fields)} className="grid gap-3">
      {isGenerating ? (
       <div className="flex items-center justify-center min-h-[200px]">
        <Spinner size="lg" label="Generating..." />
@@ -784,7 +762,7 @@ export const View = ({ item, onSubmit, isSaving }: ViewProps) => {
       </>
      )}
     </form> */}
-   </ModalBody>
-  </>
- );
+			</ModalBody>
+		</>
+	);
 };

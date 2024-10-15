@@ -54,8 +54,8 @@ export const {
 
       if (session.user) session.user.otpEnabled = token.otpEnabled as boolean;
 
-
       if (session.user) {
+        console.log('TOKEN', token)
         session.user.username = token.username;
         session.user.name = token.name;
         session.user.email = token.email;
@@ -95,6 +95,7 @@ export const {
       token.permission = existingUser.permission;
       token.otpEnabled = existingUser.otpEnabled;
       token.about = existingUser.about;
+      
 
       return token;
     },

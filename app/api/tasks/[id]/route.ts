@@ -29,28 +29,13 @@ export const PUT = async (req: Request, { params }: any) => {
     const user = await currentUser();
     if (!user) return { error: "Unathorized" };
     // TODO: check if user has writing permissions
-    const task = await req.json();
-
-    let updateField = {};
-
-    switch (type) {
-      case "status":
-        updateField = { status: task.status };
-        break;
-      case "members":
-        updateField = { assignTo: task };
-        break;
-      case "priority":
-        updateField = { priority: task.priority };
-        break;
-      default:
-        break;
-    }
+    const field = await req.json();
 
     const res = await db.task.update({
       where: { id: params.id },
-      data: updateField,
+      data: field
     });
+    
 
     return NextResponse.json(res, { status: 200 });
   } catch (error) {

@@ -13,7 +13,6 @@ export const GET = async (req: Request) => {
     const url = new URL(req.url);
     const searchParams = new URLSearchParams(url.searchParams);
     const sortBy = searchParams.get("sortby");
-    console.log(sortBy)
 
     const options = {
       version: "v2", // defaults to 'v2' if missing.
@@ -56,8 +55,6 @@ export const GET = async (req: Request) => {
         break;
     }
 
-
-
     const res = await db.task.findMany({
       orderBy: sorting,
       include: { user: true },
@@ -95,14 +92,14 @@ export const GET = async (req: Request) => {
 
       for (const i of item.assignedIds) {
         const user = await getUserById(i);
-        const image = await getTemporaryUrlImage(
+        // const image =
+        user.tempUrl =  await getTemporaryUrlImage(
           "profiles",
           user.image,
           user.id
         );
-        const name = user.name;
-        const username = user.username;
-        item.assignedTo.push({ image, name, username })
+      
+        item.assignedTo.push( user )
       }
     }
 

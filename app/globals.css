@@ -185,3 +185,9 @@ svg text {
     stroke-dashoffstet: -20%;
   }
 }
+
+.markup > ol,li {
+    list-style: auto;
+    margin: auto;
+    padding: revert;
+}

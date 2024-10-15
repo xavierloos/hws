@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth";
 import { storage } from "@/lib/gcp";
+import { getTemporaryUrlImage } from "@/temporaryUrlImage";
 
 export const GET = async (req: Request) => {
   const searchParams = req.nextUrl.searchParams;
@@ -40,6 +41,13 @@ export const GET = async (req: Request) => {
     //     i.username = user.username;
     //   }
     // }
+    for (const item of res) {
+      item.user.tempUrl = await getTemporaryUrlImage(
+        "profiles",
+        item.user.image,
+        item.user.id
+      );
+    }
 
     return NextResponse.json(res, { status: 200 });
   } catch (error) {

@@ -14,7 +14,6 @@ export const login = async (values: any, callbackUrl?: string | null) => {
   const { email, password, code } = values;
   const existingUser = await getUserByEmail(email);
   const matchingPassword = bcrypt.compare(password, existingUser?.password);
-  console.log(matchingPassword)
 
   if (
     !existingUser ||
