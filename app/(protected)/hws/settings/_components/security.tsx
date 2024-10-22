@@ -1,14 +1,19 @@
-import { useState, useTransition } from 'react';
-import { Accordion, AccordionItem, Button, Input, Switch, Tooltip, cn } from '@nextui-org/react';
-import { CheckCircledIcon, CircleIcon, EyeClosedIcon, EyeOpenIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
+import { Button, Input, Switch, cn, Card, CardBody } from '@nextui-org/react';
+import { CheckCircledIcon, CircleIcon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-export const Security = ({ fields }: any) => {
-	const [isPending, startTransition] = useTransition();
+export const Security = ({ user }: any) => {
+	const [fields, setFields] = useState(user);
 	const [showPsswrd1, setShowPsswrd1] = useState(false);
 	const [showPsswrd2, setShowPsswrd2] = useState(false);
 	const [showPsswrd3, setShowPsswrd3] = useState(false);
+	const [passwordHelp, setPasswordHelp] = useState(false);
+	const toggle1 = () => setShowPsswrd1(!showPsswrd1);
+	const toggle2 = () => setShowPsswrd2(!showPsswrd2);
+	const toggle3 = () => setShowPsswrd3(!showPsswrd3);
+
 	const [passwordValidation, setPasswordValidation] = useState({
 		hasMinLength: false,
 		hasUpperCase: false,
@@ -17,26 +22,6 @@ export const Security = ({ fields }: any) => {
 		hasSpecialChar: false,
 		confirmPasswordMatch: false,
 	});
-
-	const toggle1 = () => setShowPsswrd1(!showPsswrd1);
-	const toggle2 = () => setShowPsswrd2(!showPsswrd2);
-	const toggle3 = () => setShowPsswrd3(!showPsswrd3);
-
-	const validatePassword = (value: any) => {
-		const upper = /(?=.*?[A-Z])/;
-		const lower = /(?=.*?[a-z])/;
-		const digit = /(?=.*?[0-9])/;
-		const special = /(?=.*?[#?!@$ %^&*-])/;
-		setPasswordValidation({
-			...passwordValidation,
-			hasMinLength: checkLength(value),
-			hasUpperCase: checkPassword(value, upper),
-			hasLowerCase: checkPassword(value, lower),
-			hasDigit: checkPassword(value, digit),
-			hasSpecialChar: checkPassword(value, special),
-		});
-		fields.newPassword = value;
-	};
 
 	const checkLength = (value: string) => {
 		if (value.length >= 8) {
@@ -68,139 +53,190 @@ export const Security = ({ fields }: any) => {
 		}
 	};
 
-	const onSubmit = (e: any) => {
-		e.preventDefault();
-		startTransition(() => {
-			axios
-				.put(`/api/members/${fields.id}?type=security`, fields)
-				.then((res) => {
-					if (res?.data.error) toast.error(res?.data.error);
-					if (res?.data.warning) toast.warning(res?.data.warning);
-					if (res?.data.success) toast.success(res?.data.success);
-				})
-				.catch();
+	const update = async (field: string, value: any, e?: React.ChangeEvent<HTMLInputElement>) => {
+		e?.preventDefault();
+
+		if (field === 'password') value = [value.password, value.newPassword];
+
+		await axios
+			.put(`/api/members/${fields.id}`, { [field]: value })
+			.then((res) => {
+				field === 'otpEnabled' && setFields({ ...fields, otpEnabled: value });
+				if (res?.data.error) toast.error(res?.data.error);
+				if (res?.data.warning) toast.warning(res?.data.warning);
+				if (res?.data.success) toast.success(res?.data.success);
+			})
+			.catch();
+	};
+
+	const validatePassword = (value: any) => {
+		const upper = /(?=.*?[A-Z])/;
+		const lower = /(?=.*?[a-z])/;
+		const digit = /(?=.*?[0-9])/;
+		const special = /(?=.*?[#?!@$ %^&*-])/;
+
+		setPasswordValidation({
+			...passwordValidation,
+			hasMinLength: checkLength(value),
+			hasUpperCase: checkPassword(value, upper),
+			hasLowerCase: checkPassword(value, lower),
+			hasDigit: checkPassword(value, digit),
+			hasSpecialChar: checkPassword(value, special),
 		});
+		setFields({ ...fields, newPassword: value });
+		setPasswordHelp(true);
 	};
 
 	const PasswordHelp = () => {
 		return (
-			<Tooltip
-				content={
-					<div className='px-1 py-2'>
-						<div className='text-small font-bold flex items-center'>
-							<InfoCircledIcon className='me-1' /> Help
-						</div>
-						<div className='ms-4'>
-							<div className='text-muted-foreground text-tiny flex'>
-								{passwordValidation.hasMinLength ? (
-									<CheckCircledIcon className='me-1 text-success' />
-								) : (
-									<CircleIcon className='me-1' />
-								)}
-								Min length (8)
-							</div>
-							<div className='text-muted-foreground text-xs flex'>
-								{passwordValidation.hasUpperCase ? (
-									<CheckCircledIcon className='me-1 text-success' />
-								) : (
-									<CircleIcon className='me-1' />
-								)}
-								Upper letter (A-Z)
-							</div>
-							<div className='text-muted-foreground text-xs flex'>
-								{passwordValidation.hasLowerCase ? (
-									<CheckCircledIcon className='me-1 text-success' />
-								) : (
-									<CircleIcon className='me-1' />
-								)}
-								Lower letter (a-z)
-							</div>
-							<div className='text-muted-foreground text-xs flex'>
-								{passwordValidation.hasSpecialChar ? (
-									<CheckCircledIcon className='me-1 text-success' />
-								) : (
-									<CircleIcon className='me-1' />
-								)}
-								Special character
-							</div>
-						</div>
+			<div className='grid grid-cols-2 md:gap-2'>
+				<div>
+					<div className='text-muted-foreground text-xs flex'>
+						{passwordValidation.hasMinLength ? (
+							<CheckCircledIcon className='me-2 text-success' />
+						) : (
+							<CircleIcon className='me-2' />
+						)}
+						<span className={passwordValidation.hasMinLength ? 'line-through' : ''}>Min length (8)</span>
 					</div>
-				}
-			>
-				<InfoCircledIcon />
-			</Tooltip>
+					<div className='text-muted-foreground text-xs flex'>
+						{passwordValidation.hasUpperCase ? (
+							<CheckCircledIcon className='me-2 text-success' />
+						) : (
+							<CircleIcon className='me-2' />
+						)}
+						<span className={passwordValidation.hasUpperCase ? 'line-through' : ''}>
+							Upper letter (A-Z)
+						</span>
+					</div>
+					<div className='text-muted-foreground text-xs flex'>
+						{passwordValidation.hasLowerCase ? (
+							<CheckCircledIcon className='me-2 text-success' />
+						) : (
+							<CircleIcon className='me-2' />
+						)}
+						<span className={passwordValidation.hasLowerCase ? 'line-through' : ''}>
+							Lower letter (a-z)
+						</span>
+					</div>
+				</div>
+				<div>
+					<div className='text-muted-foreground text-xs flex'>
+						{passwordValidation.hasSpecialChar ? (
+							<CheckCircledIcon className='me-2 text-success' />
+						) : (
+							<CircleIcon className='me-2' />
+						)}
+						<span className={passwordValidation.hasSpecialChar ? 'line-through' : ''}>
+							Special character
+						</span>
+					</div>
+					<div className='text-muted-foreground text-xs flex'>
+						{passwordValidation.confirmPasswordMatch ? (
+							<CheckCircledIcon className='me-2 text-success' />
+						) : (
+							<CircleIcon className='me-2' />
+						)}
+						<span className={passwordValidation.confirmPasswordMatch ? 'line-through' : ''}>
+							Passwords match
+						</span>
+					</div>
+				</div>
+			</div>
 		);
 	};
 
 	return (
-		<div className='flex flex-col gap-3 p-6 max-w-[400px] m-auto justify-center border-none shadow-lg rounded-md bg-content1'>
-			<form onSubmit={(e) => onSubmit(e)} className='grid gap-3'>
-				<p className='text-xs'>Change password</p>
-				<div className='grid gap-3 grid-cols-1 sm:grid-cols-3 md:grid-cols-1'>
+		<Card className='border-none max-w-md w-full rounded-md m-auto mt-3 text-default-foreground' shadow='sm'>
+			<CardBody className='grid grid-cols-1 gap-8 items-center justify-center py-4 px-8'>
+				<form onSubmit={(e) => update('password', fields, e)} className='flex flex-col gap-3 mt-4 '>
+					<span className='font-semibold'>Change password</span>
 					<Input
 						size='sm'
-						radius='sm'
-						label='Old'
+						isRequired
+						radius='none'
+						label='Old Password'
 						type={showPsswrd1 ? 'text' : 'password'}
-						onValueChange={(v) => (fields.password = v)}
-						startContent={
-							<span onClick={toggle1}>{showPsswrd1 ? <EyeOpenIcon /> : <EyeClosedIcon />}</span>
+						onValueChange={(v) => setFields({ ...fields, password: v })}
+						endContent={
+							<Button
+								size='sm'
+								isIconOnly
+								variant='light'
+								className='p-0 rounded-full m-auto'
+								onClick={toggle1}
+							>
+								{showPsswrd1 ? <EyeOpenIcon /> : <EyeClosedIcon />}
+							</Button>
 						}
 					/>
 					<Input
 						size='sm'
-						radius='sm'
-						label='New'
+						isRequired
+						radius='none'
+						label='New Password'
 						type={showPsswrd2 ? 'text' : 'password'}
 						onKeyUp={(e) => validatePassword(e.target.value)}
-						startContent={
-							<span onClick={toggle2}>{showPsswrd2 ? <EyeOpenIcon /> : <EyeClosedIcon />}</span>
+						endContent={
+							<Button
+								size='sm'
+								isIconOnly
+								variant='light'
+								className='p-0 rounded-full m-auto'
+								onClick={toggle2}
+							>
+								{showPsswrd2 ? <EyeOpenIcon /> : <EyeClosedIcon />}
+							</Button>
 						}
-						endContent={<PasswordHelp />}
+						isDisabled={!fields.password}
 					/>
 					<Input
 						size='sm'
-						radius='sm'
-						label='Confirm'
+						isRequired
+						radius='none'
+						label='Confirm Password'
 						type={showPsswrd3 ? 'text' : 'password'}
 						onKeyUp={(e) => confirmPassword(e.target.value)}
-						startContent={
-							<span onClick={toggle3}>{showPsswrd3 ? <EyeOpenIcon /> : <EyeClosedIcon />}</span>
-						}
 						endContent={
-							passwordValidation.confirmPasswordMatch && (
-								<Tooltip
-									content={
-										<div className='px-1 py-2'>
-											<div className='text-small font-bold flex items-center'>
-												<InfoCircledIcon className='me-1' /> Help
-											</div>
-											<div className='ms-4'>
-												<div className='text-muted-foreground text-xs flex'>
-													{passwordValidation.confirmPasswordMatch ? (
-														<CheckCircledIcon className='me-2 text-success' />
-													) : (
-														<CircleIcon className='me-2' />
-													)}
-													Passwords match
-												</div>
-											</div>
-										</div>
-									}
-								>
-									<CheckCircledIcon className=' text-success' />
-								</Tooltip>
-							)
+							<Button
+								size='sm'
+								isIconOnly
+								variant='light'
+								className='p-0 rounded-full m-auto'
+								onClick={toggle3}
+							>
+								{showPsswrd3 ? <EyeOpenIcon /> : <EyeClosedIcon />}
+							</Button>
+						}
+						description={passwordHelp && <PasswordHelp />}
+						isDisabled={
+							!fields.password ||
+							!fields.newPassword ||
+							fields.password == fields.newPassword ||
+							!passwordValidation.hasDigit ||
+							!passwordValidation.hasLowerCase ||
+							!passwordValidation.hasMinLength ||
+							!passwordValidation.hasUpperCase
 						}
 					/>
-				</div>
+					<Button
+						size='md'
+						color='primary'
+						type='submit'
+						radius='none'
+						isDisabled={!fields.password || !fields.newPassword || !passwordValidation.confirmPasswordMatch}
+					>
+						UPDATE PASSWORD
+					</Button>
+				</form>
+				<hr className='w-[80%] mx-auto' />
 				<Switch
+					onValueChange={(e) => update('otpEnabled', e)}
 					defaultSelected={fields.otpEnabled}
-					onValueChange={(v) => (fields.otpEnabled = v)}
 					classNames={{
 						base: cn(
-							'inline-flex flex-row-reverse w-full max-w-full hover:bg-default-200 items-center',
-							'justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent  bg-content2'
+							'inline-flex flex-row-reverse w-full max-w-full hover:bg-default-200 items-center mb-4',
+							'justify-between cursor-pointer  rounded-none py-1.5 px-3 gap-2 border-2 border-transparent  bg-content2'
 						),
 						wrapper: 'p-0 h-4 overflow-visible',
 						thumb: cn(
@@ -215,16 +251,15 @@ export const Security = ({ fields }: any) => {
 					}}
 				>
 					<div className='flex flex-col gap-1'>
-						<p className='text-xs'>Enable OTP</p>
-						<p className='text-tiny text-default-400'>Send One-Time-Password confimation</p>
+						<span className='font-semibold text-default-foreground'>
+							OTP enabled: {fields.otpEnabled ? 'Yes' : 'No'}
+						</span>
+						<small className='text-tiny text-default-400 flex gap-1 items-center'>
+							When login an One-Time-Password (OTP) confimation will be send to your email
+						</small>
 					</div>
 				</Switch>
-				<div className='w-full justify-end flex py-2'>
-					<Button size='md' type='submit' color='primary' isLoading={isPending}>
-						Save Changes
-					</Button>
-				</div>
-			</form>
-		</div>
+			</CardBody>
+		</Card>
 	);
 };

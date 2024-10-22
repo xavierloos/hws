@@ -34,7 +34,7 @@ model User {
   password                  String?
   about                     String?
   tel                       String?
-  birthday                  DateTime?        @db.Date
+  birthday                  String?
   role                      UserRole         @default(USER)
   permission                UserPermission   @default(READONLY)
   accounts                  Account[]

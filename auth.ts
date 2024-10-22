@@ -55,7 +55,6 @@ export const {
       if (session.user) session.user.otpEnabled = token.otpEnabled as boolean;
 
       if (session.user) {
-        console.log('TOKEN', token)
         session.user.username = token.username;
         session.user.name = token.name;
         session.user.email = token.email;
@@ -73,6 +72,7 @@ export const {
           .file(`profiles/${session.user.id}/${session.user.image}`)
           .getSignedUrl(options);
         session.user.tempUrl = url;
+        
       }
 
       return session;

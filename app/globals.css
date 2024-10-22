@@ -15,24 +15,31 @@ h6 {
   margin-top: 0.5em;
   margin-bottom: 0em;
 }
+
 h1 {
   font-size: 2em;
 }
+
 h2 {
   font-size: 1.5em;
 }
+
 h3 {
   font-size: 1.17em;
 }
+
 h4 {
   font-size: 1em;
 }
+
 h5 {
   font-size: 0.83em;
 }
+
 h6 {
   font-size: 0.67em;
 }
+
 p {
   display: block;
   margin-top: 1em;
@@ -64,6 +71,7 @@ p {
     --ring: 20 14.3% 4.1%;
     --radius: 0.5rem;
   }
+
   .vintage {
     --background: 0, 0%, 21.96%;
     --secondary: 151.11, 29.03%, 81.76%;
@@ -87,6 +95,7 @@ p {
     --radius: 0.5rem;
     --default: 0, 0%, 21.96%;
   }
+
   .dark {
     --background: 240 5.26% 11.18%;
     --foreground: 234, 5.62%, 65.1%;
@@ -109,6 +118,7 @@ p {
     --ring: 35.5 91.7% 32.9%;
   }
 }
+
 /* svg {
   fill: var(--primary);
 } */
@@ -120,6 +130,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -186,8 +197,16 @@ svg text {
   }
 }
 
-.markup > ol,li {
-    list-style: auto;
-    margin: auto;
-    padding: revert;
+.markup>ol,
+li {
+  list-style: auto;
+  margin: auto;
+  padding: revert;
+}
+
+.birthday>div {
+  border: none !important;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
 }

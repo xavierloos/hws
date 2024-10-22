@@ -22,6 +22,7 @@ const SettingsPage = () => {
 		await axios
 			.get(`/api/members/${id}`)
 			.then((res) => {
+				console.log(res.data);
 				setData(res.data);
 				setLoading(false);
 			})
@@ -41,6 +42,8 @@ const SettingsPage = () => {
 					about: data?.about,
 					image: data?.image,
 					tempUrl: data?.tempUrl,
+					permission: data?.permission,
+					birthday: data?.birthday,
 				};
 			case 'security':
 				return { id: data?.id, otpEnabled: data?.otpEnabled };
@@ -58,7 +61,7 @@ const SettingsPage = () => {
 		<>
 			<Title text='Settings' className=' items-start mb-4' />
 			{!loading && (
-				<Tabs aria-label='Options' color='primary'>
+				<Tabs aria-label='Options' color='primary' className='flex '>
 					<Tab
 						key='personalInfo'
 						title={
@@ -68,7 +71,7 @@ const SettingsPage = () => {
 							</div>
 						}
 					>
-						<PersonalInformation fields={fields('profile')} />
+						<PersonalInformation user={fields('profile')} />
 					</Tab>
 					<Tab
 						key='Security'
@@ -79,7 +82,7 @@ const SettingsPage = () => {
 							</div>
 						}
 					>
-						<Security fields={fields('security')} />
+						<Security user={fields('security')} />
 					</Tab>
 					<Tab
 						key='Notifications'
