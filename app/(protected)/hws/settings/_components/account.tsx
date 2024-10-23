@@ -31,29 +31,8 @@ import { parseDate } from '@internationalized/date';
 
 export const Account = ({ user }: any) => {
 	const [fields, setFields] = useState(user);
-
 	const [preview, setPreview] = useState(null);
 	const [avatar, setAvatar] = useState(null);
-
-	// const onSubmit = async (e: any) => {
-	// 	e.preventDefault();
-	// 	startTransition(async () => {
-	// 		if (preview) {
-	// 			const data = new FormData();
-	// 			data.append(avatar?.name, avatar);
-	// 			await axios.post(`/api/files?type=profiles`, data);
-	// 			fields.image = `${fields.id}.${avatar?.type.split('/')[1]}`;
-	// 		}
-	// 		await axios
-	// 			.put(`/api/members/${fields.id}?type=profile`, fields)
-	// 			.then((res) => {
-	// 				if (res?.data.error) toast.error(res?.data.error);
-	// 				if (res?.data.warning) toast.warning(res?.data.warning);
-	// 				if (res?.data.success) toast.success(res?.data.success);
-	// 			})
-	// 			.catch();
-	// 	});
-	// };
 
 	const handleAvatarSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
