@@ -1,35 +1,33 @@
-import { useState, useTransition } from 'react';
-import { Accordion, AccordionItem, Button, Input, Switch, cn } from '@nextui-org/react';
+import { useState } from 'react';
+import { Switch, cn, Card, CardBody } from '@nextui-org/react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-export const Notifications = ({ fields }: any) => {
-	const [isPending, startTransition] = useTransition();
+export const Notifications = ({ user }: any) => {
+	const [fields, setFields] = useState(user);
 
-	const onSubmit = (e: any) => {
-		e.preventDefault();
-		startTransition(() => {
-			axios
-				.put(`/api/members/${fields.id}?type=notifications`, fields)
-				.then((res) => {
-					if (res?.data.error) toast.error(res?.data.error);
-					if (res?.data.warning) toast.warning(res?.data.warning);
-					if (res?.data.success) toast.success(res?.data.success);
-				})
-				.catch();
-		});
+	const update = async (field: string, value: any) => {
+		await axios
+			.put(`/api/members/${fields.id}`, { [field]: value })
+			.then((res) => {
+				setFields({ ...fields, [field]: value });
+				if (res?.data.error) toast.error(res?.data.error);
+				if (res?.data.warning) toast.warning(res?.data.warning);
+				if (res?.data.success) toast.success(res?.data.success);
+			})
+			.catch();
 	};
 
 	return (
-		<div className='flex flex-col gap-3 p-6 max-w-[400px] m-auto justify-center border-none shadow-lg rounded-md bg-content1'>
-			<form onSubmit={(e) => onSubmit(e)} className='grid gap-3'>
+		<Card className='border-none max-w-md w-full rounded-md m-auto mt-3 p-4 text-default-foreground' shadow='sm'>
+			<CardBody className='grid grid-cols-1 gap-8 items-center justify-center'>
 				<Switch
+					onValueChange={(e) => update('emailNotificationsEnabled', e)}
 					defaultSelected={fields.emailNotificationsEnabled}
-					onValueChange={(v) => (fields.emailNotificationsEnabled = v)}
 					classNames={{
 						base: cn(
 							'inline-flex flex-row-reverse w-full max-w-full hover:bg-default-200 items-center',
-							'justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent  bg-content2'
+							'justify-between cursor-pointer  rounded-none py-1.5 px-3 gap-2 border-2 border-transparent  bg-content2'
 						),
 						wrapper: 'p-0 h-4 overflow-visible',
 						thumb: cn(
@@ -44,18 +42,21 @@ export const Notifications = ({ fields }: any) => {
 					}}
 				>
 					<div className='flex flex-col gap-1'>
-						<p className='text-xs'>Email</p>
-						<p className='text-tiny text-default-400'>Send emails notifications</p>
+						<span className='font-semibold text-default-foreground'>
+							Email enabled: {fields.emailNotificationsEnabled ? 'Yes' : 'No'}
+						</span>
+						<small className='text-tiny text-default-400 flex gap-1 items-center'>
+							Get emails notifications to find out what's going on when you're not online.
+						</small>
 					</div>
 				</Switch>
 				<Switch
-					isDisabled={fields.tel ? false : true}
+					onValueChange={(e) => update('smsNotificationsEnabled', e)}
 					defaultSelected={fields.smsNotificationsEnabled}
-					onValueChange={(v) => (fields.smsNotificationsEnabled = v)}
 					classNames={{
 						base: cn(
 							'inline-flex flex-row-reverse w-full max-w-full hover:bg-default-200 items-center',
-							'justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent  bg-content2'
+							'justify-between cursor-pointer  rounded-none py-1.5 px-3 gap-2 border-2 border-transparent  bg-content2'
 						),
 						wrapper: 'p-0 h-4 overflow-visible',
 						thumb: cn(
@@ -70,18 +71,15 @@ export const Notifications = ({ fields }: any) => {
 					}}
 				>
 					<div className='flex flex-col gap-1'>
-						<p className='text-xs'>SMS</p>
-						<p className='text-tiny text-default-400'>
-							Send SMS notifications (make sure you add a phone number)
-						</p>
+						<span className='font-semibold text-default-foreground'>
+							SMS enabled: {fields.smsNotificationsEnabled ? 'Yes' : 'No'}
+						</span>
+						<small className='text-tiny text-default-400 flex gap-1 items-center'>
+							Get sms notifications to find out what's going on when you're not online.
+						</small>
 					</div>
 				</Switch>
-				<div className='w-full justify-end flex py-2'>
-					<Button size='md' type='submit' color='primary' isLoading={isPending}>
-						Save Changes
-					</Button>
-				</div>
-			</form>
-		</div>
+			</CardBody>
+		</Card>
 	);
 };

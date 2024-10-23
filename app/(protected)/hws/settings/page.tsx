@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Security } from './_components/security';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Notifications } from './_components/notifications';
-import { PersonalInformation } from './_components/personalInformation';
+import { Account } from './_components/account';
 import { PersonIcon, BellIcon, LockClosedIcon, IdCardIcon } from '@radix-ui/react-icons';
 import { Tabs, Tab } from '@nextui-org/react';
 
@@ -22,7 +22,6 @@ const SettingsPage = () => {
 		await axios
 			.get(`/api/members/${id}`)
 			.then((res) => {
-				console.log(res.data);
 				setData(res.data);
 				setLoading(false);
 			})
@@ -63,18 +62,18 @@ const SettingsPage = () => {
 			{!loading && (
 				<Tabs aria-label='Options' color='primary' className='flex '>
 					<Tab
-						key='personalInfo'
+						key='account'
 						title={
 							<div className='flex gap-2 items-center'>
 								<PersonIcon />
-								<span>Personal Information</span>
+								<span>Account</span>
 							</div>
 						}
 					>
-						<PersonalInformation user={fields('profile')} />
+						<Account user={fields('profile')} />
 					</Tab>
 					<Tab
-						key='Security'
+						key='security'
 						title={
 							<div className='flex gap-2 items-center'>
 								<LockClosedIcon />
@@ -85,7 +84,7 @@ const SettingsPage = () => {
 						<Security user={fields('security')} />
 					</Tab>
 					<Tab
-						key='Notifications'
+						key='notifications'
 						title={
 							<div className='flex gap-2 items-center'>
 								<BellIcon />
@@ -93,7 +92,7 @@ const SettingsPage = () => {
 							</div>
 						}
 					>
-						<Notifications fields={fields('notifications')} />
+						<Notifications user={fields('notifications')} />
 					</Tab>
 
 					<Tab
@@ -104,7 +103,9 @@ const SettingsPage = () => {
 								<span>Billing</span>
 							</div>
 						}
-					></Tab>
+					>
+						Coming soon
+					</Tab>
 				</Tabs>
 			)}
 		</>
