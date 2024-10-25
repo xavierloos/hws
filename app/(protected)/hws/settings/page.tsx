@@ -43,6 +43,7 @@ const SettingsPage = () => {
 					tempUrl: data?.tempUrl,
 					permission: data?.permission,
 					birthday: data?.birthday,
+					social: data?.social,
 				};
 			case 'security':
 				return { id: data?.id, otpEnabled: data?.otpEnabled };

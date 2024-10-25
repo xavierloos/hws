@@ -46,6 +46,7 @@ model User {
   file                      File[]
   task                      Task[]
   comment                   Comment[]
+  social                    Social?
 
   @@unique([email, id])
 }
@@ -164,4 +165,15 @@ model Invitation {
   id             String  @id @default(cuid()) @map("_id")
   email          String  @unique
   invitationSent Boolean @default(false)
+}
+
+model Social {
+  id        String  @id @default(cuid()) @map("_id")
+  facebook  String?
+  twitter   String?
+  instagram String?
+  linkedin  String?
+  userId    String  @unique
+  // user      User     @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

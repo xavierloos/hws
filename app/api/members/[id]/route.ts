@@ -9,6 +9,7 @@ export const GET = async (req: Request, { params }: any) => {
 	try {
 		const res = await db.user.findFirst({
 			where: { id: params.id },
+			include: { social: true },
 			//  select: {
 			//   id: true,
 			//   username: true,
@@ -127,7 +128,6 @@ export const PUT = async (req: Request) => {
 				return NextResponse.json({ error: 'Wrong passwords, no changes have been saved' }, { status: 200 });
 			}
 		}
-		console.log('here', field);
 
 		if (field.username) {
 			const existingUsername = await getUserByUsername(field.username);
