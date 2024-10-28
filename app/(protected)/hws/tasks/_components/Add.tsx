@@ -174,10 +174,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 						// isRequired
 						radius='none'
 						label='Type'
-						onChange={(e) =>
-							// console.log()
-							setFields({ ...fields, type: e.target.value })
-						}
+						onChange={(e) => setFields({ ...fields, type: e.target.value })}
 						// renderValue={(items: any) => items.map((i: any) => i.key)}
 					>
 						{types.map((type) => (

@@ -173,6 +173,7 @@ model Social {
   twitter   String?
   instagram String?
   linkedin  String?
+  github    String?
   userId    String  @unique
   // user      User     @relation(fields: [userId], references: [id])
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)

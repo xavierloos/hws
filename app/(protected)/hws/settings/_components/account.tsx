@@ -27,6 +27,7 @@ import {
 	PersonIcon,
 	ImageIcon,
 	CopyIcon,
+	EnvelopeClosedIcon,
 } from '@radix-ui/react-icons';
 import dateFormat from 'dateformat';
 import { CiAt } from 'react-icons/ci';
@@ -35,10 +36,10 @@ import { parseDate } from '@internationalized/date';
 import { BiPhone } from 'react-icons/bi';
 
 export const Account = ({ user }: any) => {
-	// console.log(user);
 	const [fields, setFields] = useState(user);
 	const [preview, setPreview] = useState(null);
 	const [avatar, setAvatar] = useState(null);
+	let socialInput: null;
 
 	const handleAvatarSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
@@ -61,22 +62,24 @@ export const Account = ({ user }: any) => {
 			.put(`/api/members/${fields.id}`, { [field]: value })
 			.then((res) => {
 				switch (field) {
-					case 'name':
-						setFields({ ...fields, name: value });
+					case 'facebook':
+					case 'twitter':
+					case 'instagram':
+					case 'linkedin':
+					case 'github':
+						setFields({
+							...fields,
+							social: {
+								...fields.social,
+								[field]: value,
+							},
+						});
 						break;
 					case 'username':
-						res?.data.success && setFields({ ...fields, username: value });
-						break;
-					case 'tel':
-						res?.data.success && setFields({ ...fields, tel: value });
-						break;
-					case 'about':
-						setFields({ ...fields, about: value });
-						break;
-					case 'birthday':
-						setFields({ ...fields, birthday: value });
+						res?.data.success && setFields({ ...fields, [field]: value });
 						break;
 					default:
+						setFields({ ...fields, [field]: value });
 						break;
 				}
 				if (res?.data.error) toast.error(res?.data.error);
@@ -124,64 +127,63 @@ export const Account = ({ user }: any) => {
 			</Popover>
 		);
 	};
+
 	const Social = ({ media, icon }: any) => {
 		return (
-			<>
-				<Popover showArrow placement='bottom' radius='sm'>
-					<Tooltip
-						content={
-							<div className='w-full flex gap-2'>
-								<span>
-									{media}.com/{fields.social[media]}
-								</span>
-								<ExternalLinkIcon />
-								<CopyIcon />
-							</div>
-						}
-						size='sm'
-						isDisabled={fields.social[media] ? false : true}
-					>
-						<div>
-							<PopoverTrigger>
-								<Button
-									size='sm'
-									isIconOnly
-									radius='full'
-									variant={fields.social[media] ? 'solid' : 'flat'}
-									color={fields.social[media] ? 'primary' : 'default'}
-									startContent={icon}
-								/>
-							</PopoverTrigger>
+			<Popover showArrow placement='bottom' radius='sm'>
+				<Tooltip
+					content={
+						<div className='w-full flex gap-2'>
+							<span>
+								{media}.com/{fields.social?.[media]}
+							</span>
+							<ExternalLinkIcon />
+							<CopyIcon />
 						</div>
-					</Tooltip>
-					<PopoverContent radius='sm' className='p-0 min-w-[200px] border-none'>
-						<form onSubmit={(e) => update('instagram', fields.social[media], e)}>
-							<Input
-								size='md'
-								type='text'
-								radius='sm'
-								placeholder={`Add ${media}`}
-								defaultValue={fields.social[media]}
-								onValueChange={(e) => (fields.social[media] = e)}
+					}
+					size='sm'
+					isDisabled={fields.social?.[media] ? false : true}
+				>
+					<div>
+						<PopoverTrigger>
+							<Button
+								size='sm'
+								isIconOnly
+								radius='full'
+								variant={fields.social?.[media] ? 'solid' : 'flat'}
+								color={fields.social?.[media] ? 'primary' : 'default'}
 								startContent={icon}
-								isRequired
-								endContent={
-									<Tooltip content='Update' size='sm'>
-										<Button
-											size='sm'
-											isIconOnly
-											color='primary'
-											radius='full'
-											type='submit'
-											startContent={<PaperPlaneIcon />}
-										/>
-									</Tooltip>
-								}
 							/>
-						</form>
-					</PopoverContent>
-				</Popover>
-			</>
+						</PopoverTrigger>
+					</div>
+				</Tooltip>
+				<PopoverContent radius='sm' className='p-0 min-w-[200px] border-none'>
+					<form onSubmit={(e) => update(media, socialInput, e)}>
+						<Input
+							size='md'
+							type='text'
+							radius='sm'
+							placeholder={`Add ${media}`}
+							defaultValue={fields.social?.[media]}
+							onValueChange={(e) => (socialInput = e)}
+							startContent={icon}
+							isRequired
+							endContent={
+								<Tooltip content={`Update ${media}`} size='sm'>
+									<Button
+										size='sm'
+										isIconOnly
+										color='primary'
+										radius='full'
+										type='submit'
+										startContent={<PaperPlaneIcon />}
+									/>
+								</Tooltip>
+							}
+						/>
+					</form>
+				</PopoverContent>
+			</Popover>
 		);
 	};
 
@@ -283,8 +285,10 @@ export const Account = ({ user }: any) => {
 								<InfoCircledIcon />
 							</Tooltip>
 						</div>
-
-						<span className='text-sm font-semi text-foreground'>{fields?.email}</span>
+						<span className='text-sm font-semi text-foreground  flex items-center gap-2'>
+							<EnvelopeClosedIcon />
+							{fields?.email}
+						</span>
 						<UpdateForm
 							field='username'
 							icon={<CiAt />}
@@ -295,11 +299,10 @@ export const Account = ({ user }: any) => {
 							icon={<BiPhone />}
 							classes='text-sm font-semi flex gap-2 items-center'
 						/>
-
 						<div className='flex gap-1 flex-wrap items-center w-full '>
-							<Social media='instagram' icon={<InstagramLogoIcon />} />
 							<Social media='facebook' icon={<FaFacebookF />} />
 							<Social media='twitter' icon={<TwitterLogoIcon />} />
+							<Social media='instagram' icon={<InstagramLogoIcon />} />
 							<Social media='linkedin' icon={<LinkedInLogoIcon />} />
 							<Social media='github' icon={<GitHubLogoIcon />} />
 						</div>
@@ -310,7 +313,6 @@ export const Account = ({ user }: any) => {
 						<h5>Bio</h5>
 						<About />
 					</div>
-
 					<div className='w-full flex justify-between items-center'>
 						<h5>Birthday </h5>
 						<DatePicker
@@ -324,12 +326,10 @@ export const Account = ({ user }: any) => {
 							}}
 						/>
 					</div>
-
 					<div className='w-full flex justify-between items-center'>
 						<h5>Member since</h5>
 						<small>{dateFormat(fields?.createdAt, 'dd/mmm/yy')}</small>
 					</div>
-
 					<div className='w-full flex justify-between items-center'>
 						<h5>Role</h5>
 						<small>{fields.role}</small>
@@ -339,15 +339,7 @@ export const Account = ({ user }: any) => {
 						<small>{fields.permission}</small>
 					</div>
 				</div>
-				<Button
-					size='md'
-					color='danger'
-					radius='none'
-					variant='flat'
-					// onClick={() => regenerate('content')}
-					fullWidth
-					// isDisabled={user?.permission == 'DELETE' || user?.permission == 'ALL' ? false : true}
-				>
+				<Button size='md' color='danger' radius='none' variant='flat' fullWidth>
 					DELETE MY PROFILE
 				</Button>
 			</CardBody>

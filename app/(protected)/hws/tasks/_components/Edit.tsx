@@ -94,7 +94,6 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 	];
 
 	useEffect(() => {
-		// console.log(fields)
 		const members = [];
 		item?.assignedTo?.map((i) => {
 			members.push(i.id);
