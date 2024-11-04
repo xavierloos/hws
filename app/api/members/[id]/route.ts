@@ -11,6 +11,7 @@ export const GET = async (req: Request, { params }: any) => {
 			where: { id: params.id },
 			include: { social: true },
 		});
+
 		if (res?.image && res?.image.includes(res?.id)) {
 			const options = {
 				version: 'v2', // defaults to 'v2' if missing.

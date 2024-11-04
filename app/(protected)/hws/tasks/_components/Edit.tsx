@@ -480,7 +480,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 											<div
 												className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words m-auto text-start ${
 													i.user?.id == user?.id
-														? 'ms-0 bg-primary rounded-tl-none'
+														? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
 														: 'me-0 bg-foreground-50 rounded-tr-none'
 												}`}
 											>
