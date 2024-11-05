@@ -44,7 +44,7 @@ model User {
   otpConfirmation           OTPConfirmation?
   blog                      Blog[]
   file                      File[]
-  comment                   Comment[]
+  comments                  Comment[]
   social                    Social?
   createdTasks              Task[]           @relation("CreatedBy")
   assignedTaskIds           String[]
@@ -128,7 +128,7 @@ model File {
 }
 
 model Task {
-  id              String   @id @default(cuid()) @map("_id")
+  id              String    @id @default(cuid()) @map("_id")
   name            String
   type            String?
   priority        Json
@@ -136,12 +136,13 @@ model Task {
   attachments     Json?
   description     String
   status          Json
-  createdAt       DateTime @default(now())
-  modifiedAt      DateTime @default(now())
+  createdAt       DateTime  @default(now())
+  modifiedAt      DateTime  @default(now())
   creatorId       String
-  createdBy       User     @relation("CreatedBy", fields: [creatorId], references: [email], onDelete: Cascade)
+  createdBy       User      @relation("CreatedBy", fields: [creatorId], references: [email], onDelete: Cascade)
   assignedUserIds String[]
-  assignedTo      User[]   @relation("AssignedTo", fields: [assignedUserIds], references: [id])
+  assignedTo      User[]    @relation("AssignedTo", fields: [assignedUserIds], references: [id])
+  comments        Comment[]
 }
 
 model Comment {
@@ -149,12 +150,19 @@ model Comment {
   name        String?
   comment     String
   attachments Json?
-  relatedId   String //Could be related to blog, task, product, etc
-  createdBy   String
+  // relatedId   String //Could be related to blog, task, product, etc
+  createdBy   String?
   createdAt   DateTime @default(now())
-  user        User?    @relation(fields: [createdBy], references: [email], onDelete: Cascade)
-  blog        Blog?    @relation(fields: [relatedId], references: [id], onDelete: Cascade)
-  isVerified  Boolean  @default(false)
+  // user        User?    @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+  // blog        Blog?    @relation(fields: [relatedId], references: [id], onDelete: Cascade)
+  verified    Boolean  @default(false)
+  // Add these fields
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      String?
+  Blog        Blog?    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId      String?
 }
 
 model Newsletter {

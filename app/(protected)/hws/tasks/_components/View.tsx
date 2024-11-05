@@ -49,8 +49,9 @@ type Props = {
 	getData: (sort?: string) => {};
 };
 
-export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
+export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 	const user = useCurrentUser();
+	console.log(user);
 	const [groupSelected, setGroupSelected] = useState([]);
 	const [searchMember, setSearchMember] = useState(null);
 	const [team, setTeam] = useState([]);
@@ -65,9 +66,8 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 		category: false,
 	});
 	const [inputs, setInputs] = useState({
-		comment: undefined,
+		comment: null,
 		attachments: null,
-		relatedId: undefined,
 	});
 	let priorities = [
 		{ name: 'High', color: 'danger' },
@@ -99,7 +99,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 			members.push(i.id);
 		});
 		setGroupSelected(members);
-		getComments();
+		// getComments();
 		getMembers();
 	}, [item]);
 
@@ -150,7 +150,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 	const onSubmitComment = async (e: React.FormEvent<HTMLFormElement>, values: any, files: any, id: string) => {
 		e.preventDefault();
 		const data = new FormData();
-		values.relatedId = id;
+		values.taskId = id;
 
 		if (files.length > 0) {
 			values.attachments = [];
@@ -162,7 +162,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 				}); //Append files to values
 			});
 		}
-
+		console.log(values);
 		await axios
 			.post('/api/comments', values)
 			.then(async (res) => {
@@ -171,7 +171,23 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 					attachments: null,
 					relatedId: undefined,
 				});
-				getComments();
+				setFields({
+					...fields,
+					comments: [
+						{
+							comment: values.comment,
+							createdAt: new Date(),
+							user: {
+								id: user.id,
+								image: user.tempUrl,
+								username: user.username,
+							},
+						},
+						...(fields.comments || []),
+					],
+				});
+
+				getData();
 
 				// if (files.length > 0) {
 				//   files.forEach((item: any) => {
@@ -192,7 +208,6 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 			.catch((e) => {
 				toast.error(e.response.data.message);
 			});
-		// getData();
 	};
 
 	const onDeleteComment = async (id: string) => {
@@ -355,7 +370,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 					{fields?.assignedTo?.map((i) => {
 						return (
 							<Tooltip key={i} content={`${i.name} ${user.email == i.email ? ' • (me)' : ''}`} size='sm'>
-								<Avatar size='sm' src={i.tempUrl} className={`shrink-0 ring-1`} />
+								<Avatar size='sm' src={i.image} className={`shrink-0 ring-1`} />
 							</Tooltip>
 						);
 					})}
@@ -411,7 +426,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 					<span
 						className={`text-sm w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-1`}
 					>
-						By {fields.createdBy.email === user.email ? 'me' : fields?.createdBy?.name}
+						By {fields.creatorId === user.email ? 'me' : fields?.createdBy?.name}
 					</span>
 				}
 			/>
@@ -424,7 +439,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 						title={
 							<div className='flex items-center space-x-2'>
 								<ChatBubbleIcon />
-								<span>{comments.length} Comments</span>
+								<span>{fields.comments.length} Comments</span>
 							</div>
 						}
 					>
@@ -466,30 +481,34 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 									}
 								/>
 							</form>
-							{comments?.map((i) => {
+							{fields.comments?.map((i) => {
 								return (
 									<div
 										className={`flex gap-2 max-w-[80%] m-auto ${
-											i.user?.id == user?.id ? 'ms-0' : 'flex-row-reverse me-0'
+											i.user.id == user.id ? 'ms-0' : 'flex-row-reverse me-0'
 										}`}
 									>
-										<Avatar src={i?.user?.tempUrl} size='sm' className='shrink-0' />
+										<Avatar src={i.user.image} size='sm' className='shrink-0' />
 										<div className='flex flex-col gap-1'>
 											<div
 												className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words m-auto text-start ${
 													i.user?.id == user?.id
 														? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
-														: 'me-0 bg-foreground-50 rounded-tr-none'
+														: 'me-0 bg-default-100 rounded-tr-none'
 												}`}
 											>
-												{i?.comment}
+												{i.comment}
 											</div>
 											<div
 												className={`text-tiny text-foreground-400 truncate text-ellipsis line-clamp-1 ${
 													i.user.id == user.id ? 'text-start' : 'text-end'
 												}`}
 											>
-												<span>{i?.user?.id === user?.id ? 'Me' : `@${i?.user?.username}`}</span>
+												<span>
+													{i.user.id === user.id
+														? 'Me'
+														: `${i.user.username ? `@${i.user.username}` : i.user.email}`}
+												</span>
 												<span>
 													{i?.attachments && ' • ' + i?.attachments?.length + ' files'}
 												</span>

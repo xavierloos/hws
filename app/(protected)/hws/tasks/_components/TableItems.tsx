@@ -53,7 +53,7 @@ import {
 import { Add } from './Add';
 import { format } from 'timeago.js';
 import { Title } from '@/components/title';
-import { Edit } from './Edit';
+import { View } from './View';
 import { useTransition } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -99,7 +99,7 @@ export const TableItems = ({
 	const [rowsPerPage, setRowsPerPage] = useState(5);
 	const [page, setPage] = useState(1);
 	const hasSearchFilter = Boolean(filterValue);
-	const [editItem, setEditItem] = useState(undefined);
+	const [viewItem, setViewItem] = useState(undefined);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [isSavingEdit, startSavingEdit] = useTransition();
 	const [visibleColumns, setVisibleColumns] = useState<Selection>(new Set(initialCols));
@@ -249,30 +249,32 @@ export const TableItems = ({
 					/>
 				);
 			case 'assignedTo':
+				console.log(cellValue[0].image);
 				if (cellValue.length === 1) {
 					return (
 						<User
 							avatarProps={{
 								size: 'sm',
 								className: `shrink-0`,
-								src: cellValue[0].tempUrl,
+								src: cellValue[0].image,
 							}}
+							rounded
 							description={
-								<span className='truncate text-ellipsis line-clamp-1 '>@{cellValue[0].username}</span>
+								<span className='truncate text-ellipsis line-clamp-1'>@{cellValue[0].username}</span>
 							}
-							name={<span className='truncate text-ellipsis line-clamp-1 '>{cellValue[0].name}</span>}
+							name={<span className='truncate text-ellipsis line-clamp-1'>{cellValue[0].name}</span>}
 						/>
 					);
 				} else {
 					return (
-						<AvatarGroup size='sm' max={3} isBordered className=' px-3 justify-start border-transparent'>
+						<AvatarGroup size='sm' max={3} isBordered className='px-3 justify-start border-transparent'>
 							{cellValue.map((val: any) => {
 								return (
 									<Tooltip
 										content={`${val.name} ${user.email == val.email ? ' • (me)' : ''}`}
 										size='sm'
 									>
-										<Avatar size='sm' src={val.tempUrl} className={`shrink-0 ring-1`} />
+										<Avatar size='sm' src={val.image} className={`shrink-0 ring-1`} />
 									</Tooltip>
 								);
 							})}
@@ -505,8 +507,8 @@ export const TableItems = ({
 		);
 	}, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
-	const onEditItem = (id: any) => {
-		setEditItem(data.filter((i: any) => i.id === id));
+	const onViewItem = (id: any) => {
+		setViewItem(data.filter((i: any) => i.id === id));
 		return onOpen();
 	};
 
@@ -526,7 +528,7 @@ export const TableItems = ({
 				onSelectionChange={setSelectedKeys}
 				onSortChange={setSortDescriptor}
 				onRowAction={(id) => {
-					return onEditItem(id);
+					return onViewItem(id);
 				}}
 				classNames={{
 					wrapper: 'p-0 border-none shadow-md rounded-md',
@@ -585,7 +587,7 @@ export const TableItems = ({
 			>
 				<ModalContent className='my-4'>
 					{/* <ModalHeader className="flex flex-col gap-1 mb-0 pb-0">Task</ModalHeader> */}
-					<Edit item={editItem} onSubmit={onSubmitEdit} isSaving={isSavingEdit} getData={getData} />
+					<View item={viewItem} onSubmit={onSubmitEdit} isSaving={isSavingEdit} getData={getData} />
 				</ModalContent>
 			</Modal>
 			{/* EDIT BLOG ENDS */}

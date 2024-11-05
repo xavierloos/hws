@@ -61,8 +61,39 @@ export const GET = async (req: Request) => {
 				OR: [{ creatorId: user.email }, { assignedUserIds: { has: user.id } }],
 			},
 			include: {
-				createdBy: true,
-				assignedTo: true,
+				createdBy: {
+					select: {
+						id: true,
+						name: true,
+						username: true,
+						image: true,
+					},
+				},
+				assignedTo: {
+					select: {
+						id: true,
+						name: true,
+						username: true,
+						image: true,
+					},
+				},
+				comments: {
+					orderBy: {
+						createdAt: 'desc',
+					},
+					where: {
+						verified: true,
+					},
+					include: {
+						user: {
+							select: {
+								id: true,
+								username: true,
+								image: true,
+							},
+						},
+					},
+				},
 			},
 		});
 
@@ -76,27 +107,16 @@ export const GET = async (req: Request) => {
 					i.url = url;
 				}
 			}
-
-			item.createdBy.image = await getTemporaryUrlImage('profiles', item.createdBy.image, item.createdBy.id);
-
 			for (const i of item.assignedTo) {
-				i.tempUrl = await getTemporaryUrlImage('profiles', i.image, i.id);
-				// const [url] = await storage
-				//   .bucket(`${process.env.GCP_BUCKET}`)
-				//   .file(`tasks/${item.id}/${i.name}`)
-				//   .getSignedUrl(options);
-				// i.url = url;
+				i.image = await getTemporaryUrlImage('profiles', i.image, i.id);
+			}
+			if (item.comments.length > 0) {
+				for (const i of item.comments) {
+					i.user.image = await getTemporaryUrlImage('profiles', i.user.image, i.user.id);
+				}
 			}
 
-			// item.assignedTo = [];
-
-			// for (const i of item.assignedUserIds) {
-			// 	const user = await getUserById(i);
-			// 	// const image =
-			// 	user.tempUrl = await getTemporaryUrlImage('profiles', user.image, user.id);
-
-			// 	item.assignedTo.push(user);
-			// }
+			item.createdBy.image = await getTemporaryUrlImage('profiles', item.createdBy.image, item.createdBy.id);
 		}
 
 		return NextResponse.json(res, { status: 200 });
