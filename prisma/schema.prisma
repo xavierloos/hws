@@ -27,7 +27,7 @@ model User {
   id                        String           @id @default(cuid()) @map("_id")
   username                  String?          @unique //Optional for social creations
   name                      String?
-  email                     String?          @unique
+  email                     String           @unique
   emailVerified             Boolean          @default(false)
   isActive                  Boolean          @default(true)
   image                     String?
@@ -44,9 +44,11 @@ model User {
   otpConfirmation           OTPConfirmation?
   blog                      Blog[]
   file                      File[]
-  task                      Task[]
   comment                   Comment[]
   social                    Social?
+  createdTasks              Task[]           @relation("CreatedBy")
+  assignedTaskIds           String[]
+  assignedTasks             Task[]           @relation("AssignedTo", fields: [assignedTaskIds], references: [id])
 
   @@unique([email, id])
 }
@@ -126,19 +128,20 @@ model File {
 }
 
 model Task {
-  id          String    @id @default(cuid()) @map("_id")
-  name        String
-  type        String?
-  priority    Json
-  dueDate     String
-  assignedIds String[]
-  attachments Json?
-  description String
-  status      Json
-  createdBy   String
-  createdAt   DateTime  @default(now())
-  modifiedAt  DateTime? @default(now())
-  user        User      @relation(fields: [createdBy], references: [email], onDelete: Cascade)
+  id              String   @id @default(cuid()) @map("_id")
+  name            String
+  type            String?
+  priority        Json
+  dueDate         String
+  attachments     Json?
+  description     String
+  status          Json
+  createdAt       DateTime @default(now())
+  modifiedAt      DateTime @default(now())
+  creatorId       String
+  createdBy       User     @relation("CreatedBy", fields: [creatorId], references: [email], onDelete: Cascade)
+  assignedUserIds String[]
+  assignedTo      User[]   @relation("AssignedTo", fields: [assignedUserIds], references: [id])
 }
 
 model Comment {

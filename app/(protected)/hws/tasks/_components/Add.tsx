@@ -57,7 +57,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 		priority: {},
 		type: useState<Selection>(new Set([])),
 		dueDate: useState<DateValue>(),
-		assignedIds: [],
+		assignedUserIds: [],
 		attachments: null,
 		description: undefined,
 	});
@@ -212,7 +212,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 						items={team}
 						label='Assign to'
 						selectionMode='multiple'
-						onChange={(e) => setFields({ ...fields, assignedIds: e.target.value.split(',') })}
+						onChange={(e) => setFields({ ...fields, assignedUserIds: e.target.value.split(',') })}
 						renderValue={(items: any) => {
 							return <p>{items.length} selected</p>;
 						}}

@@ -94,7 +94,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 	];
 
 	useEffect(() => {
-		const members = [];
+		let members: any[];
 		item?.assignedTo?.map((i) => {
 			members.push(i.id);
 		});
@@ -208,9 +208,9 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 			case 'status':
 				value = status.find((st) => st.name === value);
 				break;
-			case 'assignedIds':
-				let newTeam = team.filter((t) => value.includes(t?.id));
-				fields.assignedTo = newTeam;
+			case 'assignedUserIds':
+				fields.assignedTo = team.filter((user) => value.includes(user.id));
+				fields.ssignedUserIds = team.filter((t) => value.includes(t?.id));
 				break;
 			default:
 				break;
@@ -222,6 +222,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 				toast.success('Task updated successfully');
 			})
 			.catch((e) => {});
+		console.log(fields);
 		getData();
 	};
 
@@ -370,11 +371,8 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 						</PopoverTrigger>
 						<PopoverContent radius='sm' className='p-4 min-w-[200px] border-none radius-none'>
 							<CheckboxGroup
-								defaultValue={fields.assignedIds}
-								onChange={(ids) => {
-									// setGroupSelected;
-									update('assignedIds', ids);
-								}}
+								defaultValue={fields.assignedUserIds}
+								onChange={(ids) => update('assignedUserIds', ids)}
 								classNames='w-full overflow-y-hidden'
 								style={{ overflow: 'scroll' }}
 							>
@@ -404,7 +402,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 				avatarProps={{
 					size: 'sm',
 					className: 'shrink-0',
-					src: fields?.user?.image,
+					src: fields?.createdBy?.image,
 				}}
 				description={
 					<span className='text-tiny truncate text-ellipsis line-clamp-1'>{format(fields?.createdAt)}</span>
@@ -413,7 +411,7 @@ export const Edit = ({ item, onSubmit, isSaving, getData }: Props) => {
 					<span
 						className={`text-sm w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-1`}
 					>
-						By {fields.createdBy === user.email ? 'me' : fields?.user?.name}
+						By {fields.createdBy.email === user.email ? 'me' : fields?.createdBy?.name}
 					</span>
 				}
 			/>
