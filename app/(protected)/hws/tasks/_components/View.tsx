@@ -37,22 +37,20 @@ import {
 	TrashIcon,
 	Share1Icon,
 } from '@radix-ui/react-icons';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { now, getLocalTimeZone, DateValue, today, parseAbsoluteToLocal } from '@internationalized/date';
+import { now, getLocalTimeZone, parseDate, today, parseAbsoluteToLocal } from '@internationalized/date';
 import { FilePreviewer } from '@/components/filePreviewer';
 import { modules, formats } from '@/react-quill-settings';
-
+import { I18nProvider } from '@react-aria/i18n';
+import ReactQuill from 'react-quill';
 type Props = {
 	item: any;
-	onSubmit: (e: any, values: any, files: any) => {};
-	isSaving: boolean;
 	getData: (sort?: string) => {};
+	onDelete: (id: string, name: string) => {};
 };
 
-export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
+export const View = ({ item, getData, onDelete }: Props) => {
 	const user = useCurrentUser();
-	console.log(user);
-	const [groupSelected, setGroupSelected] = useState([]);
+
 	const [searchMember, setSearchMember] = useState(null);
 	const [team, setTeam] = useState([]);
 	const [images, setImages] = useState([]);
@@ -60,13 +58,13 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 	const [files, setFiles] = useState<File[]>([]);
 	const [fields, setFields] = useState(item?.[0]);
 	const markup = { __html: fields.description };
-	const [comments, setComments] = useState([]);
+	const [description, setDescription] = useState(item?.[0].description);
 	const [add, setAdd] = useState({
 		image: false,
 		category: false,
 	});
 	const [inputs, setInputs] = useState({
-		comment: null,
+		comment: '',
 		attachments: null,
 	});
 	let priorities = [
@@ -98,21 +96,10 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 		item?.assignedTo?.map((i) => {
 			members.push(i.id);
 		});
-		setGroupSelected(members);
+		// setGroupSelected(members);
 		// getComments();
 		getMembers();
 	}, [item]);
-
-	const getComments = async () => {
-		await axios
-			.get(`/api/comments?id=${fields.id}`)
-			.then(async (res) => {
-				setComments(res.data);
-			})
-			.catch((e) => {});
-
-		getMembers();
-	};
 
 	const getMembers = async () => {
 		await axios
@@ -167,9 +154,8 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 			.post('/api/comments', values)
 			.then(async (res) => {
 				setInputs({
-					comment: undefined,
+					comment: '',
 					attachments: null,
-					relatedId: undefined,
 				});
 				setFields({
 					...fields,
@@ -212,10 +198,15 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 
 	const onDeleteComment = async (id: string) => {
 		await axios.delete(`/api/comments?id=${id}`);
-		getComments();
+		getData();
+		return setFields({
+			...fields,
+			comments: fields.comments.filter((comment: any) => comment.id !== id),
+		});
 	};
 
-	const update = async (field: string, value: any) => {
+	const update = async (field: string, value: any, e?: React.ChangeEvent<HTMLInputElement>) => {
+		e?.preventDefault();
 		switch (field) {
 			case 'priority':
 				value = priorities.find((priority) => priority.name === value);
@@ -224,21 +215,58 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 				value = status.find((st) => st.name === value);
 				break;
 			case 'assignedUserIds':
-				fields.assignedTo = team.filter((user) => value.includes(user.id));
-				fields.ssignedUserIds = team.filter((t) => value.includes(t?.id));
+				fields.assignedTo = team.filter((user: any) => value.includes(user.id));
+				fields.ssignedUserIds = team.filter((t: any) => value.includes(t.id));
 				break;
 			default:
+				setFields({ ...fields, [field]: value });
 				break;
 		}
 		await axios
 			.put(`/api/tasks/${fields.id}?type=${field}`, { [field]: value })
 			.then(() => {
-				setFields({ ...fields, [field]: value });
 				toast.success('Task updated successfully');
 			})
 			.catch((e) => {});
 		console.log(fields);
 		getData();
+	};
+
+	const UpdateForm = ({ field, classes }: any) => {
+		return (
+			<Popover showArrow placement='bottom' radius='sm' className=''>
+				<PopoverTrigger>
+					<h2 className='m-0 p-0'>{fields.name}</h2>
+				</PopoverTrigger>
+				<PopoverContent radius='sm' className='p-0 border-none'>
+					<form onSubmit={(e) => update(field, fields[field], e)}>
+						<Input
+							size='md'
+							type='text'
+							radius='sm'
+							className='min-w-[300px]'
+							defaultValue={fields[field]}
+							placeholder={`Update ${field}`}
+							onValueChange={(e) => (fields[field] = e)}
+							isRequired
+							fullWidth
+							endContent={
+								<Tooltip content={`Update ${field}`} size='sm'>
+									<Button
+										size='sm'
+										isIconOnly
+										color='primary'
+										radius='full'
+										type='submit'
+										startContent={<PaperPlaneIcon />}
+									/>
+								</Tooltip>
+							}
+						/>
+					</form>
+				</PopoverContent>
+			</Popover>
+		);
 	};
 
 	const MemberCheckBox = ({ item }: any) => {
@@ -251,7 +279,7 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 						size: 'sm',
 						isBordered: false,
 						className: 'w-5 h-5 shrink-0',
-						src: item.tempUrl,
+						src: item.image,
 					}}
 				/>
 			</Checkbox>
@@ -261,19 +289,54 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 	return (
 		<ModalBody>
 			<div className='m-0 p-0'>
-				<span className='text-foreground text-tiny m-0 p-0'>
-					Due {format(fields.dueDate)} • on {dateFormat(fields.dueDate, 'ddd dd/mmm/yy - HH:MM')}{' '}
-				</span>
+				<div className='w-full flex gap-1 items-center text-foreground text-sm'>
+					Due {format(fields.dueDate)} • on{' '}
+					{dateFormat(
+						fields.dueDate,
+						`${user.id == fields.createdBy.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`
+					)}
+					{user.id == fields.createdBy.id && (
+						<I18nProvider locale={'en-GB'}>
+							<DatePicker
+								size='sm'
+								radius='none'
+								hourCycle={24}
+								hideTimeZone={true}
+								variant='underlined'
+								defaultValue={parseAbsoluteToLocal(fields.dueDate)}
+								showMonthAndYearPickers
+								minValue={today(getLocalTimeZone())}
+								className='flex flex-col-reverse flex-wrap-reverse overflow-hidden datePicker w-[160px]'
+								onChange={(date: any) => {
+									const m = `${date?.month <= 9 ? '0' : ''}${date?.month}`;
+									const d = `${date?.day <= 9 ? '0' : ''}${date?.day}`;
+									const h = `${date?.hour <= 9 ? '0' : ''}${date?.hour}`;
+									const min = `${date?.minute <= 9 ? '0' : ''}${date?.minute}`;
+									update('dueDate', `${date?.year}-${m}-${d}T${h}:${min}Z`);
+								}}
+							/>
+						</I18nProvider>
+					)}
+				</div>
+
 				<div className='flex justify-between'>
-					<h2 className='m-0 p-0'>{fields.name}</h2>
-					<div className='flex gap-1'>
-						<Button size='sm' isIconOnly variant='flat' type='submit' radius='full'>
-							<Share1Icon />
-						</Button>
-						<Button size='sm' isIconOnly variant='flat' color='danger' type='submit' radius='full'>
-							<TrashIcon />
-						</Button>
-					</div>
+					{user.id == fields.createdBy.id ? (
+						<>
+							<UpdateForm field='name' classes='text-sm font-semi flex gap-2 items-center' />
+							<Button
+								size='sm'
+								isIconOnly
+								variant='flat'
+								color='danger'
+								type='submit'
+								radius='full'
+								onClick={() => onDelete(fields.id, fields.name)}
+								startContent={<TrashIcon />}
+							/>
+						</>
+					) : (
+						<h2 className='m-0 p-0'>{fields.name}</h2>
+					)}
 				</div>
 			</div>
 			<div className='flex gap-3 flex-wrap'>
@@ -293,9 +356,10 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 								defaultValue={fields.priority.name}
 								onValueChange={(e) => update('priority', e)}
 							>
-								{priorities?.map((i) => {
+								{priorities?.map((i, index) => {
 									return (
 										<Radio
+											key={index}
 											size='sm'
 											value={i.name}
 											isDisabled={i == fields.priority ? true : false}
@@ -324,9 +388,14 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 								defaultValue={fields.status.name}
 								onValueChange={(e) => update('status', e)}
 							>
-								{status?.map((i) => {
+								{status?.map((i, index) => {
 									return (
-										<Radio size='sm' value={i.name} isDisabled={i == fields.status ? true : false}>
+										<Radio
+											key={index}
+											size='sm'
+											value={i.name}
+											isDisabled={i == fields.status ? true : false}
+										>
 											{i.name}
 										</Radio>
 									);
@@ -351,9 +420,14 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 								defaultValue={fields.type}
 								onValueChange={(e) => update('type', e)}
 							>
-								{types?.map((i) => {
+								{types?.map((i, index) => {
 									return (
-										<Radio size='sm' value={i.name} isDisabled={i == fields.type ? true : false}>
+										<Radio
+											key={index}
+											size='sm'
+											value={i.name}
+											isDisabled={i == fields.type ? true : false}
+										>
 											{i.name}
 										</Radio>
 									);
@@ -366,23 +440,25 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 
 			<div className='flex flex-col gap-1'>
 				<span className='text-foreground text-tiny m-0 p-0'>Team</span>
-				<AvatarGroup isBordered max={13} className='px-3 justify-start border-transparent'>
-					{fields?.assignedTo?.map((i) => {
-						return (
-							<Tooltip key={i} content={`${i.name} ${user.email == i.email ? ' • (me)' : ''}`} size='sm'>
-								<Avatar size='sm' src={i.image} className={`shrink-0 ring-1`} />
-							</Tooltip>
-						);
-					})}
+				<div className='flex'>
+					{fields?.assignedTo.length > 0 && (
+						<AvatarGroup isBordered max={13} className='ps-3 justify-start border-transparent'>
+							{fields?.assignedTo?.map((i) => {
+								return (
+									<Tooltip
+										key={i}
+										content={`${i.name} ${user.email == i.email ? ' • (me)' : ''}`}
+										size='sm'
+									>
+										<Avatar size='sm' src={i.image} className={`shrink-0 ring-1`} />
+									</Tooltip>
+								);
+							})}
+						</AvatarGroup>
+					)}
 					<Popover showArrow placement='bottom' radius='sm'>
 						<PopoverTrigger>
-							<Avatar
-								size='sm'
-								color='primary'
-								showFallback
-								className={`shrink-0 ring-1`}
-								fallback={<PlusIcon className='text-foreground' fill='currentColor' />}
-							/>
+							<Button color='primary' radius='full' isIconOnly size='sm' endContent={<PlusIcon />} />
 						</PopoverTrigger>
 						<PopoverContent radius='sm' className='p-4 min-w-[200px] border-none radius-none'>
 							<CheckboxGroup
@@ -397,21 +473,57 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 									placeholder='Search member'
 									onKeyUp={(e) => setSearchMember(e.target.value)}
 								/>
-								{team?.map((i, index) => {
+								{team?.map((i: any) => {
 									if (searchMember) {
 										if (i.name?.toLowerCase().includes(searchMember?.toLowerCase())) {
-											return <MemberCheckBox item={i} key={index} />;
+											return <MemberCheckBox item={i} key={i.id} />;
 										}
 									} else {
-										return <MemberCheckBox item={i} key={index} />;
+										return <MemberCheckBox item={i} key={i.id} />;
 									}
 								})}
 							</CheckboxGroup>
 						</PopoverContent>
 					</Popover>
-				</AvatarGroup>
+				</div>
 			</div>
-			<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
+			{user.id == fields.createdBy.id ? (
+				<Popover showArrow placement='bottom' radius='sm'>
+					<PopoverTrigger>
+						<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
+					</PopoverTrigger>
+					<PopoverContent radius='sm' className='p-0 min-w-[200px] border-none'>
+						<form onSubmit={(e) => update('description', description, e)}>
+							<ReactQuill
+								theme='snow'
+								placeholder='Write your content'
+								className='min-h-[300px] rounded-none bg-content2 max-w-[600px]'
+								modules={modules}
+								formats={formats}
+								value={description}
+								onChange={(v) => {
+									setDescription(v);
+								}}
+							/>
+							<Tooltip content={`Update description`} size='sm'>
+								<Button
+									size='sm'
+									isIconOnly
+									color='primary'
+									radius='full'
+									type='submit'
+									isDisabled={description ? false : true}
+									className='absolute appearance-none select-none top-1 right-1 rtl:left-1 rtl:right-[unset]'
+									startContent={<PaperPlaneIcon />}
+								/>
+							</Tooltip>
+						</form>
+					</PopoverContent>
+				</Popover>
+			) : (
+				<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
+			)}
+
 			<User
 				className='w-full justify-start'
 				avatarProps={{
@@ -453,6 +565,7 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 									isRequired
 									minRows={1}
 									description={`0 Files attached`}
+									value={inputs.comment}
 									onValueChange={(e) => setInputs({ ...inputs, comment: e })}
 									startContent={<Avatar src={user?.tempUrl} size='sm' className='shrink-0' />}
 									endContent={
@@ -461,7 +574,6 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 												size='sm'
 												isIconOnly
 												color='foreground'
-												// type="submit"
 												variant='flat'
 												radius='full'
 											>
@@ -481,9 +593,10 @@ export const View = ({ item, onSubmit, isSaving, getData }: Props) => {
 									}
 								/>
 							</form>
-							{fields.comments?.map((i) => {
+							{fields.comments?.map((i: any, index: any) => {
 								return (
 									<div
+										key={index}
 										className={`flex gap-2 max-w-[80%] m-auto ${
 											i.user.id == user.id ? 'ms-0' : 'flex-row-reverse me-0'
 										}`}

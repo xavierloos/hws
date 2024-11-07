@@ -155,7 +155,7 @@ export const View = ({ user, getData }: Props) => {
 					<Image
 						radius='full'
 						className=' w-32 h-32 object-cover shrink-0'
-						src={fields?.tempUrl}
+						src={fields?.image}
 						alt={`${fields?.name} profile cover`}
 					/>
 				</div>

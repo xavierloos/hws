@@ -6,6 +6,12 @@ import { generateToken } from '@/actions/tokens';
 import { NextResponse } from 'next/server';
 import { storage } from '@/lib/gcp';
 
+const options = {
+	version: 'v2', // defaults to 'v2' if missing.
+	action: 'read',
+	expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
+};
+
 export const GET = async () => {
 	try {
 		const user = await currentUser();
@@ -21,18 +27,10 @@ export const GET = async () => {
 
 		for (const key in res) {
 			if (Object.prototype.hasOwnProperty.call(res, key)) {
-				const element = res[key];
-				const options = {
-					version: 'v2', // defaults to 'v2' if missing.
-					action: 'read',
-					expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
-				};
-
-				const [url] = await storage
+				res[key].image = await storage
 					.bucket(`${process.env.GCP_BUCKET}`)
-					.file(`profiles/${element.id}/${element.image}`)
+					.file(`profiles/${res[key].id}/${res[key].image}`)
 					.getSignedUrl(options);
-				element.tempUrl = url;
 			}
 		}
 

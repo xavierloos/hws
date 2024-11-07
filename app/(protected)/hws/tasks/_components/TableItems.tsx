@@ -249,8 +249,9 @@ export const TableItems = ({
 					/>
 				);
 			case 'assignedTo':
-				console.log(cellValue[0].image);
-				if (cellValue.length === 1) {
+				if (cellValue.length === 0) {
+					return <span>No assigned</span>;
+				} else if (cellValue.length === 1) {
 					return (
 						<User
 							avatarProps={{
@@ -314,19 +315,20 @@ export const TableItems = ({
 			case 'actions':
 				return (
 					<div className='relative flex items-center gap-2 justify-end'>
-						<Tooltip color='danger' content='Delete' size='sm'>
-							<Button
-								size='sm'
-								isIconOnly
-								radius='full'
-								color='danger'
-								variant='light'
-								onClick={() => onDelete(i.id, i.name)}
-								isDisabled={permission == 'DELETE' || permission == 'ALL' ? false : true}
-							>
-								<TrashIcon color='red' />
-							</Button>
-						</Tooltip>
+						{user.id == i.createdBy.id && (permission == 'DELETE' || permission == 'ALL') && (
+							<Tooltip color='danger' content='Delete' size='sm'>
+								<Button
+									size='sm'
+									isIconOnly
+									radius='full'
+									color='danger'
+									variant='light'
+									onClick={() => onDelete(i.id, i.name)}
+								>
+									<TrashIcon color='red' />
+								</Button>
+							</Tooltip>
+						)}
 					</div>
 				);
 			// default:
@@ -586,8 +588,7 @@ export const TableItems = ({
 				className='rounded-md'
 			>
 				<ModalContent className='my-4'>
-					{/* <ModalHeader className="flex flex-col gap-1 mb-0 pb-0">Task</ModalHeader> */}
-					<View item={viewItem} onSubmit={onSubmitEdit} isSaving={isSavingEdit} getData={getData} />
+					<View item={viewItem} getData={getData} onDelete={onDelete} />
 				</ModalContent>
 			</Modal>
 			{/* EDIT BLOG ENDS */}

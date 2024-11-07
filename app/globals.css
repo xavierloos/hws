@@ -198,15 +198,36 @@ svg text {
 }
 
 .markup>ol,
-li {
+.markup>ul {
   list-style: auto;
   margin: auto;
   padding: revert;
 }
 
-.birthday>div {
+.markup>ul {
+  list-style: disc;
+}
+
+.markup a {
+  color: #7cbdfa;
+  text-decoration: underline;
+}
+
+blockquote {
+  border-left: 4px solid gray !important;
+  padding-left: 4px;
+
+}
+
+.birthday>div,
+.datePicker>div {
   border: none !important;
   padding: 0;
   margin: 0;
   box-shadow: none;
+
+}
+
+.datePicker>div {
+  font-family: "Poppins", sans-serif;
 }

@@ -184,7 +184,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 					<DatePicker
 						size='sm'
 						radius='none'
-						// isRequired
+						isRequired
 						hourCycle={24}
 						hideTimeZone={true}
 						label='Due Date & Time'
