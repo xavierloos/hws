@@ -4,28 +4,19 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { storage } from '@/lib/gcp';
+import { getTemporaryUrlImage } from '@/temporaryUrlImage';
 
 export const GET = async (req: Request, { params }: any) => {
 	try {
-		const res = await db.user.findFirst({
+		const user = await db.user.findFirst({
 			where: { id: params.id },
 			include: { social: true },
 		});
 
-		if (res?.image && res?.image.includes(res?.id)) {
-			const options = {
-				version: 'v2', // defaults to 'v2' if missing.
-				action: 'read',
-				expires: Date.now() + 1000 * 60 * 60, // temporary url will expire in 1hr
-			};
-			const [url] = await storage
-				.bucket(`${process.env.GCP_BUCKET}`)
-				.file(`profiles/${res.id}/${res.image}`)
-				.getSignedUrl(options);
-			res.tempUrl = url;
-		}
+		const getImages = async () => (user.src = await getTemporaryUrlImage(user.id, user.image));
+		await getImages();
 
-		return NextResponse.json(res, { status: 200 });
+		return NextResponse.json(user, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
 	}

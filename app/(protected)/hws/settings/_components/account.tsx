@@ -236,7 +236,7 @@ export const Account = ({ user }: any) => {
 								<Image
 									radius='full'
 									className=' w-32 h-32 object-cover shrink-0'
-									src={preview ? preview : fields?.tempUrl}
+									src={preview ? preview : fields?.src}
 									alt={`${fields?.name} profile cover`}
 								/>
 							</PopoverTrigger>

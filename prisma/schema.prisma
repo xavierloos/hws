@@ -42,13 +42,14 @@ model User {
   emailNotificationsEnabled Boolean          @default(false)
   smsNotificationsEnabled   Boolean          @default(false)
   otpConfirmation           OTPConfirmation?
-  blog                      Blog[]
-  file                      File[]
+  file                      File[]           @relation("CreatedBy")
   comments                  Comment[]
   social                    Social?
   createdTasks              Task[]           @relation("CreatedBy")
   assignedTaskIds           String[]
   assignedTasks             Task[]           @relation("AssignedTo", fields: [assignedTaskIds], references: [id])
+  createdBlogs              Blog[]           @relation("BlogCreator")
+  modifiedBlogs             Blog[]           @relation("BlogModifier")
 
   @@unique([email, id])
 }
@@ -89,42 +90,56 @@ model OTPConfirmation {
 }
 
 model Category {
-  id   String @id @default(cuid()) @map("_id")
-  name String
+  id      String   @id @default(cuid()) @map("_id")
+  name    String
+  blogIds String[]
+  blogs   Blog[]   @relation(fields: [blogIds], references: [id])
 }
 
 model Blog {
-  id          String    @id @default(cuid()) @map("_id")
-  name        String    @unique
-  slug        String    @unique
+  id          String     @id @default(cuid()) @map("_id")
+  name        String     @unique
+  slug        String     @unique
   description String
-  isActive    Boolean   @default(false)
+  isActive    Boolean    @default(false)
   content     String
-  thumbnail   String?
-  banner      String?
-  views       Int       @default(0)
-  likes       Int       @default(0)
-  categories  Json
+  views       Int        @default(0)
+  likes       Int        @default(0)
   tags        Json?
-  // category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdBy   String
-  createdAt   DateTime  @default(now())
-  modifiedBy  String
-  modifiedAt  DateTime  @default(now())
-  user        User      @relation(fields: [createdBy, modifiedBy], references: [email, id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  creatorId   String
+  creator     User       @relation("BlogCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  modifiedAt  DateTime   @default(now())
+  modifierId  String
+  modifier    User       @relation("BlogModifier", fields: [modifierId], references: [id])
   comments    Comment[]
+  thumbnailId String
+  thumbnail   File       @relation("Thumbnail", fields: [thumbnailId], references: [id])
+  bannerId    String
+  banner      File       @relation("Banner", fields: [bannerId], references: [id])
+  fileIds     String[]
+  files       File[]     @relation(fields: [fileIds], references: [id])
+  categoryIds String[]
+  categories  Category[] @relation(fields: [categoryIds], references: [id])
 }
 
 model File {
-  id           String   @id @default(cuid()) @map("_id")
+  id           String    @id @default(cuid()) @map("_id")
   name         String
   type         String
   size         Int
   lastModified Int
-  createdBy    String
-  createdAt    DateTime @default(now())
-  isPrivate    Boolean  @default(false)
-  user         User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  creatorId    String
+  user         User      @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
+  blogIds      String[]
+  blogs        Blog[]    @relation(fields: [blogIds], references: [id])
+  taskIds      String[]
+  tasks        Task[]    @relation(fields: [taskIds], references: [id])
+  commentsIds  String[]
+  comments     Comment[] @relation(fields: [commentsIds], references: [id])
+  thumbnails   Blog[]    @relation("Thumbnail")
+  banners      Blog[]    @relation("Banner")
 }
 
 model Task {
@@ -143,6 +158,8 @@ model Task {
   assignedUserIds String[]
   assignedTo      User[]    @relation("AssignedTo", fields: [assignedUserIds], references: [id])
   comments        Comment[]
+  fileIds         String[]
+  files           File[]    @relation(fields: [fileIds], references: [id])
 }
 
 model Comment {
@@ -163,6 +180,8 @@ model Comment {
   taskId      String?
   Blog        Blog?    @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId      String?
+  fileIds     String[]
+  files       File[]   @relation(fields: [fileIds], references: [id])
 }
 
 model Newsletter {

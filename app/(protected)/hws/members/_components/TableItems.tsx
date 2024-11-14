@@ -93,8 +93,8 @@ export const TableItems = ({
 
 		startSavingEdit(async () => {
 			let categories: Array<string> = [];
-			inputs.categories.forEach((element: any) => categories.push(element));
-			inputs.categories = categories;
+			inputs.categoryIds.forEach((element: any) => categories.push(element));
+			inputs.categoryIds = categories;
 
 			await axios
 				.put('/api/blogs', inputs)

@@ -22,6 +22,7 @@ const SettingsPage = () => {
 		await axios
 			.get(`/api/members/${id}`)
 			.then((res) => {
+				console.log(res.data);
 				setData(res.data);
 				setLoading(false);
 			})
@@ -44,6 +45,7 @@ const SettingsPage = () => {
 					permission: data?.permission,
 					birthday: data?.birthday,
 					social: data?.social,
+					src: data?.src,
 				};
 			case 'security':
 				return { id: data?.id, otpEnabled: data?.otpEnabled };
