@@ -50,7 +50,6 @@ type Props = {
 
 export const View = ({ item, getData, onDelete }: Props) => {
 	const user = useCurrentUser();
-
 	const [searchMember, setSearchMember] = useState(null);
 	const [team, setTeam] = useState([]);
 	const [images, setImages] = useState([]);
@@ -93,7 +92,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 
 	useEffect(() => {
 		let members: any[];
-		item?.assignedTo?.map((i) => {
+		item?.team?.map((i) => {
 			members.push(i.id);
 		});
 		// setGroupSelected(members);
@@ -149,23 +148,26 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				}); //Append files to values
 			});
 		}
-		console.log(values);
+
 		await axios
 			.post('/api/comments', values)
 			.then(async (res) => {
+				console.log('here', res);
 				setInputs({
 					comment: '',
 					attachments: null,
 				});
+				//Temporary comment adding
 				setFields({
 					...fields,
 					comments: [
 						{
+							id: res.data.id,
 							comment: values.comment,
 							createdAt: new Date(),
 							user: {
 								id: user.id,
-								image: user.tempUrl,
+								src: user.src,
 								username: user.username,
 							},
 						},
@@ -214,9 +216,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			case 'status':
 				value = status.find((st) => st.name === value);
 				break;
-			case 'assignedUserIds':
-				fields.assignedTo = team.filter((user: any) => value.includes(user.id));
-				fields.ssignedUserIds = team.filter((t: any) => value.includes(t.id));
+			case 'teamIds':
+				fields.team = team.filter((user: any) => value.includes(user.id));
+				fields.teamIds = team.filter((t: any) => value.includes(t.id));
 				break;
 			default:
 				setFields({ ...fields, [field]: value });
@@ -228,7 +230,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				toast.success('Task updated successfully');
 			})
 			.catch((e) => {});
-		console.log(fields);
+
 		getData();
 	};
 
@@ -279,7 +281,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						size: 'sm',
 						isBordered: false,
 						className: 'w-5 h-5 shrink-0',
-						src: item.image,
+						src: item.src,
 					}}
 				/>
 			</Checkbox>
@@ -291,11 +293,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			<div className='m-0 p-0'>
 				<div className='w-full flex gap-1 items-center text-foreground text-sm'>
 					Due {format(fields.dueDate)} • on{' '}
-					{dateFormat(
-						fields.dueDate,
-						`${user.id == fields.createdBy.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`
-					)}
-					{user.id == fields.createdBy.id && (
+					{dateFormat(fields.dueDate, `${user.id == fields.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`)}
+					{user.id == fields.creator.id && (
 						<I18nProvider locale={'en-GB'}>
 							<DatePicker
 								size='sm'
@@ -320,7 +319,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				</div>
 
 				<div className='flex justify-between'>
-					{user.id == fields.createdBy.id ? (
+					{user.id == fields.creator.id ? (
 						<>
 							<UpdateForm field='name' classes='text-sm font-semi flex gap-2 items-center' />
 							<Button
@@ -439,18 +438,18 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			</div>
 
 			<div className='flex flex-col gap-1'>
-				<span className='text-foreground text-tiny m-0 p-0'>Team</span>
+				<span className='text-foreground text-tiny m-0 p-0'>Team members</span>
 				<div className='flex'>
-					{fields?.assignedTo.length > 0 && (
+					{fields?.team.length > 0 && (
 						<AvatarGroup isBordered max={13} className='ps-3 justify-start border-transparent'>
-							{fields?.assignedTo?.map((i) => {
+							{fields?.team?.map((i) => {
 								return (
 									<Tooltip
 										key={i}
 										content={`${i.name} ${user.email == i.email ? ' • (me)' : ''}`}
 										size='sm'
 									>
-										<Avatar size='sm' src={i.image} className={`shrink-0 ring-1`} />
+										<Avatar size='sm' src={i.src} className={`shrink-0 ring-1`} />
 									</Tooltip>
 								);
 							})}
@@ -462,8 +461,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						</PopoverTrigger>
 						<PopoverContent radius='sm' className='p-4 min-w-[200px] border-none radius-none'>
 							<CheckboxGroup
-								defaultValue={fields.assignedUserIds}
-								onChange={(ids) => update('assignedUserIds', ids)}
+								defaultValue={fields.teamIds}
+								onChange={(ids) => update('teamIds', ids)}
 								classNames='w-full overflow-y-hidden'
 								style={{ overflow: 'scroll' }}
 							>
@@ -487,7 +486,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					</Popover>
 				</div>
 			</div>
-			{user.id == fields.createdBy.id ? (
+			{user.id == fields.creator.id ? (
 				<Popover showArrow placement='bottom' radius='sm'>
 					<PopoverTrigger>
 						<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
@@ -529,7 +528,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				avatarProps={{
 					size: 'sm',
 					className: 'shrink-0',
-					src: fields?.createdBy?.image,
+					src: fields?.creator.src,
 				}}
 				description={
 					<span className='text-tiny truncate text-ellipsis line-clamp-1'>{format(fields?.createdAt)}</span>
@@ -538,7 +537,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					<span
 						className={`text-sm w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-1`}
 					>
-						By {fields.creatorId === user.email ? 'me' : fields?.createdBy?.name}
+						By {fields.creatorId === user.id ? 'me' : fields?.creator.name}
 					</span>
 				}
 			/>
@@ -567,7 +566,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 									description={`0 Files attached`}
 									value={inputs.comment}
 									onValueChange={(e) => setInputs({ ...inputs, comment: e })}
-									startContent={<Avatar src={user?.tempUrl} size='sm' className='shrink-0' />}
+									startContent={<Avatar src={user?.src} size='sm' className='shrink-0' />}
 									endContent={
 										<>
 											<Button
@@ -601,7 +600,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 											i.user.id == user.id ? 'ms-0' : 'flex-row-reverse me-0'
 										}`}
 									>
-										<Avatar src={i.user.image} size='sm' className='shrink-0' />
+										<Avatar src={i.user.src} size='sm' className='shrink-0' />
 										<div className='flex flex-col gap-1'>
 											<div
 												className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words m-auto text-start ${

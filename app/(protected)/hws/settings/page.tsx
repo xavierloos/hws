@@ -22,7 +22,6 @@ const SettingsPage = () => {
 		await axios
 			.get(`/api/members/${id}`)
 			.then((res) => {
-				console.log(res.data);
 				setData(res.data);
 				setLoading(false);
 			})
@@ -41,7 +40,6 @@ const SettingsPage = () => {
 					tel: data?.tel,
 					about: data?.about,
 					image: data?.image,
-					tempUrl: data?.tempUrl,
 					permission: data?.permission,
 					birthday: data?.birthday,
 					social: data?.social,

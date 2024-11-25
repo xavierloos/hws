@@ -152,7 +152,6 @@ export const TableItems = ({
 
 		switch (columnKey) {
 			case 'name':
-				console.log(i);
 				return (
 					<User
 						avatarProps={{

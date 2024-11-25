@@ -55,13 +55,13 @@ export const GET = async (req: Request) => {
 				break;
 		}
 
-		const res = await db.task.findMany({
+		const tasks = await db.task.findMany({
 			orderBy: sorting,
 			where: {
-				OR: [{ creatorId: user.email }, { assignedUserIds: { has: user.id } }],
+				OR: [{ creatorId: user.id }, { teamIds: { has: user.id } }],
 			},
 			include: {
-				createdBy: {
+				creator: {
 					select: {
 						id: true,
 						name: true,
@@ -69,7 +69,7 @@ export const GET = async (req: Request) => {
 						image: true,
 					},
 				},
-				assignedTo: {
+				team: {
 					select: {
 						id: true,
 						name: true,
@@ -97,29 +97,21 @@ export const GET = async (req: Request) => {
 			},
 		});
 
-		for (const item of res) {
-			if (item.attachments) {
-				for (const i of item.attachments) {
-					const [url] = await storage
-						.bucket(`${process.env.GCP_BUCKET}`)
-						.file(`tasks/${item.id}/${i.name}`)
-						.getSignedUrl(options);
-					i.url = url;
+		const getImages = async () => {
+			for (const task of tasks) {
+				task.creator.src = await getTemporaryUrlImage(task.creator.id, task.creator.image);
+				for (const member of task.team) {
+					member.src = await getTemporaryUrlImage(member.id, member.image);
+				}
+				for (const comment of task.comments) {
+					comment.user.src = await getTemporaryUrlImage(comment.user.id, comment.user.image);
 				}
 			}
-			for (const i of item.assignedTo) {
-				i.image = await getTemporaryUrlImage('profiles', i.image, i.id);
-			}
-			if (item.comments.length > 0) {
-				for (const i of item.comments) {
-					i.user.image = await getTemporaryUrlImage('profiles', i.user.image, i.user.id);
-				}
-			}
+		};
 
-			item.createdBy.image = await getTemporaryUrlImage('profiles', item.createdBy.image, item.createdBy.id);
-		}
+		await getImages();
 
-		return NextResponse.json(res, { status: 200 });
+		return NextResponse.json(tasks, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong' }, { status: 500 });
 	}

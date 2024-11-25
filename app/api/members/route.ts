@@ -5,6 +5,7 @@ import { sendRegisterInvitation } from '@/lib/mailer';
 import { generateToken } from '@/actions/tokens';
 import { NextResponse } from 'next/server';
 import { storage } from '@/lib/gcp';
+import { getTemporaryUrlImage } from '@/temporaryUrlImage';
 
 const options = {
 	version: 'v2', // defaults to 'v2' if missing.
@@ -16,7 +17,7 @@ export const GET = async () => {
 	try {
 		const user = await currentUser();
 
-		const res = await db.user.findMany({
+		const members = await db.user.findMany({
 			where: {
 				id: {
 					not: user?.id,
@@ -25,16 +26,14 @@ export const GET = async () => {
 			include: { social: true },
 		});
 
-		for (const key in res) {
-			if (Object.prototype.hasOwnProperty.call(res, key)) {
-				res[key].image = await storage
-					.bucket(`${process.env.GCP_BUCKET}`)
-					.file(`profiles/${res[key].id}/${res[key].image}`)
-					.getSignedUrl(options);
+		const getImages = async () => {
+			for (const member of members) {
+				member.src = (await getTemporaryUrlImage(member.id, member.image)) || null;
 			}
-		}
+		};
+		await getImages();
 
-		return new NextResponse(JSON.stringify(res, { status: 200 }));
+		return new NextResponse(JSON.stringify(members, { status: 200 }));
 	} catch (error) {
 		return NextResponse.json(
 			{
@@ -85,7 +84,6 @@ export const PUT = async (req: any) => {
 		const id = searchParams.get('id');
 
 		let field = await req.json();
-		console.log(id, field);
 
 		await db.user.update({
 			where: { id },

@@ -39,7 +39,6 @@ export const GET = async (req: Request) => {
 					name: 'desc',
 				};
 				break;
-
 			default:
 				sorting = {
 					modifiedAt: 'desc',

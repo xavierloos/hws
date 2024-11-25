@@ -226,15 +226,15 @@ export const TableItems = ({
 						/>
 					</Tooltip>
 				);
-			case 'modifiedBy':
-			case 'createdBy':
+
+			case 'creator':
 				return (
 					<User
 						avatarProps={{
 							className: `shrink-0 bg-default text-default-foreground`,
 							size: 'sm',
 							radius: 'full',
-							src: cellValue.image || i.user.image,
+							src: cellValue.src,
 						}}
 						description={
 							<span className='truncate text-ellipsis line-clamp-1 text-tiny'>
@@ -248,7 +248,7 @@ export const TableItems = ({
 						}
 					/>
 				);
-			case 'assignedTo':
+			case 'team':
 				if (cellValue.length === 0) {
 					return <span>No assigned</span>;
 				} else if (cellValue.length === 1) {
@@ -257,7 +257,7 @@ export const TableItems = ({
 							avatarProps={{
 								size: 'sm',
 								className: `shrink-0`,
-								src: cellValue[0].image,
+								src: cellValue[0].src,
 							}}
 							rounded
 							description={
@@ -271,11 +271,8 @@ export const TableItems = ({
 						<AvatarGroup size='sm' max={3} isBordered className='px-3 justify-start border-transparent'>
 							{cellValue.map((val: any) => {
 								return (
-									<Tooltip
-										content={`${val.name} ${user.email == val.email ? ' • (me)' : ''}`}
-										size='sm'
-									>
-										<Avatar size='sm' src={val.image} className={`shrink-0 ring-1`} />
+									<Tooltip content={`${val.name} ${user.id == val.id ? '(me)' : ''}`} size='sm'>
+										<Avatar size='sm' src={val.src} className={`shrink-0 ring-1`} />
 									</Tooltip>
 								);
 							})}
@@ -315,7 +312,7 @@ export const TableItems = ({
 			case 'actions':
 				return (
 					<div className='relative flex items-center gap-2 justify-end'>
-						{user.id == i.createdBy.id && (permission == 'DELETE' || permission == 'ALL') && (
+						{user.id == i.creator.id && (permission == 'DELETE' || permission == 'ALL') && (
 							<Tooltip color='danger' content='Delete' size='sm'>
 								<Button
 									size='sm'

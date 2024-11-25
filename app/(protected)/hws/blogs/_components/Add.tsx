@@ -108,7 +108,6 @@ export const AddBlog = ({ onSubmit, isSaving }: AddProps) => {
 			await axios
 				.get('/api/files?type=image')
 				.then((res) => {
-					console.log(res.data);
 					setImages(res.data);
 				})
 				.catch(() => {});

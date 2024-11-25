@@ -160,7 +160,7 @@ export const TableItems = ({
 						avatarProps={{
 							className: `shrink-0 m-auto rounded-md bg-transparent`,
 							size: 'lg',
-							src: i.image,
+							src: i.src,
 						}}
 						description={<span className='truncate text-ellipsis line-clamp-1 '>@{i.username}</span>}
 						name={

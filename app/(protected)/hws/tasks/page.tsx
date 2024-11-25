@@ -14,13 +14,13 @@ const TasksPage = () => {
 	const [isLoading, startLoading] = useTransition();
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [isSaving, startSaving] = useTransition();
-	const initialCols = ['name', 'status', 'assignedTo', 'actions'];
+	const initialCols = ['name', 'status', 'team', 'actions'];
 	const cols = [
 		{ name: 'NAME', uid: 'name', sortable: true },
-		{ name: 'ASSIGNED TO', uid: 'assignedTo', sortable: true },
+		{ name: 'ASSIGNED TO', uid: 'team', sortable: true },
 		{ name: 'STATUS', uid: 'status', sortable: true },
 		{ name: 'PRIORITY', uid: 'priority', sortable: true },
-		{ name: 'CREATED BY', uid: 'createdBy', sortable: true },
+		{ name: 'CREATED BY', uid: 'creator', sortable: true },
 		{ name: 'ACTIONS', uid: 'actions' },
 	];
 	const statusOptions = [
@@ -41,7 +41,6 @@ const TasksPage = () => {
 			await axios
 				.get(`/api/tasks?sortby=${sorting}`)
 				.then((res) => {
-					console.log(res.data);
 					setData(res.data);
 				})
 				.catch((e) => {
@@ -110,30 +109,21 @@ const TasksPage = () => {
 	};
 
 	return (
-		<div>
-			<TableItems
-				data={data}
-				cols={cols}
-				initialCols={initialCols}
-				onDelete={onDelete}
-				onSave={onSubmit}
-				statusOptions={statusOptions}
-				isLoading={isLoading}
-				isSaving={isSaving}
-				isNewOpen={isOpen}
-				onNewOpen={onOpen}
-				onNewClose={handleOnClose}
-				getData={getData}
-				permission={user?.permission}
-			/>
-
-			{/* <TaskViewModal
-        data={details}
-        isOpen={isOpen}
-        handleView={handleView}
-        getData={getData}
-      />  */}
-		</div>
+		<TableItems
+			data={data}
+			cols={cols}
+			initialCols={initialCols}
+			onDelete={onDelete}
+			onSave={onSubmit}
+			statusOptions={statusOptions}
+			isLoading={isLoading}
+			isSaving={isSaving}
+			isNewOpen={isOpen}
+			onNewOpen={onOpen}
+			onNewClose={handleOnClose}
+			getData={getData}
+			permission={user?.permission}
+		/>
 	);
 };
 

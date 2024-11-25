@@ -143,23 +143,23 @@ model File {
 }
 
 model Task {
-  id              String    @id @default(cuid()) @map("_id")
-  name            String
-  type            String?
-  priority        Json
-  dueDate         String
-  attachments     Json?
-  description     String
-  status          Json
-  createdAt       DateTime  @default(now())
-  modifiedAt      DateTime  @default(now())
-  creatorId       String
-  createdBy       User      @relation("CreatedBy", fields: [creatorId], references: [email], onDelete: Cascade)
-  assignedUserIds String[]
-  assignedTo      User[]    @relation("AssignedTo", fields: [assignedUserIds], references: [id])
-  comments        Comment[]
-  fileIds         String[]
-  files           File[]    @relation(fields: [fileIds], references: [id])
+  id          String    @id @default(cuid()) @map("_id")
+  name        String
+  type        String?
+  priority    Json
+  dueDate     String
+  attachments Json?
+  description String
+  status      Json
+  createdAt   DateTime  @default(now())
+  modifiedAt  DateTime  @default(now())
+  creatorId   String
+  creator     User      @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
+  teamIds     String[]
+  team        User[]    @relation("AssignedTo", fields: [teamIds], references: [id])
+  comments    Comment[]
+  fileIds     String[]
+  files       File[]    @relation(fields: [fileIds], references: [id])
 }
 
 model Comment {

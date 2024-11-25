@@ -42,7 +42,7 @@ export const GET = async (req: Request) => {
 		//   }
 		// }
 		for (const item of res) {
-			item.user.tempUrl = await getTemporaryUrlImage('profiles', item.user.image, item.user.id);
+			item.user.src = await getTemporaryUrlImage(item.user.id, item.user.image);
 		}
 
 		return NextResponse.json(res, { status: 200 });
@@ -67,12 +67,7 @@ export const POST = async (req: Request) => {
 			},
 		});
 
-		return NextResponse.json(
-			{
-				message: res.id,
-			},
-			{ status: 200 }
-		);
+		return NextResponse.json(res, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
 	}
