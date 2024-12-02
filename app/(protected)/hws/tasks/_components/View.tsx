@@ -152,7 +152,6 @@ export const View = ({ item, getData, onDelete }: Props) => {
 		await axios
 			.post('/api/comments', values)
 			.then(async (res) => {
-				console.log('here', res);
 				setInputs({
 					comment: '',
 					attachments: null,

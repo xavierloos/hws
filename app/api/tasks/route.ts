@@ -149,20 +149,13 @@ export const POST = async (req: Request) => {
 
 export const DELETE = async (req: any) => {
 	try {
+		const user = await currentUser();
+		if (!user) return { error: 'Unathorized' };
 		const searchParams = req.nextUrl.searchParams;
 		const id = searchParams.get('id');
+		const files = searchParams.get('files');
 
-		const { attachments } = await db.task.findUnique({
-			where: {
-				id,
-			},
-			select: { attachments: true },
-		});
-
-		if (attachments) {
-			// Delete file from GP
-			await storage.bucket(`${process.env.GCP_BUCKET}`).deleteFiles({ prefix: `tasks/${id}/` });
-		}
+		if (files) await storage.bucket(`${process.env.GCP_BUCKET}`).deleteFiles({ prefix: `${user.id}/${id}` });
 
 		await db.task.delete({
 			where: {

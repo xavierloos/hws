@@ -63,7 +63,7 @@ type TableItemsProps = {
 	data: any;
 	cols: any;
 	initialCols: any;
-	onDelete: (id: any, name: any) => {};
+	onDelete: (id: any, name: any, files: boolean) => {};
 	onSave: (e: any, values: any, files: any) => {};
 	statusOptions?: any;
 	isLoading: boolean;
@@ -320,7 +320,7 @@ export const TableItems = ({
 									radius='full'
 									color='danger'
 									variant='light'
-									onClick={() => onDelete(i.id, i.name)}
+									onClick={() => onDelete(i.id, i.name, i.files.length > 0 && true)}
 								>
 									<TrashIcon color='red' />
 								</Button>
