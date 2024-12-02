@@ -304,7 +304,6 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								variant='underlined'
 								defaultValue={parseAbsoluteToLocal(fields.dueDate)}
 								showMonthAndYearPickers
-								minValue={today(getLocalTimeZone())}
 								className='flex flex-col-reverse flex-wrap-reverse overflow-hidden datePicker w-[160px]'
 								onChange={(date: any) => {
 									const m = `${date?.month <= 9 ? '0' : ''}${date?.month}`;
@@ -643,17 +642,17 @@ export const View = ({ item, getData, onDelete }: Props) => {
 							})}
 						</div>
 					</Tab>
-					{fields.attachments && (
+					{fields.files && (
 						<Tab
 							key='attachments'
 							title={
 								<div className='flex items-center space-x-2'>
 									<FileIcon />
-									<span>{fields.attachments.length} Attachments</span>
+									<span>{fields.files.length} Attachments</span>
 								</div>
 							}
 						>
-							{fields.attachments.map((item, index) => {
+							{fields.files.map((item, index) => {
 								item.index = index; //To delete from the uploading list
 								return <FilePreviewer item={item} key={index} onDelete={onDeleteSelected} />;
 							})}

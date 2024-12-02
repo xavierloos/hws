@@ -5,7 +5,7 @@ import { sendRegisterInvitation } from '@/lib/mailer';
 import { generateToken } from '@/actions/tokens';
 import { NextResponse } from 'next/server';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrl } from '@/temporaryUrl';
 
 const options = {
 	version: 'v2', // defaults to 'v2' if missing.
@@ -28,7 +28,7 @@ export const GET = async () => {
 
 		const getImages = async () => {
 			for (const member of members) {
-				member.src = (await getTemporaryUrlImage(member.id, member.image)) || null;
+				member.src = (await getTemporaryUrl(`${member.id}/${member.image}`)) || null;
 			}
 		};
 		await getImages();

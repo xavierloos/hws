@@ -57,8 +57,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 		priority: {},
 		type: useState<Selection>(new Set([])),
 		dueDate: useState<DateValue>(),
-		assignedUserIds: [],
-		attachments: null,
+		teamIds: [],
 		description: undefined,
 	});
 	const modules = {
@@ -85,6 +84,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 		'image',
 		'video',
 	];
+
 	useEffect(() => {
 		axios
 			.get('/api/members')
@@ -124,7 +124,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 				<div className='flex flex-row items-top gap-3'>
 					<Input
 						size='sm'
-						// isRequired
+						isRequired
 						type='text'
 						radius='none'
 						label='Title'
@@ -140,7 +140,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 				<div className='grid gap-3 grid-cols-3 w-full'>
 					<Select
 						size='sm'
-						// isRequired
+						isRequired
 						radius='none'
 						label='Priority'
 						items={priorities}
@@ -171,7 +171,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 					</Select>
 					<Select
 						size='sm'
-						// isRequired
+						isRequired
 						radius='none'
 						label='Type'
 						onChange={(e) => setFields({ ...fields, type: e.target.value })}
@@ -207,12 +207,12 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 				<div className={`grid gap-3 sm:grid-cols-2`}>
 					<Select
 						size='sm'
-						// isRequired
+						isRequired
 						radius='none'
 						items={team}
 						label='Assign to'
 						selectionMode='multiple'
-						onChange={(e) => setFields({ ...fields, assignedUserIds: e.target.value.split(',') })}
+						onChange={(e) => setFields({ ...fields, teamIds: e.target.value.split(',') })}
 						renderValue={(items: any) => {
 							return <p>{items.length} selected</p>;
 						}}
@@ -224,7 +224,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 										size='sm'
 										radius='full'
 										alt={i.name}
-										src={i.tempUrl}
+										src={i.src}
 										className='flex-shrink-0'
 									/>
 									<div className='flex flex-col'>
@@ -285,12 +285,16 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 						color='primary'
 						type='submit'
 						radius='none'
-						// isDisabled={
-						//   isSaving ||
-						//   !fields.name ||
-						//   !fields.description
-
-						// }
+						isDisabled={
+							isSaving ||
+							!fields.name ||
+							!fields.description ||
+							!fields.priority ||
+							!fields.type ||
+							!fields.dueDate ||
+							!fields.teamIds ||
+							!fields.description
+						}
 						spinnerPlacement='end'
 						endContent={!isSaving && <PaperPlaneIcon />}
 						isLoading={isSaving}

@@ -39,7 +39,6 @@ const MembersPage = () => {
 			await axios
 				.get('/api/members')
 				.then((res) => {
-					console.log(res.data);
 					setData(res.data);
 				})
 				.catch((e) => {

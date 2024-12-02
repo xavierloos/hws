@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrlImage } from '@/temporaryUrl';
 
 export const GET = async (req: Request, { params }: any) => {
 	try {

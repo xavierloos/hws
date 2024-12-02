@@ -1,6 +1,6 @@
 import { currentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrl } from '@/temporaryUrl';
 import { NextResponse } from 'next/server';
 
 export const GET = async (req: Request) => {
@@ -59,10 +59,10 @@ export const GET = async (req: Request) => {
 
 		const getImages = async () => {
 			for (const blog of blogs) {
-				blog.creator.src = await getTemporaryUrlImage(blog.creator.id, blog.creator.image);
-				blog.modifier.src = await getTemporaryUrlImage(blog.modifier.id, blog.modifier.image);
-				blog.thumbnail.src = await getTemporaryUrlImage(blog.thumbnail.creatorId, blog.thumbnail.name);
-				blog.banner.src = await getTemporaryUrlImage(blog.banner.creatorId, blog.banner.name);
+				blog.creator.src = await getTemporaryUrl(`${blog.creator.id}/${blog.creator.image}`);
+				blog.modifier.src = await getTemporaryUrl(`${blog.modifier.id}/${blog.modifier.image}`);
+				blog.thumbnail.src = await getTemporaryUrl(`${blog.thumbnail.creatorId}/${blog.thumbnail.name}`);
+				blog.banner.src = await getTemporaryUrl(`${blog.banner.creatorId}/${blog.banner.name}`);
 			}
 		};
 

@@ -8,7 +8,7 @@ import { UserRole } from '@prisma/client'; //
 import { getAccountByUserId } from './data/account';
 import GitHub from 'next-auth/providers/github';
 import { storage } from './lib/gcp';
-import { getTemporaryUrlImage } from './temporaryUrlImage';
+import { getTemporaryUrl } from './temporaryUrl';
 
 export const {
 	handlers: { GET, POST },
@@ -72,7 +72,7 @@ export const {
 				//   .bucket(`${process.env.GCP_BUCKET}`)
 				//   .file(`profiles/${session.user.id}/${session.user.image}`)
 				//   .getSignedUrl(options);
-				session.user.src = await getTemporaryUrlImage(session.user.id, session.user.image);
+				session.user.src = await getTemporaryUrl(`${session.user.id}/${session.user.image}`);
 			}
 
 			return session;

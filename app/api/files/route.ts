@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrlImage } from '@/temporaryUrl';
 
 export const GET = async (req: any) => {
 	const searchParams = req.nextUrl.searchParams;
@@ -45,6 +45,7 @@ export const POST = async (req: Request) => {
 
 		const data = await req.formData();
 		const dataValues = Array.from(data.values());
+		const taskId = Array.from(data.keys());
 
 		for (const value of dataValues) {
 			if (typeof value === 'object' && 'arrayBuffer' in value) {
@@ -57,8 +58,19 @@ export const POST = async (req: Request) => {
 						await bucket.file(`${user.id}/${fName}`).save(Buffer.from(buffer));
 						break;
 					case 'tasks':
-						const taskId = Array.from(data.keys()); //Creates a folder with the id
-						await bucket.file(`${type}/${taskId[0]}/${value.name}`).save(Buffer.from(buffer));
+						//Creates a folder with the id
+						await bucket.file(`${user.id}/${taskId[0]}/${value.name}`).save(Buffer.from(buffer));
+						const fileId = await db.file.create({
+							data: {
+								name: value.name,
+								type: value.type,
+								size: value.size,
+								lastModified: value.lastModified,
+								creatorId: user.id,
+								createdAt: new Date(),
+								taskId: taskId[0],
+							},
+						});
 						break;
 					default:
 						const rand = crypto.randomInt(10, 1_00).toString();
@@ -74,12 +86,10 @@ export const POST = async (req: Request) => {
 								createdAt: new Date(),
 							},
 						});
-
 						break;
 				}
 			}
 		}
-
 		return NextResponse.json(
 			{
 				message: `File${dataValues.length > 1 ? 's' : ''} uploaded successfully`,

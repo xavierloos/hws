@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
 import { getUserById } from '@/data/user';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrl } from '@/temporaryUrl';
 
 export const GET = async (req: Request) => {
 	try {
@@ -61,6 +61,11 @@ export const GET = async (req: Request) => {
 				OR: [{ creatorId: user.id }, { teamIds: { has: user.id } }],
 			},
 			include: {
+				files: {
+					include: {
+						user: true,
+					},
+				},
 				creator: {
 					select: {
 						id: true,
@@ -96,15 +101,17 @@ export const GET = async (req: Request) => {
 				},
 			},
 		});
-
 		const getImages = async () => {
 			for (const task of tasks) {
-				task.creator.src = await getTemporaryUrlImage(task.creator.id, task.creator.image);
+				task.creator.src = await getTemporaryUrl(`${task.creator.id}/${task.creator.image}`);
 				for (const member of task.team) {
-					member.src = await getTemporaryUrlImage(member.id, member.image);
+					member.src = await getTemporaryUrl(`${member.id}/${member.image}`);
 				}
 				for (const comment of task.comments) {
-					comment.user.src = await getTemporaryUrlImage(comment.user.id, comment.user.image);
+					comment.user.src = await getTemporaryUrl(`${comment.user.id}/${comment.user.image}`);
+				}
+				for (const file of task.files) {
+					file.src = await getTemporaryUrl(`${user.id}/${task.id}/${file.name}`);
 				}
 			}
 		};
@@ -128,7 +135,7 @@ export const POST = async (req: Request) => {
 			data: {
 				...task,
 				status: { name: 'To Do', color: 'default' }, //Default status
-				creatorId: user?.email,
+				creatorId: user?.id,
 				createdAt: new Date(),
 				modifiedAt: new Date(),
 			},

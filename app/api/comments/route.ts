@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrlImage';
+import { getTemporaryUrlImage } from '@/temporaryUrl';
 
 export const GET = async (req: Request) => {
 	const searchParams = req.nextUrl.searchParams;

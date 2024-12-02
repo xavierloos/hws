@@ -134,12 +134,12 @@ model File {
   user         User      @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
   blogIds      String[]
   blogs        Blog[]    @relation(fields: [blogIds], references: [id])
-  taskIds      String[]
-  tasks        Task[]    @relation(fields: [taskIds], references: [id])
   commentsIds  String[]
   comments     Comment[] @relation(fields: [commentsIds], references: [id])
   thumbnails   Blog[]    @relation("Thumbnail")
   banners      Blog[]    @relation("Banner")
+  taskId       String?
+  task         Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model Task {
@@ -158,8 +158,7 @@ model Task {
   teamIds     String[]
   team        User[]    @relation("AssignedTo", fields: [teamIds], references: [id])
   comments    Comment[]
-  fileIds     String[]
-  files       File[]    @relation(fields: [fileIds], references: [id])
+  files       File[]
 }
 
 model Comment {

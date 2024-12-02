@@ -53,22 +53,13 @@ const TasksPage = () => {
 		e.preventDefault();
 		startSaving(async () => {
 			const data = new FormData();
-			if (files.length > 0) {
-				values.attachments = [];
-				files.forEach((item: any) => {
-					values.attachments.push({
-						name: item.name,
-						url: null,
-						type: item.type,
-					}); //Append files to values
-				});
-			}
 
+			//I need to create the task first
 			const taskId = await axios.post('/api/tasks', values).then(async (res) => {
 				return res.data.message;
 			});
-
-			if (files.length > 0) {
+			//get the task id to add the files to the gcbucket
+			const postFiles = async () => {
 				files.forEach((item: any) => {
 					data.append(taskId, item, item.name);
 				});
@@ -80,10 +71,16 @@ const TasksPage = () => {
 					.catch((e) => {
 						toast.error(e.response.data.message);
 					});
+			};
+
+			if (files.length > 0) {
+				await postFiles();
 			} else {
 				toast.success('Task added successfully');
 			}
+
 			getData();
+			handleOnClose();
 		});
 	};
 
