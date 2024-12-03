@@ -45,7 +45,7 @@ import ReactQuill from 'react-quill';
 type Props = {
 	item: any;
 	getData: (sort?: string) => {};
-	onDelete: (id: string, name: string) => {};
+	onDelete: (id: string, name: string, files: boolean) => {};
 };
 
 export const View = ({ item, getData, onDelete }: Props) => {
@@ -327,7 +327,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								color='danger'
 								type='submit'
 								radius='full'
-								onClick={() => onDelete(fields.id, fields.name)}
+								onClick={() => onDelete(fields.id, fields.name, fields.files.length > 0 && true)}
 								startContent={<TrashIcon />}
 							/>
 						</>
