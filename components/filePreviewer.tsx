@@ -13,21 +13,21 @@ type FilePreviewerProps = {
 
 export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
 	const user = useCurrentUser();
-
 	const fileType = item.name.split('.').pop();
+	const img = item.src ? item.src : URL.createObjectURL(item);
 
 	return (
 		<Listbox
 			aria-label='User Menu'
 			fullWidth
 			onAction={() => window.open(item.src)}
-			className='p-0 mb-1 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 overflow-visible rounded-sm'
+			className='p-0 mb-1 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 overflow-visible rounded-sm w-full'
 			itemClasses={{
 				base: 'p-1 rounded-none gap-3 h-12 data-[hover=true]:bg-default-100/80',
 			}}
 		>
 			<ListboxItem
-				key='issues'
+				key='files'
 				endContent={
 					(item.creatorId == null || user.id === item.creatorId) && (
 						<Tooltip content='Delete' size='sm'>
@@ -48,7 +48,7 @@ export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
 					<Avatar
 						showFallback
 						radius='none'
-						src={item.src}
+						src={img}
 						className='bg-transparent'
 						fallback={
 							fileType.includes('docx') ? (
@@ -76,9 +76,9 @@ export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
 					/>
 				}
 			>
-				<div className='inline-flex flex-col items-start'>
-					<span className='text-small text-inherit text-default-foreground w-full text-ellipsis font-normal overflow-hidden break-words line-clamp-1'>
-						{item.name}
+				<div className='flex-col items-start'>
+					<span className='text-default-foreground w-full truncate text-ellipsis overflow-hidden break-words line-clamp-1'>
+						hey {item.name}
 					</span>
 					<span className='text-tiny text-foreground-400 truncate line-clamp-1 '>
 						{item.creatorId && (item.creatorId === user.id ? 'By me' : `By ${item.user.name}`)} (

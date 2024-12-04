@@ -15,6 +15,8 @@ const FilesPage = () => {
 	const [filterValue, setFilterValue] = useState('');
 	const hasSearchFilter = Boolean(filterValue);
 	const [isLoading, startLoading] = useTransition();
+	const [isSaving, startSaving] = useTransition();
+
 	useEffect(() => {
 		getData();
 	}, []);
@@ -40,21 +42,23 @@ const FilesPage = () => {
 		return filteredItem;
 	}, [data, filterValue]);
 
-	const onSubmit = async (e: React.FormEvent<HTMLFormElement>, files: any) => {
+	const onSubmit = (e: React.FormEvent<HTMLFormElement>, files: any) => {
 		e.preventDefault();
+		startSaving(async () => {
+			const data = new FormData();
+			files.forEach((item: any) => data.append(item.name, item));
 
-		const data = new FormData();
-		files.forEach((item: any) => data.append(item.name, item));
-
-		await axios
-			.post(`/api/files?type=files`, data)
-			.then((res) => {
-				toast.success(res.data.message);
-				getData();
-			})
-			.catch((e) => {
-				toast.error(e.response.data.message);
-			});
+			await axios
+				.post(`/api/files?type=files`, data)
+				.then((res) => {
+					toast.success(res.data.message);
+					getData();
+					handleOnClose();
+				})
+				.catch((e) => {
+					toast.error(e.response.data.message);
+				});
+		});
 	};
 
 	const onDelete = async (id: string, name: string) => {
@@ -63,7 +67,7 @@ const FilesPage = () => {
 				label: 'YES',
 				onClick: async () => {
 					try {
-						await axios.delete(`/api/files?id=${id}`);
+						await axios.delete(`/api/files?id=${id}&name=${name}`);
 						getData();
 					} catch (error) {}
 				},
@@ -82,6 +86,10 @@ const FilesPage = () => {
 	const onClear = useCallback(() => {
 		setFilterValue('');
 	}, []);
+
+	const handleOnClose = () => {
+		return onClose();
+	};
 
 	return (
 		<>
@@ -124,7 +132,7 @@ const FilesPage = () => {
 					) : (
 						<div className='grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
 							{filteredItems?.map((item: any) => (
-								<CardItem item={item} key={item.id} />
+								<CardItem item={item} key={item.id} onDelete={onDelete} />
 							))}
 						</div>
 					)}
@@ -140,7 +148,7 @@ const FilesPage = () => {
 			>
 				<ModalContent>
 					<ModalHeader className='flex flex-col gap-1'>Add Files</ModalHeader>
-					<Add onSubmit={onSubmit} />
+					<Add onSubmit={onSubmit} isSaving={isSaving} />
 				</ModalContent>
 			</Modal>
 		</>

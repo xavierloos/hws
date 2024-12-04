@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrl';
+import { getTemporaryUrl } from '@/temporaryUrl';
 
 export const GET = async (req: any) => {
 	const searchParams = req.nextUrl.searchParams;
@@ -14,7 +14,7 @@ export const GET = async (req: any) => {
 		const typeFilter = type === 'all' ? {} : { type: { contains: type } };
 
 		const files = await db.file.findMany({
-			include: { user: true },
+			include: { creator: true, thumbnails: true, banners: true },
 			where: {
 				creatorId: user.id,
 				...typeFilter,
@@ -24,7 +24,7 @@ export const GET = async (req: any) => {
 
 		const getImages = async () => {
 			for (const file of files) {
-				file.src = await getTemporaryUrlImage(user.id, file.name);
+				file.src = await getTemporaryUrl(`${user.id}/${file.name}`);
 			}
 		};
 
@@ -104,14 +104,19 @@ export const POST = async (req: Request) => {
 
 export const DELETE = async (req: any) => {
 	try {
+		const user = await currentUser();
+		if (!user) return { error: 'Unathorized' };
 		const searchParams = req.nextUrl.searchParams;
 		const id = searchParams.get('id');
+		const name = searchParams.get('name');
 
-		const res = await db.file.findUnique({
-			where: {
-				id,
-			},
-		});
+		// const res = await db.file.findUnique({
+		// 	where: {
+		// 		id,
+		// 	},
+		// });
+
+		await storage.bucket(`${process.env.GCP_BUCKET}`).file(`${user.id}/${name}`).delete();
 
 		await db.file.delete({
 			where: {
@@ -119,9 +124,13 @@ export const DELETE = async (req: any) => {
 			},
 		});
 
-		await storage.bucket(`${process.env.GCP_BUCKET}`).file(`files/${res?.name}`).delete();
-
-		return NextResponse.json({ message: `File deleted successfully` }, { status: 200 });
+		return NextResponse.json(
+			{
+				message: `File deleted successfully`,
+				type: 'success',
+			},
+			{ status: 200 }
+		);
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
 	}

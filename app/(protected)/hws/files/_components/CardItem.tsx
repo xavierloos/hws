@@ -8,6 +8,7 @@ import {
 	Button,
 	Chip,
 	User,
+	Tooltip,
 	Dropdown,
 	DropdownTrigger,
 	DropdownMenu,
@@ -27,14 +28,18 @@ import {
 	Share1Icon,
 	TrashIcon,
 } from '@radix-ui/react-icons';
+import { toast } from 'sonner';
+import axios from 'axios';
 
 type CardItemProps = {
 	item: any;
+	onDelete: (id: any, name: any) => {};
 };
 
-export const CardItem = ({ item }: CardItemProps) => {
+export const CardItem = ({ item, onDelete }: CardItemProps) => {
 	const router = useRouter();
 	const [image, setImage] = useState('');
+
 	useEffect(() => {
 		if (item.type.includes('sheet')) {
 			setImage('https://www.freeiconspng.com/thumbs/xls-icon/excel-png-office-xlsx-icon-3.png');
@@ -58,15 +63,22 @@ export const CardItem = ({ item }: CardItemProps) => {
 			className='border-none min-h-[200] h-[200px] rounded-md shadow-md'
 			onPress={openLink}
 		>
-			{/* <CardHeader className="absolute z-50 top-0 flex-col items-end w-full">
-    <div className="flex justify-center items-center z-40 text-black w-5 h-5 rounded-full bg-primary shadow-md">
-     {item.isPrivate ? (
-      <LockClosedIcon className="w-3 h-3 font-thin" />
-     ) : (
-      <LockOpen2Icon className="w-3 h-3 font-thin" />
-     )}
-    </div>
-   </CardHeader> */}
+			{(!item.banners.length || !item.thumbnails.length) && (
+				<CardHeader className='absolute top-0 flex items-end w-full gap-1 z-50 justify-end py-1 px-[5px]'>
+					<Tooltip color='danger' content='Delete' size='sm'>
+						<Button
+							size='sm'
+							isIconOnly
+							radius='full'
+							color='danger'
+							// variant='light'
+							onClick={() => onDelete(item.id, item.name)}
+						>
+							<TrashIcon />
+						</Button>
+					</Tooltip>
+				</CardHeader>
+			)}
 
 			<Image
 				alt='Woman listing to music'
@@ -77,32 +89,33 @@ export const CardItem = ({ item }: CardItemProps) => {
 				src={image}
 			/>
 
-			<CardFooter className='absolute bg-white/60 bottom-0 z-10 justify-between rounded-b py-0.5 px-[5px] flex gap-1'>
-				<div className='text-tiny text-black truncate text-ellipsis line-clamp-1 w-full'>{item.name}</div>
+			<CardFooter className='flex gap-1 absolute bottom-0 z-10 justify-between rounded-b py-1 px-[5px]'>
+				<div className='text-tiny overflow-hidden break-words line-clamp-1 text-default-foreground'>
+					{item.name}
+				</div>
 				<Dropdown size='sm' className='max-w-[200px] rounded-md'>
 					<DropdownTrigger>
-						<div className='flex justify-center items-center min-w-[25px] min-h-[25px] bg-default rounded-full text-black shadow-sm my-1'>
+						<Button size='sm' isIconOnly radius='full' variant='light'>
 							<DotsVerticalIcon />
-						</div>
+						</Button>
 					</DropdownTrigger>
 					<DropdownMenu aria-label='Static Actions'>
-						<DropdownItem isReadOnly key='profile' showDivider className=' hover:cursor-none'>
+						<DropdownItem isReadOnly key='profile' showDivider className='hover:cursor-none'>
 							<div className='flex gap-1 flex-col justify-center items-center m-auto w-full'>
 								<div className='text-tiny font-semibold text-wrap break-all'>{item?.name}</div>
 								<div className='text-tiny text-foreground'>{(item.size / 1024).toFixed(2)}kB</div>
-								<div className='text-tiny text-foreground'>By @{item?.user?.username}</div>
+								<div className='text-tiny text-foreground'>By @{item?.creator?.username}</div>
 								<div className='flex gap-2 justify-between w-full'>
-									{/* <div className='text-tiny text-foreground flex gap-1 items-center '>
-										{item.isPrivate ? <LockClosedIcon /> : <LockOpen2Icon />}
-										{item.isPrivate ? 'Private' : 'Public'}
-									</div> */}
+									<div className='text-tiny text-foreground flex gap-1 items-center '>
+										{/* {item.isPrivate ? <LockClosedIcon /> : <LockOpen2Icon />}
+										{item.isPrivate ? 'Private' : 'Public'} */}
+									</div>
 									<div className='text-tiny text-foreground flex gap-1 items-center '>
 										<ClockIcon /> {format(item.createdAt)}
 									</div>
 								</div>
 							</div>
 						</DropdownItem>
-
 						<DropdownItem
 							key='open'
 							onClick={openLink}
