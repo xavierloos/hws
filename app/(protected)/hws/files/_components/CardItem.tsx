@@ -71,7 +71,6 @@ export const CardItem = ({ item, onDelete }: CardItemProps) => {
 							isIconOnly
 							radius='full'
 							color='danger'
-							// variant='light'
 							onClick={() => onDelete(item.id, item.name)}
 						>
 							<TrashIcon />
@@ -135,14 +134,17 @@ export const CardItem = ({ item, onDelete }: CardItemProps) => {
 						<DropdownItem key='open' onClick={openLink} startContent={<CopyIcon />} className=' rounded-md'>
 							Copy link
 						</DropdownItem>
-						<DropdownItem
-							key='delete'
-							className='text-danger rounded-md'
-							color='danger'
-							startContent={<TrashIcon />}
-						>
-							Delete file
-						</DropdownItem>
+						{(!item.banners.length || !item.thumbnails.length) && (
+							<DropdownItem
+								key='delete'
+								className='text-danger rounded-md'
+								color='danger'
+								startContent={<TrashIcon />}
+								onClick={() => onDelete(item.id, item.name)}
+							>
+								Delete file
+							</DropdownItem>
+						)}
 					</DropdownMenu>
 				</Dropdown>
 			</CardFooter>

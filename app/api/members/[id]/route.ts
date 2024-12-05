@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { storage } from '@/lib/gcp';
-import { getTemporaryUrlImage } from '@/temporaryUrl';
+import { getTemporaryUrl } from '@/temporaryUrl';
 
 export const GET = async (req: Request, { params }: any) => {
 	try {
@@ -13,7 +13,7 @@ export const GET = async (req: Request, { params }: any) => {
 			include: { social: true },
 		});
 
-		const getImages = async () => (user.src = await getTemporaryUrlImage(user.id, user.image));
+		const getImages = async () => (user.src = await getTemporaryUrl(`${user.id}/${user.image}`));
 		await getImages();
 
 		return NextResponse.json(user, { status: 200 });

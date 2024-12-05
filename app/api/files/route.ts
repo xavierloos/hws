@@ -17,6 +17,7 @@ export const GET = async (req: any) => {
 			include: { creator: true, thumbnails: true, banners: true },
 			where: {
 				creatorId: user.id,
+				savedAsFile: true,
 				...typeFilter,
 			},
 			orderBy: { createdAt: 'desc' },
@@ -46,6 +47,7 @@ export const POST = async (req: Request) => {
 		const data = await req.formData();
 		const dataValues = Array.from(data.values());
 		const taskId = Array.from(data.keys());
+		const filesId = [];
 
 		for (const value of dataValues) {
 			if (typeof value === 'object' && 'arrayBuffer' in value) {
@@ -71,6 +73,7 @@ export const POST = async (req: Request) => {
 								taskId: taskId[0],
 							},
 						});
+						// filesId.push(fileId.id);
 						break;
 					default:
 						const rand = crypto.randomInt(10, 1_00).toString();
@@ -84,12 +87,21 @@ export const POST = async (req: Request) => {
 								lastModified: value.lastModified,
 								creatorId: user.id,
 								createdAt: new Date(),
+								savedAsFile: true,
 							},
 						});
 						break;
 				}
 			}
 		}
+
+		// console.log(filesId);
+		// if (type === 'taskss')
+		// 	await db.task.update({
+		// 		where: { id: taskId[0] },
+		// 		data: { files: filesId },
+		// 	});
+
 		return NextResponse.json(
 			{
 				message: `File${dataValues.length > 1 ? 's' : ''} uploaded successfully`,
@@ -108,15 +120,17 @@ export const DELETE = async (req: any) => {
 		if (!user) return { error: 'Unathorized' };
 		const searchParams = req.nextUrl.searchParams;
 		const id = searchParams.get('id');
+		const taskid = searchParams.get('task');
 		const name = searchParams.get('name');
+		const deletefolder = searchParams.get('deletefolder');
 
-		// const res = await db.file.findUnique({
-		// 	where: {
-		// 		id,
-		// 	},
-		// });
+		const src = taskid ? `${user.id}/${taskid}/${name}` : `${user.id}/${name}`;
 
-		await storage.bucket(`${process.env.GCP_BUCKET}`).file(`${user.id}/${name}`).delete();
+		if (deletefolder) {
+			await storage.bucket(`${process.env.GCP_BUCKET}`).deleteFiles({ prefix: `${user.id}/${taskid}` });
+		} else {
+			await storage.bucket(`${process.env.GCP_BUCKET}`).file(src).delete();
+		}
 
 		await db.file.delete({
 			where: {

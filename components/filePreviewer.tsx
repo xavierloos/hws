@@ -8,13 +8,15 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 type FilePreviewerProps = {
 	item: any;
 	type?: string;
-	onDelete?: (i: number) => {};
+	onDelete?: (i: number | string, name?: string) => {};
+	isDeleting?: Boolean;
 };
 
-export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
+export const FilePreviewer = ({ item, onDelete, type, isDeleting }: FilePreviewerProps) => {
 	const user = useCurrentUser();
 	const fileType = item.name.split('.').pop();
 	const img = item.src ? item.src : URL.createObjectURL(item);
+	const index = typeof item.id === 'string' ? item.id : item.index;
 
 	return (
 		<Listbox
@@ -37,7 +39,8 @@ export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
 								radius='full'
 								color='danger'
 								variant='light'
-								onClick={() => onDelete(item.index)}
+								isLoading={isDeleting}
+								onClick={() => onDelete(index, item.name)}
 							>
 								<TrashIcon />
 							</Button>
@@ -78,10 +81,10 @@ export const FilePreviewer = ({ item, onDelete, type }: FilePreviewerProps) => {
 			>
 				<div className='flex-col items-start'>
 					<span className='text-default-foreground w-full truncate text-ellipsis overflow-hidden break-words line-clamp-1'>
-						hey {item.name}
+						{item.name}
 					</span>
 					<span className='text-tiny text-foreground-400 truncate line-clamp-1 '>
-						{item.creatorId && (item.creatorId === user.id ? 'By me' : `By ${item.user.name}`)} (
+						{item.creatorId && (item.creatorId === user.id ? 'By me' : `By ${item.creator.name}`)} (
 						{item.size && `${(item.size / 1024).toFixed(2)}kB`})
 					</span>
 				</div>

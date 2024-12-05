@@ -63,25 +63,11 @@ export const GET = async (req: Request) => {
 			include: {
 				files: {
 					include: {
-						user: true,
+						creator: true,
 					},
 				},
-				creator: {
-					select: {
-						id: true,
-						name: true,
-						username: true,
-						image: true,
-					},
-				},
-				team: {
-					select: {
-						id: true,
-						name: true,
-						username: true,
-						image: true,
-					},
-				},
+				creator: true,
+				team: true,
 				comments: {
 					orderBy: {
 						createdAt: 'desc',
@@ -90,17 +76,12 @@ export const GET = async (req: Request) => {
 						verified: true,
 					},
 					include: {
-						user: {
-							select: {
-								id: true,
-								username: true,
-								image: true,
-							},
-						},
+						creator: true,
 					},
 				},
 			},
 		});
+
 		const getImages = async () => {
 			for (const task of tasks) {
 				task.creator.src = await getTemporaryUrl(`${task.creator.id}/${task.creator.image}`);

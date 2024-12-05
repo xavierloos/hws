@@ -25,7 +25,7 @@ enum UserPermission {
 
 model User {
   id                        String           @id @default(cuid()) @map("_id")
-  username                  String?          @unique //Optional for social creations
+  username                  String?          @unique //Optional if they registered with Google or any other social
   name                      String?
   email                     String           @unique
   emailVerified             Boolean          @default(false)
@@ -48,8 +48,8 @@ model User {
   createdTasks              Task[]           @relation("CreatedBy")
   assignedTaskIds           String[]
   assignedTasks             Task[]           @relation("AssignedTo", fields: [assignedTaskIds], references: [id])
-  createdBlogs              Blog[]           @relation("BlogCreator")
-  modifiedBlogs             Blog[]           @relation("BlogModifier")
+  createdBlogs              Blog[]           @relation("Creator")
+  modifiedBlogs             Blog[]           @relation("Modifier")
 
   @@unique([email, id])
 }
@@ -108,38 +108,39 @@ model Blog {
   tags        Json?
   createdAt   DateTime   @default(now())
   creatorId   String
-  creator     User       @relation("BlogCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creator     User       @relation("Creator", fields: [creatorId], references: [id], onDelete: Cascade)
   modifiedAt  DateTime   @default(now())
   modifierId  String
-  modifier    User       @relation("BlogModifier", fields: [modifierId], references: [id])
-  comments    Comment[]
-  thumbnailId String
-  thumbnail   File       @relation("Thumbnail", fields: [thumbnailId], references: [id])
-  bannerId    String
-  banner      File       @relation("Banner", fields: [bannerId], references: [id])
-  fileIds     String[]
-  files       File[]     @relation(fields: [fileIds], references: [id])
+  modifier    User       @relation("Modifier", fields: [modifierId], references: [id])
   categoryIds String[]
   categories  Category[] @relation(fields: [categoryIds], references: [id])
+  // Blog could have comments
+  comments    Comment[]
+  //Use can select a banner/thumbnail from the files or upload their own 
+  thumbnailId String?
+  thumbnail   File?      @relation("Thumbnail", fields: [thumbnailId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bannerId    String?
+  banner      File?      @relation("Banner", fields: [bannerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model File {
-  id           String    @id @default(cuid()) @map("_id")
+  id           String   @id @default(cuid()) @map("_id")
   name         String
   type         String
   size         Int
   lastModified Int
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime @default(now())
   creatorId    String
-  user         User      @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
-  blogIds      String[]
-  blogs        Blog[]    @relation(fields: [blogIds], references: [id])
-  commentsIds  String[]
-  comments     Comment[] @relation(fields: [commentsIds], references: [id])
-  thumbnails   Blog[]    @relation("Thumbnail")
-  banners      Blog[]    @relation("Banner")
+  savedAsFile  Boolean  @default(false)
+  creator      User     @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
   taskId       String?
-  task         Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task         Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  // Could be realted to a blog as banner or thumbnail
+  thumbnails   Blog[]   @relation("Thumbnail")
+  banners      Blog[]   @relation("Banner")
+  // Could be related to a comment
+  commentId    String?
+  comment      Comment? @relation("CommentFiles", fields: [commentId], references: [id], onDelete: Cascade)
 }
 
 model Task {
@@ -148,7 +149,6 @@ model Task {
   type        String?
   priority    Json
   dueDate     String
-  attachments Json?
   description String
   status      Json
   createdAt   DateTime  @default(now())
@@ -162,25 +162,21 @@ model Task {
 }
 
 model Comment {
-  id          String   @id @default(cuid()) @map("_id")
-  name        String?
-  comment     String
-  attachments Json?
-  // relatedId   String //Could be related to blog, task, product, etc
-  createdBy   String?
-  createdAt   DateTime @default(now())
-  // user        User?    @relation(fields: [createdBy], references: [email], onDelete: Cascade)
-  // blog        Blog?    @relation(fields: [relatedId], references: [id], onDelete: Cascade)
-  verified    Boolean  @default(false)
-  // Add these fields
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String?
-  task        Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId      String?
-  Blog        Blog?    @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  blogId      String?
-  fileIds     String[]
-  files       File[]   @relation(fields: [fileIds], references: [id])
+  id        String   @id @default(cuid()) @map("_id")
+  name      String?
+  comment   String
+  email     String? //if user is  not registered, they will need an email to verify the comment
+  createdAt DateTime @default(now())
+  verified  Boolean  @default(false)
+  creatorId String? //Comment could have a creator or not, cuz the comments could be done by someone not registered, so they need an email id instead
+  creator   User?    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  //Could be related to a task or blog
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  blogId    String?
+  blog      Blog?    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  //Could have some files attached
+  files     File[]   @relation("CommentFiles")
 }
 
 model Newsletter {
@@ -203,7 +199,6 @@ model Social {
   instagram String?
   linkedin  String?
   github    String?
-  userId    String  @unique
-  // user      User     @relation(fields: [userId], references: [id])
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creatorId String  @unique
+  creator   User    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 }

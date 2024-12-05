@@ -25,6 +25,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
+
 import { toast } from 'sonner';
 import dateFormat from 'dateformat';
 import { format } from 'timeago.js';
@@ -54,9 +55,10 @@ export const View = ({ item, getData, onDelete }: Props) => {
 	const [team, setTeam] = useState([]);
 	const [images, setImages] = useState([]);
 	const [isPending, startTransition] = useTransition();
+	const [isDeleting, startDeleting] = useTransition();
 	const [files, setFiles] = useState<File[]>([]);
-	const [fields, setFields] = useState(item?.[0]);
-	const markup = { __html: fields.description };
+	const [task, setTask] = useState(item?.[0]);
+	const markup = { __html: task.description };
 	const [description, setDescription] = useState(item?.[0].description);
 	const [add, setAdd] = useState({
 		image: false,
@@ -127,10 +129,26 @@ export const View = ({ item, getData, onDelete }: Props) => {
 		}
 	};
 
-	const onDeleteSelected = (index: number) => {
-		const _files = Array.from(files);
-		_files.splice(index, 1);
-		setFiles(_files);
+	const onDeleteFile = async (fileId: string, fileName: string) => {
+		startDeleting(async () => {
+			await axios
+				.delete(`/api/files/${task.id}/${task.creatorId}/${fileId}/${fileName}`)
+				.then(async (res: any) => {
+					if (res.status === 200)
+						await axios.get(`/api/files/${task.id}/${task.creatorId}`).then((res: any) => {
+							setTask({
+								...task,
+								files: res.data,
+							});
+							console.log(res);
+							toast.success(res.message);
+							getData();
+						});
+				})
+				.catch((e) => {
+					toast.error(e.response.data.message);
+				});
+		});
 	};
 
 	const onSubmitComment = async (e: React.FormEvent<HTMLFormElement>, values: any, files: any, id: string) => {
@@ -157,8 +175,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					attachments: null,
 				});
 				//Temporary comment adding
-				setFields({
-					...fields,
+				setTask({
+					...task,
 					comments: [
 						{
 							id: res.data.id,
@@ -170,7 +188,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								username: user.username,
 							},
 						},
-						...(fields.comments || []),
+						...(task.comments || []),
 					],
 				});
 
@@ -200,9 +218,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 	const onDeleteComment = async (id: string) => {
 		await axios.delete(`/api/comments?id=${id}`);
 		getData();
-		return setFields({
-			...fields,
-			comments: fields.comments.filter((comment: any) => comment.id !== id),
+		return setTask({
+			...task,
+			comments: task.comments.filter((comment: any) => comment.id !== id),
 		});
 	};
 
@@ -216,15 +234,15 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				value = status.find((st) => st.name === value);
 				break;
 			case 'teamIds':
-				fields.team = team.filter((user: any) => value.includes(user.id));
-				fields.teamIds = team.filter((t: any) => value.includes(t.id));
+				task.team = team.filter((user: any) => value.includes(user.id));
+				task.teamIds = team.filter((t: any) => value.includes(t.id));
 				break;
 			default:
-				setFields({ ...fields, [field]: value });
+				setTask({ ...task, [field]: value });
 				break;
 		}
 		await axios
-			.put(`/api/tasks/${fields.id}?type=${field}`, { [field]: value })
+			.put(`/api/tasks/${task.id}?type=${field}`, { [field]: value })
 			.then(() => {
 				toast.success('Task updated successfully');
 			})
@@ -237,18 +255,18 @@ export const View = ({ item, getData, onDelete }: Props) => {
 		return (
 			<Popover showArrow placement='bottom' radius='sm' className=''>
 				<PopoverTrigger>
-					<h2 className='m-0 p-0'>{fields.name}</h2>
+					<h2 className='m-0 p-0'>{task.name}</h2>
 				</PopoverTrigger>
 				<PopoverContent radius='sm' className='p-0 border-none'>
-					<form onSubmit={(e) => update(field, fields[field], e)}>
+					<form onSubmit={(e) => update(field, task[field], e)}>
 						<Input
 							size='md'
 							type='text'
 							radius='sm'
 							className='min-w-[300px]'
-							defaultValue={fields[field]}
+							defaultValue={task[field]}
 							placeholder={`Update ${field}`}
-							onValueChange={(e) => (fields[field] = e)}
+							onValueChange={(e) => (task[field] = e)}
 							isRequired
 							fullWidth
 							endContent={
@@ -291,9 +309,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 		<ModalBody>
 			<div className='m-0 p-0'>
 				<div className='w-full flex gap-1 items-center text-foreground text-sm'>
-					Due {format(fields.dueDate)} • on{' '}
-					{dateFormat(fields.dueDate, `${user.id == fields.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`)}
-					{user.id == fields.creator.id && (
+					Due {format(task.dueDate)} • on{' '}
+					{dateFormat(task.dueDate, `${user.id == task.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`)}
+					{user.id == task.creator.id && (
 						<I18nProvider locale={'en-GB'}>
 							<DatePicker
 								size='sm'
@@ -301,7 +319,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								hourCycle={24}
 								hideTimeZone={true}
 								variant='underlined'
-								defaultValue={parseAbsoluteToLocal(fields.dueDate)}
+								defaultValue={parseAbsoluteToLocal(task.dueDate)}
 								showMonthAndYearPickers
 								className='flex flex-col-reverse flex-wrap-reverse overflow-hidden datePicker w-[160px]'
 								onChange={(date: any) => {
@@ -317,7 +335,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				</div>
 
 				<div className='flex justify-between'>
-					{user.id == fields.creator.id ? (
+					{user.id == task.creator.id ? (
 						<>
 							<UpdateForm field='name' classes='text-sm font-semi flex gap-2 items-center' />
 							<Button
@@ -327,12 +345,12 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								color='danger'
 								type='submit'
 								radius='full'
-								onClick={() => onDelete(fields.id, fields.name, fields.files.length > 0 && true)}
+								onClick={() => onDelete(task.id, task.name, task.files.length > 0 && true)}
 								startContent={<TrashIcon />}
 							/>
 						</>
 					) : (
-						<h2 className='m-0 p-0'>{fields.name}</h2>
+						<h2 className='m-0 p-0'>{task.name}</h2>
 					)}
 				</div>
 			</div>
@@ -341,8 +359,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					<span className='text-foreground text-tiny m-0 p-0'>Priority</span>
 					<Popover showArrow placement='bottom' radius='sm'>
 						<PopoverTrigger>
-							<Chip radius='sm' color={fields.priority.color} className='shadow-md'>
-								{fields.priority.name}
+							<Chip radius='sm' color={task.priority.color} className='shadow-md'>
+								{task.priority.name}
 							</Chip>
 						</PopoverTrigger>
 						<PopoverContent className='p-4 min-w-[200px] border-none radius-none'>
@@ -350,7 +368,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								size='sm'
 								label='Change priority'
 								className='w-full justify-start mb-2'
-								defaultValue={fields.priority.name}
+								defaultValue={task.priority.name}
 								onValueChange={(e) => update('priority', e)}
 							>
 								{priorities?.map((i, index) => {
@@ -359,7 +377,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 											key={index}
 											size='sm'
 											value={i.name}
-											isDisabled={i == fields.priority ? true : false}
+											isDisabled={i == task.priority ? true : false}
 										>
 											{i.name}
 										</Radio>
@@ -373,8 +391,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					<span className='text-foreground text-tiny m-0 p-0'>Status</span>
 					<Popover showArrow placement='bottom' radius='sm'>
 						<PopoverTrigger>
-							<Chip radius='sm' color={fields.status.color} className='shadow-md'>
-								{fields.status.name}
+							<Chip radius='sm' color={task.status.color} className='shadow-md'>
+								{task.status.name}
 							</Chip>
 						</PopoverTrigger>
 						<PopoverContent className='p-4 min-w-[200px] border-none radius-none'>
@@ -382,7 +400,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								size='sm'
 								label='Change status'
 								className='w-full justify-start mb-2'
-								defaultValue={fields.status.name}
+								defaultValue={task.status.name}
 								onValueChange={(e) => update('status', e)}
 							>
 								{status?.map((i, index) => {
@@ -391,7 +409,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 											key={index}
 											size='sm'
 											value={i.name}
-											isDisabled={i == fields.status ? true : false}
+											isDisabled={i == task.status ? true : false}
 										>
 											{i.name}
 										</Radio>
@@ -405,8 +423,8 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					<span className='text-foreground text-tiny m-0 p-0'>Type</span>
 					<Popover showArrow placement='bottom' radius='sm'>
 						<PopoverTrigger>
-							<Chip radius='sm' color={fields.type} className='shadow-md'>
-								{fields.type}
+							<Chip radius='sm' color={task.type} className='shadow-md'>
+								{task.type}
 							</Chip>
 						</PopoverTrigger>
 						<PopoverContent className='p-4 min-w-[200px] border-none radius-none'>
@@ -414,7 +432,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								size='sm'
 								label='Change type'
 								className='w-full justify-start mb-2'
-								defaultValue={fields.type}
+								defaultValue={task.type}
 								onValueChange={(e) => update('type', e)}
 							>
 								{types?.map((i, index) => {
@@ -423,7 +441,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 											key={index}
 											size='sm'
 											value={i.name}
-											isDisabled={i == fields.type ? true : false}
+											isDisabled={i == task.type ? true : false}
 										>
 											{i.name}
 										</Radio>
@@ -438,9 +456,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			<div className='flex flex-col gap-1'>
 				<span className='text-foreground text-tiny m-0 p-0'>Team members</span>
 				<div className='flex'>
-					{fields?.team.length > 0 && (
+					{task?.team.length > 0 && (
 						<AvatarGroup isBordered max={13} className='ps-3 justify-start border-transparent'>
-							{fields?.team?.map((i) => {
+							{task?.team?.map((i) => {
 								return (
 									<Tooltip
 										key={i}
@@ -459,7 +477,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						</PopoverTrigger>
 						<PopoverContent radius='sm' className='p-4 min-w-[200px] border-none radius-none'>
 							<CheckboxGroup
-								defaultValue={fields.teamIds}
+								defaultValue={task.teamIds}
 								onChange={(ids) => update('teamIds', ids)}
 								classNames='w-full overflow-y-hidden'
 								style={{ overflow: 'scroll' }}
@@ -484,7 +502,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					</Popover>
 				</div>
 			</div>
-			{user.id == fields.creator.id ? (
+			{user.id == task.creator.id ? (
 				<Popover showArrow placement='bottom' radius='sm'>
 					<PopoverTrigger>
 						<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
@@ -526,16 +544,16 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				avatarProps={{
 					size: 'sm',
 					className: 'shrink-0',
-					src: fields?.creator.src,
+					src: task?.creator.src,
 				}}
 				description={
-					<span className='text-tiny truncate text-ellipsis line-clamp-1'>{format(fields?.createdAt)}</span>
+					<span className='text-tiny truncate text-ellipsis line-clamp-1'>{format(task?.createdAt)}</span>
 				}
 				name={
 					<span
 						className={`text-sm w-full text-ellipsis font-medium overflow-hidden break-words line-clamp-1`}
 					>
-						By {fields.creatorId === user.id ? 'me' : fields?.creator.name}
+						By {task.creatorId === user.id ? 'me' : task?.creator.name}
 					</span>
 				}
 			/>
@@ -548,12 +566,12 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						title={
 							<div className='flex items-center space-x-2'>
 								<ChatBubbleIcon />
-								<span>{fields.comments.length} Comments</span>
+								<span>{task.comments.length} Comments</span>
 							</div>
 						}
 					>
 						<div className='flex gap-3 flex-col comments'>
-							<form onSubmit={(e) => onSubmitComment(e, inputs, files, fields?.id)}>
+							<form onSubmit={(e) => onSubmitComment(e, inputs, files, task?.id)}>
 								<Textarea
 									placeholder='What are you thinking?'
 									size='sm'
@@ -590,7 +608,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 									}
 								/>
 							</form>
-							{fields.comments?.map((i: any, index: any) => {
+							{task.comments?.map((i: any, index: any) => {
 								return (
 									<div
 										key={index}
@@ -641,19 +659,26 @@ export const View = ({ item, getData, onDelete }: Props) => {
 							})}
 						</div>
 					</Tab>
-					{fields.files && (
+					{task.files && (
 						<Tab
 							key='attachments'
 							title={
 								<div className='flex items-center space-x-2'>
 									<FileIcon />
-									<span>{fields.files.length} Attachments</span>
+									<span>{task.files.length} Attachments</span>
 								</div>
 							}
 						>
-							{fields.files.map((item, index) => {
+							{task.files.map((item, index) => {
 								item.index = index; //To delete from the uploading list
-								return <FilePreviewer item={item} key={index} onDelete={onDeleteSelected} />;
+								return (
+									<FilePreviewer
+										item={item}
+										key={index}
+										onDelete={onDeleteFile}
+										isDeleting={isDeleting}
+									/>
+								);
 							})}
 						</Tab>
 					)}

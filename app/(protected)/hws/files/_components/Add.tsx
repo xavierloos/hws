@@ -56,7 +56,7 @@ export const Add = ({ onSubmit, isSaving, onClose }: NewFilesFormProps) => {
 				{files.map((item, index) => {
 					item.upload = true; // To assign the image
 					item.index = index; //To delete from the uploading list
-					return <FilePreviewer item={item} key={index} onDelete={() => onDeleteSelected} />;
+					return <FilePreviewer item={item} key={index} onDelete={onDeleteSelected} />;
 				})}
 
 				<div className='flex justify-end items-center gap-3 w-fll mb-3'>

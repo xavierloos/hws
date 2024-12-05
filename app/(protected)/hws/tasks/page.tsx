@@ -41,7 +41,7 @@ const TasksPage = () => {
 			await axios
 				.get(`/api/tasks?sortby=${sorting}`)
 				.then((res) => {
-					setData(res.data);
+					return setData(res.data);
 				})
 				.catch((e) => {
 					toast.error(e.response.data.message);
