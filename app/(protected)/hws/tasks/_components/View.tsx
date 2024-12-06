@@ -46,7 +46,7 @@ import ReactQuill from 'react-quill';
 type Props = {
 	item: any;
 	getData: (sort?: string) => {};
-	onDelete: (id: string, name: string, files: boolean) => {};
+	onDelete: (id: string, name: string) => {};
 };
 
 export const View = ({ item, getData, onDelete }: Props) => {
@@ -140,8 +140,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								...task,
 								files: res.data,
 							});
-							console.log(res);
-							toast.success(res.message);
+							toast.success(`File deleted successfully`);
 							getData();
 						});
 				})
@@ -345,7 +344,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								color='danger'
 								type='submit'
 								radius='full'
-								onClick={() => onDelete(task.id, task.name, task.files.length > 0 && true)}
+								onClick={() => onDelete(task.id, task.name)}
 								startContent={<TrashIcon />}
 							/>
 						</>

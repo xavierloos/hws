@@ -84,13 +84,13 @@ const TasksPage = () => {
 		});
 	};
 
-	const onDelete = async (id: string, name: string, files: boolean = false) => {
+	const onDelete = async (id: string, name: string) => {
 		toast.warning(`Are you sure you want to delete: ${name}?`, {
 			action: {
 				label: 'YES',
 				onClick: async () => {
 					try {
-						const res = await axios.delete(`/api/tasks?id=${id}&files=${files}`);
+						const res = await axios.delete(`/api/tasks/${id}`);
 						toast.success(res.data.message);
 						getData();
 					} catch (e) {
