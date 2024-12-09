@@ -3,15 +3,49 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
+import { getTemporaryUrl } from '@/temporaryUrl';
 
 export const GET = async (req: Request, { params }: any) => {
 	try {
-		const res = await db.task.findUnique({
+		const task = await db.task.findUnique({
 			where: { id: params.id },
+			include: {
+				files: {
+					include: {
+						creator: true,
+					},
+				},
+				creator: true,
+				team: true,
+				comments: {
+					orderBy: {
+						createdAt: 'desc',
+					},
+					where: {
+						verified: true,
+					},
+					include: {
+						creator: true,
+						files: true,
+					},
+				},
+			},
 		});
+		const getImages = async () => {
+			task.creator.src = await getTemporaryUrl(`${task.creator.id}/${task.creator.image}`);
+			for (const member of task.team) member.src = await getTemporaryUrl(`${member.id}/${member.image}`);
+			for (const file of task.files)
+				file.src = await getTemporaryUrl(`${task.creatorId}/${task.id}/${file.name}`);
+			for (const comment of task.comments) {
+				comment.creator.src = await getTemporaryUrl(`${comment.creator.id}/${comment.creator.image}`);
+				for (const file of comment.files)
+					file.src = await getTemporaryUrl(`${task.creatorId}/${task.id}/${file.name}`);
+			}
+		};
 
-		if (!res) return NextResponse.json({ message: 'Not found' }, { status: 500 });
-		return NextResponse.json(res, { status: 200 });
+		await getImages();
+
+		return NextResponse.json(task, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
 	}

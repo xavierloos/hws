@@ -20,7 +20,7 @@ export const GET = async (req: Request) => {
 				relatedId: id,
 			},
 			orderBy: { createdAt: 'desc' },
-			include: { user: true },
+			include: { creator: true },
 		});
 
 		// for (const item of res) {
@@ -62,12 +62,12 @@ export const POST = async (req: Request) => {
 			data: {
 				...comment,
 				verified: true,
-				userId: user?.id,
+				creatorId: user?.id,
 				createdAt: new Date(),
 			},
 		});
 
-		return NextResponse.json(res, { status: 200 });
+		return NextResponse.json(res.id, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ message: 'Something went wrong', error }, { status: 500 });
 	}

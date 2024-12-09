@@ -15,7 +15,7 @@ type FilePreviewerProps = {
 export const FilePreviewer = ({ item, onDelete, type, isDeleting }: FilePreviewerProps) => {
 	const user = useCurrentUser();
 	const fileType = item.name.split('.').pop();
-	const img = item.src ? item.src : URL.createObjectURL(item);
+	// const img = item.src ? item.src : URL.createObjectURL(item);
 	const index = typeof item.id === 'string' ? item.id : item.index;
 
 	return (
@@ -51,7 +51,7 @@ export const FilePreviewer = ({ item, onDelete, type, isDeleting }: FilePreviewe
 					<Avatar
 						showFallback
 						radius='none'
-						src={img}
+						src={item.src}
 						className='bg-transparent'
 						fallback={
 							fileType.includes('docx') ? (

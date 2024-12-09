@@ -77,6 +77,7 @@ export const GET = async (req: Request) => {
 					},
 					include: {
 						creator: true,
+						files: true,
 					},
 				},
 			},
@@ -85,14 +86,12 @@ export const GET = async (req: Request) => {
 		const getImages = async () => {
 			for (const task of tasks) {
 				task.creator.src = await getTemporaryUrl(`${task.creator.id}/${task.creator.image}`);
-				for (const member of task.team) {
-					member.src = await getTemporaryUrl(`${member.id}/${member.image}`);
-				}
+				for (const member of task.team) member.src = await getTemporaryUrl(`${member.id}/${member.image}`);
+				for (const file of task.files) file.src = await getTemporaryUrl(`${user.id}/${task.id}/${file.name}`);
 				for (const comment of task.comments) {
-					comment.user.src = await getTemporaryUrl(`${comment.user.id}/${comment.user.image}`);
-				}
-				for (const file of task.files) {
-					file.src = await getTemporaryUrl(`${user.id}/${task.id}/${file.name}`);
+					comment.creator.src = await getTemporaryUrl(`${comment.creator.id}/${comment.creator.image}`);
+					for (const file of comment.files)
+						file.src = await getTemporaryUrl(`${task.creator.id}/${task.id}/${file.name}`);
 				}
 			}
 		};

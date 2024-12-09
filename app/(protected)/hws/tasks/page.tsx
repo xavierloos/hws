@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { useDisclosure } from '@nextui-org/react';
+import { Alert, useDisclosure } from '@nextui-org/react';
 
 const TasksPage = () => {
 	const user = useCurrentUser();
@@ -106,21 +106,23 @@ const TasksPage = () => {
 	};
 
 	return (
-		<TableItems
-			data={data}
-			cols={cols}
-			initialCols={initialCols}
-			onDelete={onDelete}
-			onSave={onSubmit}
-			statusOptions={statusOptions}
-			isLoading={isLoading}
-			isSaving={isSaving}
-			isNewOpen={isOpen}
-			onNewOpen={onOpen}
-			onNewClose={handleOnClose}
-			getData={getData}
-			permission={user?.permission}
-		/>
+		<>
+			<TableItems
+				data={data}
+				cols={cols}
+				initialCols={initialCols}
+				onDelete={onDelete}
+				onSave={onSubmit}
+				statusOptions={statusOptions}
+				isLoading={isLoading}
+				isSaving={isSaving}
+				isNewOpen={isOpen}
+				onNewOpen={onOpen}
+				onNewClose={handleOnClose}
+				getData={getData}
+				permission={user?.permission}
+			/>
+		</>
 	);
 };
 

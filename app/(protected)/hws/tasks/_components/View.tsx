@@ -20,12 +20,14 @@ import {
 	Chip,
 	RadioGroup,
 	Radio,
+	Alert,
 } from '@nextui-org/react';
+import { FaFileExcel, FaFileImage, FaFilePdf, FaFilePowerpoint, FaFileWord } from 'react-icons/fa';
+import { BiSolidFileTxt } from 'react-icons/bi';
 import { useEffect, useState, useTransition } from 'react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
-
 import { toast } from 'sonner';
 import dateFormat from 'dateformat';
 import { format } from 'timeago.js';
@@ -50,11 +52,12 @@ type Props = {
 };
 
 export const View = ({ item, getData, onDelete }: Props) => {
+	console.log(now);
 	const user = useCurrentUser();
 	const [searchMember, setSearchMember] = useState(null);
 	const [team, setTeam] = useState([]);
 	const [images, setImages] = useState([]);
-	const [isPending, startTransition] = useTransition();
+	const [isSaving, startSaving] = useTransition();
 	const [isDeleting, startDeleting] = useTransition();
 	const [files, setFiles] = useState<File[]>([]);
 	const [task, setTask] = useState(item?.[0]);
@@ -66,7 +69,6 @@ export const View = ({ item, getData, onDelete }: Props) => {
 	});
 	const [inputs, setInputs] = useState({
 		comment: '',
-		attachments: null,
 	});
 	let priorities = [
 		{ name: 'High', color: 'danger' },
@@ -134,15 +136,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			await axios
 				.delete(`/api/files/${task.id}/${task.creatorId}/${fileId}/${fileName}`)
 				.then(async (res: any) => {
-					if (res.status === 200)
-						await axios.get(`/api/files/${task.id}/${task.creatorId}`).then((res: any) => {
-							setTask({
-								...task,
-								files: res.data,
-							});
-							toast.success(`File deleted successfully`);
-							getData();
-						});
+					if (res.status === 200) await axios.get(`/api/files/${task.id}/${task.creatorId}`);
+					updateTask();
+					getData();
 				})
 				.catch((e) => {
 					toast.error(e.response.data.message);
@@ -150,103 +146,67 @@ export const View = ({ item, getData, onDelete }: Props) => {
 		});
 	};
 
-	const onSubmitComment = async (e: React.FormEvent<HTMLFormElement>, values: any, files: any, id: string) => {
+	const onSubmitComment = async (e: React.FormEvent<HTMLFormElement>, values: any) => {
 		e.preventDefault();
-		const data = new FormData();
-		values.taskId = id;
-
-		if (files.length > 0) {
-			values.attachments = [];
-			files.forEach((item: any) => {
-				values.attachments.push({
-					name: item.name,
-					url: null,
-					type: item.type,
-				}); //Append files to values
+		startSaving(async () => {
+			const data = new FormData();
+			values.taskId = task.id;
+			const commentId = await axios.post('/api/comments', values).then(async (res) => {
+				return res.data;
 			});
-		}
 
-		await axios
-			.post('/api/comments', values)
-			.then(async (res) => {
-				setInputs({
-					comment: '',
-					attachments: null,
+			const postFiles = async () => {
+				files.forEach((item: any) => {
+					data.append(task.id, item, item.name);
 				});
-				//Temporary comment adding
-				setTask({
-					...task,
-					comments: [
-						{
-							id: res.data.id,
-							comment: values.comment,
-							createdAt: new Date(),
-							user: {
-								id: user.id,
-								src: user.src,
-								username: user.username,
-							},
-						},
-						...(task.comments || []),
-					],
-				});
+				await axios.post(`/api/files?type=tasks&commentId=${commentId}`, data);
+			};
 
-				getData();
-
-				// if (files.length > 0) {
-				//   files.forEach((item: any) => {
-				//     data.append(res.data.message, item, item.name);
-				//   });
-				//   await axios
-				//     .post(`/api/tasks/${res.data.message}`, data)
-				//     .then((res) => {
-				//       toast.success(res.data.message);
-				//     })
-				//     .catch((e) => {
-				//       toast.error(e.response.data.message);
-				//     });
-				// } else {
-				//   toast.success("Task added successfully");
-				// }
-			})
-			.catch((e) => {
-				toast.error(e.response.data.message);
+			if (files.length > 0) await postFiles();
+			setFiles([]);
+			setInputs({
+				comment: '',
 			});
+			updateTask();
+			toast.success('Comment added successfully');
+			getData();
+		});
 	};
 
 	const onDeleteComment = async (id: string) => {
-		await axios.delete(`/api/comments?id=${id}`);
+		await axios.delete(`/api/comments/comment/${id}`);
+		updateTask();
+		toast.success('Comment deleted successfully');
 		getData();
-		return setTask({
-			...task,
-			comments: task.comments.filter((comment: any) => comment.id !== id),
-		});
+	};
+
+	const updateTask = async () => {
+		setTask(
+			await axios.get(`/api/tasks/${task.id}`).then(async (task: any) => {
+				return task.data;
+			})
+		);
 	};
 
 	const update = async (field: string, value: any, e?: React.ChangeEvent<HTMLInputElement>) => {
 		e?.preventDefault();
-		switch (field) {
-			case 'priority':
-				value = priorities.find((priority) => priority.name === value);
-				break;
-			case 'status':
-				value = status.find((st) => st.name === value);
-				break;
-			case 'teamIds':
-				task.team = team.filter((user: any) => value.includes(user.id));
-				task.teamIds = team.filter((t: any) => value.includes(t.id));
-				break;
-			default:
-				setTask({ ...task, [field]: value });
-				break;
+		if (['priority', 'status'].includes(field)) {
+			const options = [...priorities, ...status];
+			value = options.find((i) => i.name === value);
 		}
 		await axios
 			.put(`/api/tasks/${task.id}?type=${field}`, { [field]: value })
 			.then(() => {
-				toast.success('Task updated successfully');
+				const fieldMapping = {
+					teamIds: 'members',
+					dueDate: 'due date',
+				};
+				toast.success(`Task ${fieldMapping[field] || field} updated successfully`);
 			})
-			.catch((e) => {});
-
+			.catch((e) => {
+				return toast.error('Something went wrong');
+			});
+		updateTask();
 		getData();
 	};
 
@@ -307,36 +267,38 @@ export const View = ({ item, getData, onDelete }: Props) => {
 	return (
 		<ModalBody>
 			<div className='m-0 p-0'>
-				<div className='w-full flex gap-1 items-center text-foreground text-sm'>
-					Due {format(task.dueDate)} • on{' '}
-					{dateFormat(task.dueDate, `${user.id == task.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`)}
-					{user.id == task.creator.id && (
-						<I18nProvider locale={'en-GB'}>
-							<DatePicker
-								size='sm'
-								radius='none'
-								hourCycle={24}
-								hideTimeZone={true}
-								variant='underlined'
-								defaultValue={parseAbsoluteToLocal(task.dueDate)}
-								showMonthAndYearPickers
-								className='flex flex-col-reverse flex-wrap-reverse overflow-hidden datePicker w-[160px]'
-								onChange={(date: any) => {
-									const m = `${date?.month <= 9 ? '0' : ''}${date?.month}`;
-									const d = `${date?.day <= 9 ? '0' : ''}${date?.day}`;
-									const h = `${date?.hour <= 9 ? '0' : ''}${date?.hour}`;
-									const min = `${date?.minute <= 9 ? '0' : ''}${date?.minute}`;
-									update('dueDate', `${date?.year}-${m}-${d}T${h}:${min}Z`);
-								}}
-							/>
-						</I18nProvider>
-					)}
-				</div>
+				<div className='w-full flex flex-col gap-2'>
+					<div className='w-full flex justify-between'>
+						<div className='flex gap-1 items-center text-foreground text-sm'>
+							Due {format(task.dueDate)} • on{' '}
+							{dateFormat(
+								task.dueDate,
+								`${user.id == task.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`
+							)}
+							{user.id == task.creator.id && (
+								<I18nProvider locale={'en-GB'}>
+									<DatePicker
+										size='sm'
+										radius='none'
+										hourCycle={24}
+										hideTimeZone={true}
+										variant='underlined'
+										defaultValue={parseAbsoluteToLocal(task.dueDate)}
+										showMonthAndYearPickers
+										className='flex flex-col-reverse flex-wrap-reverse overflow-hidden datePicker w-[160px]'
+										onChange={(date: any) => {
+											const m = `${date?.month <= 9 ? '0' : ''}${date?.month}`;
+											const d = `${date?.day <= 9 ? '0' : ''}${date?.day}`;
+											const h = `${date?.hour <= 9 ? '0' : ''}${date?.hour}`;
+											const min = `${date?.minute <= 9 ? '0' : ''}${date?.minute}`;
+											update('dueDate', `${date?.year}-${m}-${d}T${h}:${min}Z`);
+										}}
+									/>
+								</I18nProvider>
+							)}
+						</div>
 
-				<div className='flex justify-between'>
-					{user.id == task.creator.id ? (
-						<>
-							<UpdateForm field='name' classes='text-sm font-semi flex gap-2 items-center' />
+						{user.id == task.creator.id && (
 							<Button
 								size='sm'
 								isIconOnly
@@ -347,6 +309,22 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								onClick={() => onDelete(task.id, task.name)}
 								startContent={<TrashIcon />}
 							/>
+						)}
+					</div>
+					{task.status.name != 'Completed' && new Date() > new Date(task.dueDate) && (
+						<Alert
+							size='sm'
+							color='danger'
+							variant='flat'
+							title={'This task is overdue'}
+							hideIconWrapper={true}
+						/>
+					)}
+				</div>
+				<div className='flex justify-between'>
+					{user.id == task.creator.id ? (
+						<>
+							<UpdateForm field='name' classes='text-sm font-semi flex gap-2 items-center' />
 						</>
 					) : (
 						<h2 className='m-0 p-0'>{task.name}</h2>
@@ -537,7 +515,6 @@ export const View = ({ item, getData, onDelete }: Props) => {
 			) : (
 				<div dangerouslySetInnerHTML={markup} className='markup text-sm text-foreground-600' />
 			)}
-
 			<User
 				className='w-full justify-start'
 				avatarProps={{
@@ -557,7 +534,6 @@ export const View = ({ item, getData, onDelete }: Props) => {
 				}
 			/>
 			<hr />
-
 			<div>
 				<Tabs aria-label='Options' color='primary'>
 					<Tab
@@ -570,7 +546,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						}
 					>
 						<div className='flex gap-3 flex-col comments'>
-							<form onSubmit={(e) => onSubmitComment(e, inputs, files, task?.id)}>
+							<form onSubmit={(e) => onSubmitComment(e, inputs)}>
 								<Textarea
 									placeholder='What are you thinking?'
 									size='sm'
@@ -578,21 +554,26 @@ export const View = ({ item, getData, onDelete }: Props) => {
 									fullWidth
 									isRequired
 									minRows={1}
-									description={`0 Files attached`}
+									description={`${files.length} file(s) attached`}
 									value={inputs.comment}
 									onValueChange={(e) => setInputs({ ...inputs, comment: e })}
 									startContent={<Avatar src={user?.src} size='sm' className='shrink-0' />}
 									endContent={
 										<>
-											<Button
-												size='sm'
-												isIconOnly
-												color='foreground'
-												variant='flat'
-												radius='full'
+											<label
+												className='z-0 flex items-center justify-center rounded-full px-0 min-w-8 w-8 h-8 bg-default text-default-foreground hover:opacity-70'
+												htmlFor='attachments'
 											>
 												<FilePlusIcon />
-											</Button>
+											</label>
+											<input
+												id='attachments'
+												type='file'
+												multiple
+												accept='.xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf'
+												className='hidden'
+												onChange={handleFileSelected}
+											/>
 											<Button
 												size='sm'
 												isIconOnly
@@ -600,9 +581,9 @@ export const View = ({ item, getData, onDelete }: Props) => {
 												type='submit'
 												radius='full'
 												className='ms-2'
-											>
-												<PaperPlaneIcon />
-											</Button>
+												isLoading={isSaving}
+												startContent={<PaperPlaneIcon />}
+											/>
 										</>
 									}
 								/>
@@ -612,35 +593,121 @@ export const View = ({ item, getData, onDelete }: Props) => {
 									<div
 										key={index}
 										className={`flex gap-2 max-w-[80%] m-auto ${
-											i.user.id == user.id ? 'ms-0' : 'flex-row-reverse me-0'
+											i.creator.id == user.id ? 'ms-0' : 'flex-row-reverse me-0'
 										}`}
 									>
-										<Avatar src={i.user.src} size='sm' className='shrink-0' />
+										<Avatar src={i.creator.src} size='sm' className='shrink-0' />
 										<div className='flex flex-col gap-1'>
-											<div
-												className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words m-auto text-start ${
-													i.user?.id == user?.id
-														? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
-														: 'me-0 bg-default-100 rounded-tr-none'
-												}`}
-											>
-												{i.comment}
+											<div className='flex gap-2'>
+												<div
+													className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words text-start ${
+														i.creator?.id == user.id
+															? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
+															: 'me-0 bg-default-100 rounded-tr-none'
+													}`}
+												>
+													{i.comment}
+												</div>
+												{i.creator.id === user.id && (
+													<Button
+														size='sm'
+														isIconOnly
+														color='danger'
+														radius='full'
+														variant='light'
+														onClick={() => onDeleteComment(i.id)}
+														startContent={<TrashIcon />}
+													/>
+												)}
 											</div>
+											{i.files.length > 0 && (
+												<AvatarGroup
+													isBordered
+													renderCount={1}
+													max={10}
+													className={
+														i.creator.id == user.id
+															? 'flex justify-start mt-1'
+															: 'flex justify-end mt-1'
+													}
+												>
+													{i.files?.map((file) => {
+														const fileType = file.name.split('.').pop();
+														return (
+															<Tooltip content={file.name} size='sm' key={file.id}>
+																<Avatar
+																	src={file.src}
+																	onClick={() => window.open(file.src)}
+																	radius='sm'
+																	className={`shrink-0 ring-1`}
+																	showFallback
+																	fallback={
+																		fileType.includes('docx') ? (
+																			<FaFileWord
+																				size={70}
+																				className='w-full h-full text-blue-600'
+																				fill='currentColor'
+																			/>
+																		) : fileType.includes('ppt') ? (
+																			<FaFilePowerpoint
+																				size={70}
+																				className='w-full h-full text-orange-600'
+																				fill='currentColor'
+																			/>
+																		) : fileType.includes('xls') ? (
+																			<FaFileExcel
+																				size={70}
+																				className='w-full h-full text-success'
+																				fill='currentColor'
+																			/>
+																		) : fileType.includes('txt') ? (
+																			<BiSolidFileTxt
+																				size={70}
+																				className='w-full h-full text-foreground'
+																				fill='currentColor'
+																			/>
+																		) : fileType.includes('pdf') ? (
+																			<FaFilePdf
+																				size={100}
+																				className='w-full h-full text-red-500'
+																				fill='currentColor'
+																			/>
+																		) : (
+																			<FaFileImage
+																				size={100}
+																				className='w-full h-full text-primary'
+																				fill='currentColor'
+																			/>
+																		)
+																	}
+																/>
+															</Tooltip>
+														);
+													})}
+												</AvatarGroup>
+											)}
 											<div
 												className={`text-tiny text-foreground-400 truncate text-ellipsis line-clamp-1 ${
-													i.user.id == user.id ? 'text-start' : 'text-end'
+													i.creator.id == user.id ? 'text-start' : 'text-end'
 												}`}
 											>
 												<span>
-													{i.user.id === user.id
+													{i.creator.id === user.id
 														? 'Me'
-														: `${i.user.username ? `@${i.user.username}` : i.user.email}`}
+														: `${
+																i.creator.username
+																	? `@${i.creator.username}`
+																	: i.creator.email
+														  }`}
 												</span>
-												<span>
-													{i?.attachments && ' • ' + i?.attachments?.length + ' files'}
-												</span>
+												{i.files.length > 0 && (
+													<>
+														{' • '}
+														<span className=' underline'>Added some files</span>
+													</>
+												)}
 												<span> • {format(i?.createdAt)}</span>
-												{i.user.id === user.id && (
+												{/* {i.creator.id === user.id && (
 													<>
 														{' • '}
 														<span
@@ -650,7 +717,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 															Delete
 														</span>
 													</>
-												)}
+												)} */}
 											</div>
 										</div>
 									</div>

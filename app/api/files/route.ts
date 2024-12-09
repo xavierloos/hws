@@ -40,6 +40,8 @@ export const GET = async (req: any) => {
 export const POST = async (req: Request) => {
 	const searchParams = req.nextUrl.searchParams;
 	const type = searchParams.get('type');
+	const commentId = searchParams.get('commentId');
+
 	try {
 		const user = await currentUser();
 		if (!user) return { error: 'Unathorized' };
@@ -48,7 +50,7 @@ export const POST = async (req: Request) => {
 		const dataValues = Array.from(data.values());
 		const taskId = Array.from(data.keys());
 		const filesId = [];
-
+		const rand = crypto.randomInt(10, 1_00).toString();
 		for (const value of dataValues) {
 			if (typeof value === 'object' && 'arrayBuffer' in value) {
 				const file = value as unknown as Blob;
@@ -60,23 +62,25 @@ export const POST = async (req: Request) => {
 						await bucket.file(`${user.id}/${fName}`).save(Buffer.from(buffer));
 						break;
 					case 'tasks':
+						const filename = commentId
+							? `${value.name.split('.')[0]}-${rand}.${file.type.split('/')[1]}`
+							: value.name;
 						//Creates a folder with the id
-						await bucket.file(`${user.id}/${taskId[0]}/${value.name}`).save(Buffer.from(buffer));
-						const fileId = await db.file.create({
+						await bucket.file(`${user.id}/${taskId[0]}/${filename}`).save(Buffer.from(buffer));
+						await db.file.create({
 							data: {
-								name: value.name,
+								name: filename,
 								type: value.type,
 								size: value.size,
 								lastModified: value.lastModified,
 								creatorId: user.id,
 								createdAt: new Date(),
 								taskId: taskId[0],
+								commentId: commentId ? commentId : null,
 							},
 						});
-						// filesId.push(fileId.id);
 						break;
 					default:
-						const rand = crypto.randomInt(10, 1_00).toString();
 						const name = `${value.name.split('.')[0]}-${rand}.${file.type.split('/')[1]}`;
 						await bucket.file(`${user.id}/${name}`).save(Buffer.from(buffer));
 						await db.file.create({
