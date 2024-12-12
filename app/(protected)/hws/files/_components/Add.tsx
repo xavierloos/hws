@@ -46,7 +46,7 @@ export const Add = ({ onSubmit, isSaving, onClose }: NewFilesFormProps) => {
 						id='uploadfiles'
 						type='file'
 						multiple
-						accept='.xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf'
+						accept='image/*,.xlsx,.xls,.ods,.doc,.docx,.ppt,.pptx,.pdf,.txt,.csv'
 						required
 						className='hidden'
 						onChange={handleFileSelected}

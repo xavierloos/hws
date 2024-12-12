@@ -10,8 +10,25 @@ export const GET = async (req: Request, { params }: any) => {
 	try {
 		const user = await db.user.findFirst({
 			where: { id: params.id },
-			include: { social: true },
+			include: {
+				social: true,
+				_count: {
+					select: {
+						blogs: true,
+						// assignmentIds: true,
+						assignedTasks: {
+							where: {
+								status: {
+									path: ['name'],
+									equals: 'Completed',
+								},
+							},
+						},
+					},
+				},
+			},
 		});
+		console.log(user);
 
 		const getImages = async () => (user.src = await getTemporaryUrl(`${user.id}/${user.image}`));
 		await getImages();

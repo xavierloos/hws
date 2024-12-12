@@ -52,7 +52,6 @@ type Props = {
 };
 
 export const View = ({ item, getData, onDelete }: Props) => {
-	console.log(now);
 	const user = useCurrentUser();
 	const [searchMember, setSearchMember] = useState(null);
 	const [team, setTeam] = useState([]);

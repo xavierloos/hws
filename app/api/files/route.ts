@@ -81,7 +81,7 @@ export const POST = async (req: Request) => {
 						});
 						break;
 					default:
-						const name = `${value.name.split('.')[0]}-${rand}.${file.type.split('/')[1]}`;
+						const name = `${value.name.split('.')[0]}-${rand}.${value.name.split('.').pop()}`;
 						await bucket.file(`${user.id}/${name}`).save(Buffer.from(buffer));
 						await db.file.create({
 							data: {
@@ -130,17 +130,17 @@ export const DELETE = async (req: any) => {
 
 		const src = taskid ? `${user.id}/${taskid}/${name}` : `${user.id}/${name}`;
 
-		if (deletefolder) {
-			await storage.bucket(`${process.env.GCP_BUCKET}`).deleteFiles({ prefix: `${user.id}/${taskid}` });
-		} else {
-			await storage.bucket(`${process.env.GCP_BUCKET}`).file(src).delete();
-		}
-
 		await db.file.delete({
 			where: {
 				id,
 			},
 		});
+
+		if (deletefolder) {
+			await storage.bucket(`${process.env.GCP_BUCKET}`).deleteFiles({ prefix: `${user.id}/${taskid}` });
+		} else {
+			await storage.bucket(`${process.env.GCP_BUCKET}`).file(src).delete();
+		}
 
 		return NextResponse.json(
 			{

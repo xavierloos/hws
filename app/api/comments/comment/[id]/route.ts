@@ -5,7 +5,6 @@ import { currentUser } from '@/lib/auth';
 import { storage } from '@/lib/gcp';
 
 export const DELETE = async (req: any, { params }: any) => {
-	console.log('asdas');
 	try {
 		const comment = await db.comment.findUnique({
 			where: {

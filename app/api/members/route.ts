@@ -18,11 +18,11 @@ export const GET = async () => {
 		const user = await currentUser();
 
 		const members = await db.user.findMany({
-			where: {
-				id: {
-					not: user?.id,
-				},
-			},
+			// where: {
+			// 	id: {
+			// 		not: user?.id,
+			// 	},
+			// },
 			include: { social: true },
 		});
 
@@ -33,7 +33,7 @@ export const GET = async () => {
 		};
 		await getImages();
 
-		return new NextResponse(JSON.stringify(members, { status: 200 }));
+		return NextResponse.json(members, { status: 200 });
 	} catch (error) {
 		return NextResponse.json(
 			{

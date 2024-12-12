@@ -67,7 +67,7 @@ const FilesPage = () => {
 				label: 'YES',
 				onClick: async () => {
 					try {
-						await axios.delete(`/api/files?id=${id}&name=${name}`);
+						await axios.delete(`/api/files/file/${id}`);
 						getData();
 					} catch (error) {}
 				},

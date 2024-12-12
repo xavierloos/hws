@@ -42,13 +42,13 @@ model User {
   emailNotificationsEnabled Boolean          @default(false)
   smsNotificationsEnabled   Boolean          @default(false)
   otpConfirmation           OTPConfirmation?
-  file                      File[]           @relation("CreatedBy")
+  files                     File[]           @relation("CreatedBy")
   comments                  Comment[]
   social                    Social?
-  createdTasks              Task[]           @relation("CreatedBy")
+  tasks                     Task[]           @relation("CreatedBy")
   assignedTaskIds           String[]
   assignedTasks             Task[]           @relation("AssignedTo", fields: [assignedTaskIds], references: [id])
-  createdBlogs              Blog[]           @relation("Creator")
+  blogs                     Blog[]           @relation("Creator")
   modifiedBlogs             Blog[]           @relation("Modifier")
 
   @@unique([email, id])
