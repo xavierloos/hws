@@ -63,7 +63,7 @@ export const POST = async (req: Request) => {
 						break;
 					case 'tasks':
 						const filename = commentId
-							? `${value.name.split('.')[0]}-${rand}.${file.type.split('/')[1]}`
+							? `${value.name.split('.')[0]}-${rand}.${value.name.split('.').pop()}`
 							: value.name;
 						//Creates a folder with the id
 						await bucket.file(`${user.id}/${taskId[0]}/${filename}`).save(Buffer.from(buffer));

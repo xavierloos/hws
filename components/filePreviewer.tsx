@@ -1,8 +1,5 @@
-import { Button, Tooltip, User, Switch, ListboxItem, Listbox, Avatar } from '@nextui-org/react';
-import { EyeOpenIcon, ImageIcon, LockClosedIcon, LockOpen1Icon, TrashIcon } from '@radix-ui/react-icons';
-import { BiSolidFileTxt } from 'react-icons/bi';
-import { FaFileExcel, FaFileImage, FaFilePdf, FaFilePowerpoint, FaFileWord } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
+import { Button, Tooltip, ListboxItem, Listbox, Avatar } from '@nextui-org/react';
+import { TrashIcon } from '@radix-ui/react-icons';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 type FilePreviewerProps = {
@@ -14,10 +11,13 @@ type FilePreviewerProps = {
 
 export const FilePreviewer = ({ item, onDelete, type, isDeleting }: FilePreviewerProps) => {
 	const user = useCurrentUser();
-	const fileType = item.name.split('.').pop();
-	// const img = item.src ? item.src : URL.createObjectURL(item);
 	const index = typeof item.id === 'string' ? item.id : item.index;
-
+	const imageUrl =
+		item.src && item.type.includes('image')
+			? item.src
+			: item.src && !item.type.includes('image')
+			? `/${item.name.split('.').pop()}.png`
+			: URL.createObjectURL(item);
 	return (
 		<Listbox
 			aria-label='User Menu'
@@ -47,37 +47,7 @@ export const FilePreviewer = ({ item, onDelete, type, isDeleting }: FilePreviewe
 						</Tooltip>
 					)
 				}
-				startContent={
-					<Avatar
-						showFallback
-						radius='none'
-						src={item.src}
-						className='bg-transparent'
-						fallback={
-							fileType.includes('docx') ? (
-								<FaFileWord size={70} className='w-full h-full text-blue-600' fill='currentColor' />
-							) : fileType.includes('ppt') ? (
-								<FaFilePowerpoint
-									size={70}
-									className='w-full h-full text-orange-600'
-									fill='currentColor'
-								/>
-							) : fileType.includes('xls') ? (
-								<FaFileExcel size={70} className='w-full h-full text-success' fill='currentColor' />
-							) : fileType.includes('txt') ? (
-								<BiSolidFileTxt
-									size={70}
-									className='w-full h-full text-foreground'
-									fill='currentColor'
-								/>
-							) : fileType.includes('pdf') ? (
-								<FaFilePdf size={100} className='w-full h-full text-red-500' fill='currentColor' />
-							) : (
-								<FaFileImage size={100} className='w-full h-full text-primary' fill='currentColor' />
-							)
-						}
-					/>
-				}
+				startContent={<Avatar showFallback radius='none' src={imageUrl} className='bg-transparent' />}
 			>
 				<div className='flex-col items-start'>
 					<span className='text-default-foreground w-full truncate text-ellipsis overflow-hidden break-words line-clamp-1'>

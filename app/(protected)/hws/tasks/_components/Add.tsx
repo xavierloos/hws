@@ -37,15 +37,15 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 		{ name: 'Low', color: 'default' },
 	];
 	let types = [
-		{ key: 'Bug', label: 'Bug' },
-		{ key: 'Documentation', label: 'Documentation' },
-		{ key: 'Testing', label: 'Testing' },
-		{ key: 'Research', label: 'Research' },
-		{ key: 'Feature', label: 'Feature' },
-		{ key: 'Story', label: 'Story' },
-		{ key: 'Urgent', label: 'Urgent' },
-		{ key: 'Critical', label: 'Critical' },
-		{ key: 'Maintenance', label: 'Maintenance' },
+		{ name: 'Bug', color: 'primary' },
+		{ name: 'Documentation', color: 'primary' },
+		{ name: 'Testing', color: 'primary' },
+		{ name: 'Research', color: 'primary' },
+		{ name: 'Feature', color: 'primary' },
+		{ name: 'Story', color: 'primary' },
+		{ name: 'Urgent', color: 'primary' },
+		{ name: 'Critical', color: 'primary' },
+		{ name: 'Maintenance', color: 'primary' },
 	];
 	const [team, setTeam] = useState([]);
 	const [images, setImages] = useState([]);
@@ -55,7 +55,7 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 	const [fields, setFields] = useState({
 		name: undefined,
 		priority: {},
-		type: useState<Selection>(new Set([])),
+		type: {},
 		dueDate: useState<DateValue>(),
 		teamIds: [],
 		description: undefined,
@@ -144,26 +144,14 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 						radius='none'
 						label='Priority'
 						items={priorities}
-						onChange={
-							(item: any) =>
-								priorities.map(
-									(p) => p.name == item.target.value && setFields({ ...fields, priority: p })
-								)
-							//
+						onChange={(item: any) =>
+							priorities.map((p) => p.name == item.target.value && setFields({ ...fields, priority: p }))
 						}
 						renderValue={(items: any) => items.map((i: any) => i.key)}
 					>
 						{(i: any) => (
 							<SelectItem key={i.name} value={i.name} rounded='none'>
 								<div className='flex gap-1 items-center'>
-									{/* <Avatar
-                    radius="full"
-                    alt={i.name}
-                    // src={i.name}
-                    // icon={i.icon}
-                    className={`flex-shrink-0 w-5 h-5 bg-${i.color}`}
-
-                  /> */}
 									<span className='text-small'>{i.name}</span>
 								</div>
 							</SelectItem>
@@ -174,12 +162,19 @@ export const Add = ({ onSubmit, isSaving }: AddProps) => {
 						isRequired
 						radius='none'
 						label='Type'
-						onChange={(e) => setFields({ ...fields, type: e.target.value })}
-						// renderValue={(items: any) => items.map((i: any) => i.key)}
+						items={types}
+						onChange={(item: any) =>
+							types.map((i) => i.name == item.target.value && setFields({ ...fields, type: i }))
+						}
+						renderValue={(items: any) => items.map((i: any) => i.key)}
 					>
-						{types.map((type) => (
-							<SelectItem key={type.key}>{type.label}</SelectItem>
-						))}
+						{(i: any) => (
+							<SelectItem key={i.name} value={i.name} rounded='none'>
+								<div className='flex gap-1 items-center'>
+									<span className='text-small'>{i.name}</span>
+								</div>
+							</SelectItem>
+						)}
 					</Select>
 					<DatePicker
 						size='sm'

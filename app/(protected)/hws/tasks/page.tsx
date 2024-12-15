@@ -14,10 +14,11 @@ const TasksPage = () => {
 	const [isLoading, startLoading] = useTransition();
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [isSaving, startSaving] = useTransition();
-	const initialCols = ['name', 'status', 'team', 'actions'];
+	const initialCols = ['name', 'status', 'assignments', 'actions'];
 	const cols = [
 		{ name: 'NAME', uid: 'name', sortable: true },
-		{ name: 'ASSIGNED TO', uid: 'team', sortable: true },
+		{ name: 'ASSIGNED TO', uid: 'assignments', sortable: true },
+		{ name: 'TYPE', uid: 'type', sortable: true },
 		{ name: 'STATUS', uid: 'status', sortable: true },
 		{ name: 'PRIORITY', uid: 'priority', sortable: true },
 		{ name: 'CREATED BY', uid: 'creator', sortable: true },

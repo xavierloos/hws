@@ -8,22 +8,41 @@ import { getTemporaryUrl } from '@/temporaryUrl';
 
 export const GET = async (req: Request, { params }: any) => {
 	try {
+		// const user = await db.user.findFirst({
+		// 	where: { id: params.id },
+		// 	include: {
+		// 		social: true,
+		// 		_count: {
+		// 			select: {
+		//         assignedTaskIds: true,
+		// 				assignedTasks: true,
+		// 				blogs: true,
+
+		// 				// assignedTasks: {
+		// 				// 	where: {
+		// 				// 		status: {
+		// 				// 			path: ['name'],
+		// 				// 			equals: 'Completed',
+		// 				// 		},
+		// 				// 	},
+		// 				// },
+		// 			},
+		// 		},
+		// 	},
+		// });
 		const user = await db.user.findFirst({
 			where: { id: params.id },
 			include: {
 				social: true,
+			},
+			select: {
+				id: true, // Include any other fields you need
+				social: true,
 				_count: {
 					select: {
+						tasks: true,
+						// assignedTasks: true,
 						blogs: true,
-						// assignmentIds: true,
-						assignedTasks: {
-							where: {
-								status: {
-									path: ['name'],
-									equals: 'Completed',
-								},
-							},
-						},
 					},
 				},
 			},

@@ -109,6 +109,31 @@ export const TableItems = ({
 	});
 	const plugin = React.useRef(Autoplay({ delay: 2000, stopOnInteraction: true }));
 
+	const iconMapping: Record<string, JSX.Element> = {
+		Low: <ArrowDownIcon />,
+		Medium: <ArrowRightIcon />,
+		High: <ArrowUpIcon />,
+		'To Do': <CircleIcon />,
+		'In Progress': <LapTimerIcon />,
+		Completed: <CheckCircledIcon />,
+		Blocked: <CircleBackslashIcon />,
+		Documentation: <ReaderIcon />,
+		Feature: <LightningBoltIcon />,
+		Maintenance: <GearIcon />,
+		Story: <MagicWandIcon />,
+		Research: <MagnifyingGlassIcon />,
+		Testing: <ClipboardIcon />,
+		Urgent: <ExclamationTriangleIcon />,
+		Bug: <CrumpledPaperIcon />,
+		Cancelled: <CrossCircledIcon />,
+		Critical: <LinkBreak2Icon />,
+	};
+
+	const Icon = ({ label }: { label: string }) => {
+		// const icon = iconMapping[label] ;
+		return iconMapping[label];
+	};
+
 	const onSubmitEdit = async (e: React.FormEvent<HTMLFormElement>, inputs: any) => {
 		e.preventDefault();
 		startSavingEdit(async () => {
@@ -175,43 +200,13 @@ export const TableItems = ({
 		const cellValue = i[columnKey as keyof Items];
 		switch (columnKey) {
 			case 'name':
-				let icon;
-				switch (i.type) {
-					case 'Documentation':
-						icon = <ReaderIcon />;
-						break;
-					case 'Feature':
-						icon = <LightningBoltIcon />;
-						break;
-					case 'Maintenance':
-						icon = <GearIcon />;
-						break;
-					case 'Story':
-						icon = <MagicWandIcon />;
-						break;
-					case 'Research':
-						icon = <MagnifyingGlassIcon />;
-						break;
-					case 'Testing':
-						icon = <ClipboardIcon />;
-						break;
-					case 'Urgent':
-						icon = <ExclamationTriangleIcon />;
-						break;
-					case 'Bug':
-						icon = <CrumpledPaperIcon />;
-						break;
-					default:
-						icon = <LinkBreak2Icon />;
-				}
 				return (
-					<Tooltip content={i.type} size='sm' placement='top-start'>
+					<Tooltip content={i.type.name} size='sm' placement='top-start'>
 						<User
 							avatarProps={{
 								className: `shrink-0 m-auto rounded-full`,
 								size: 'sm',
-								icon,
-								// src: i.tempThumbnail,
+								icon: <Icon label={i.type.name} />,
 							}}
 							description={
 								<span className='truncate text-ellipsis line-clamp-1 '>Due {format(i.dueDate)}</span>
@@ -248,22 +243,22 @@ export const TableItems = ({
 						}
 					/>
 				);
-			case 'team':
-				if (cellValue.length === 0) {
+			case 'assignments':
+				if (cellValue === 0) {
 					return <span>No assigned</span>;
-				} else if (cellValue.length === 1) {
+				} else if (cellValue === 1) {
 					return (
 						<User
 							avatarProps={{
 								size: 'sm',
 								className: `shrink-0`,
-								src: cellValue[0].src,
+								src: cellValue.user.src,
 							}}
 							rounded
 							description={
-								<span className='truncate text-ellipsis line-clamp-1'>@{cellValue[0].username}</span>
+								<span className='truncate text-ellipsis line-clamp-1'>@{cellValue.user.username}</span>
 							}
-							name={<span className='truncate text-ellipsis line-clamp-1'>{cellValue[0].name}</span>}
+							name={<span className='truncate text-ellipsis line-clamp-1'>{cellValue.user.name}</span>}
 						/>
 					);
 				} else {
@@ -271,8 +266,12 @@ export const TableItems = ({
 						<AvatarGroup size='sm' max={3} isBordered className='px-3 justify-start border-transparent'>
 							{cellValue.map((val: any) => {
 								return (
-									<Tooltip content={`${val.name} ${user.id == val.id ? '(me)' : ''}`} size='sm'>
-										<Avatar size='sm' src={val.src} className={`shrink-0 ring-1`} />
+									<Tooltip
+										content={`${val.user.name} ${user.id == val.user.id ? '(me)' : ''}`}
+										size='sm'
+										key={val.user.id}
+									>
+										<Avatar size='sm' src={val.user.src} className={`shrink-0 ring-1`} />
 									</Tooltip>
 								);
 							})}
@@ -281,30 +280,13 @@ export const TableItems = ({
 				}
 			case 'priority':
 			case 'status':
+			case 'type':
 				return (
 					<Chip
-						className={`capitalize text-${cellValue.color}`}
-						size='md'
-						variant='light'
-						startContent={
-							cellValue.name == 'Low' ? (
-								<ArrowDownIcon />
-							) : cellValue.name == 'Medium' ? (
-								<ArrowRightIcon />
-							) : cellValue.name == 'High' ? (
-								<ArrowUpIcon />
-							) : cellValue.name == 'To Do' ? (
-								<CircleIcon />
-							) : cellValue.name == 'In Progress' ? (
-								<LapTimerIcon />
-							) : cellValue.name == 'Completed' ? (
-								<CheckCircledIcon />
-							) : cellValue.name == 'Blocked' ? (
-								<CircleBackslashIcon />
-							) : (
-								<CrossCircledIcon />
-							)
-						}
+						className={`capitalize`}
+						variant='flat'
+						color={cellValue.color}
+						startContent={<Icon label={cellValue.name} />}
 					>
 						{cellValue.name}
 					</Chip>
@@ -583,8 +565,9 @@ export const TableItems = ({
 				scrollBehavior='inside'
 				shouldBlockScroll
 				className='rounded-md'
+				hideCloseButton='true'
 			>
-				<ModalContent className='my-4'>
+				<ModalContent>
 					<View item={viewItem} getData={getData} onDelete={onDelete} />
 				</ModalContent>
 			</Modal>

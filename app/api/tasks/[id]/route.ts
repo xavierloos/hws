@@ -16,7 +16,11 @@ export const GET = async (req: Request, { params }: any) => {
 					},
 				},
 				creator: true,
-				team: true,
+				assignments: {
+					include: {
+						user: true,
+					},
+				},
 				comments: {
 					orderBy: {
 						createdAt: 'desc',
@@ -32,8 +36,13 @@ export const GET = async (req: Request, { params }: any) => {
 			},
 		});
 		const getImages = async () => {
+			task.assigmentIds = [];
 			task.creator.src = await getTemporaryUrl(`${task.creator.id}/${task.creator.image}`);
-			for (const member of task.team) member.src = await getTemporaryUrl(`${member.id}/${member.image}`);
+			for (const assignment of task.assignments) {
+				task.assigmentIds.push(assignment.userId);
+				assignment.user.src = await getTemporaryUrl(`${assignment.user.id}/${assignment.user.image}`);
+			}
+
 			for (const file of task.files)
 				file.src = await getTemporaryUrl(`${task.creatorId}/${task.id}/${file.name}`);
 			for (const comment of task.comments) {
