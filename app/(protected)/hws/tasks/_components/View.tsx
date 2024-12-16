@@ -370,7 +370,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 					</Tooltip>
 				)}
 			</div>
-			<div className='flex gap-1 items-center text-foreground text-sm'>
+			<div className='w-full flex gap-1 items-center text-foreground text-sm uppercase font-semibold'>
 				Due {format(task.dueDate)} • on{' '}
 				{dateFormat(task.dueDate, `${user.id == task.creator.id ? 'ddd,' : 'ddd, dd/mm/yyyy, HH:mm'}`)}
 				{user.id == task.creator.id && (
@@ -554,15 +554,28 @@ export const View = ({ item, getData, onDelete }: Props) => {
 								>
 									<Avatar src={i.creator.src} size='sm' className='shrink-0' />
 									<div className='flex flex-col gap-1'>
-										<div className='flex gap-2'>
+										<div className='flex gap-2 '>
 											<div
-												className={`w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words text-start ${
-													i.creator?.id == user.id
-														? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
-														: 'me-0 bg-default-100 rounded-tr-none'
+												className={`flex ${
+													i.creator?.id == user.id ? `flex-row` : `flex-row-reverse`
 												}`}
 											>
-												{i.comment}
+												<span
+													className={`arrow  ${
+														i.creator?.id == user.id
+															? `before:border-x-transparent before:border-b-transparent before:border-t-primary before:content-['']`
+															: `after:border-x-transparent after:border-b-transparent after:border-t-default-100 after:content-['']`
+													}`}
+												></span>
+												<div
+													className={`shadow-lg w-fit h-auto px-2 py-1 rounded-xl text-sm text-ellipsis text-content5 font-light overflow-hidden break-words text-start ${
+														i.creator?.id == user.id
+															? 'ms-0 bg-primary rounded-tl-none text-primary-foreground'
+															: 'me-0 bg-default-100 rounded-tr-none'
+													}`}
+												>
+													{i.comment}
+												</div>
 											</div>
 											{i.creator.id === user.id && (
 												<Button
@@ -644,6 +657,7 @@ export const View = ({ item, getData, onDelete }: Props) => {
 						}
 					>
 						{task.files.map((item, index) => {
+							console.log(item);
 							item.index = index; //To delete from the uploading list
 							return (
 								<FilePreviewer

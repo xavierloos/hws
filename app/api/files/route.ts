@@ -49,7 +49,10 @@ export const POST = async (req: Request) => {
 		const data = await req.formData();
 		const dataValues = Array.from(data.values());
 		const taskId = Array.from(data.keys());
-		const filesId = [];
+		const task = await db.task.findUnique({
+			where: { id: taskId[0] },
+		});
+		console.log(task);
 		const rand = crypto.randomInt(10, 1_00).toString();
 		for (const value of dataValues) {
 			if (typeof value === 'object' && 'arrayBuffer' in value) {
@@ -66,7 +69,7 @@ export const POST = async (req: Request) => {
 							? `${value.name.split('.')[0]}-${rand}.${value.name.split('.').pop()}`
 							: value.name;
 						//Creates a folder with the id
-						await bucket.file(`${user.id}/${taskId[0]}/${filename}`).save(Buffer.from(buffer));
+						await bucket.file(`${task.creatorId}/${taskId[0]}/${filename}`).save(Buffer.from(buffer));
 						await db.file.create({
 							data: {
 								name: filename,
@@ -98,14 +101,6 @@ export const POST = async (req: Request) => {
 				}
 			}
 		}
-
-		// console.log(filesId);
-		// if (type === 'taskss')
-		// 	await db.task.update({
-		// 		where: { id: taskId[0] },
-		// 		data: { files: filesId },
-		// 	});
-
 		return NextResponse.json(
 			{
 				message: `File${dataValues.length > 1 ? 's' : ''} uploaded successfully`,
