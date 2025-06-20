@@ -5,18 +5,10 @@ import { NextResponse } from 'next/server';
 
 export const GET = async (req: Request) => {
 	try {
-		const user = await currentUser();
-		const url = new URL(req.url);
-		const api_key = url.searchParams.get('api_key');
-
+		// const user = await currentUser();
 		// if (!user) return { error: 'Unathorized' };
 
-		if (!user && api_key !== process.env.NEXT_PUBLIC_API_KEY) {
-			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-		}
-
-		console.log(api_key);
-
+		const url = new URL(req.url);
 		const searchParams = new URLSearchParams(url.searchParams);
 		const sortBy = searchParams.get('sortby');
 
